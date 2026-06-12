@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch Rate Meter — Sioux Watch Café</title>
+<style>
+  :root{
+    --page:#ececec; --card:#f5f3ef; --accent:#c25a36; --accent-d:#a8492b;
+    --panel-1:#1c1c1c; --panel-2:#0b0b0b; --led:#ff3b30; --led-off:#350707;
+    --banner:#d68f6b; --muted:#777; --border:#ddd9d1; --ink:#2b2b2b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--page); color:var(--ink);
+    font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh; padding:28px 16px 60px;
+  }
+  .wrap{max-width:680px;margin:0 auto}
+  .card{background:var(--card);border-radius:14px;padding:30px 30px 34px;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+  h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .grow{flex:1 1 auto;min-width:0}
+  label.fld{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 5px}
+
+  select,input[type=text],textarea{
+    font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;
+    background:#fff;color:var(--ink);width:100%;
+  }
+  textarea{resize:vertical;min-height:38px}
+
+  button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#fff;color:var(--ink)}
+  button:hover{background:#f0ece5}
+  button:active{transform:scale(.98)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{background:var(--accent-d)}
+  button.ghost{background:transparent}
+  button.danger{color:#b3261e}
+  button.sm{padding:6px 10px;font-size:13px}
+
+  .block{border-top:1px solid var(--border);margin-top:26px;padding-top:22px}
+  .block h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:0 0 14px;font-weight:700}
+
+  /* watch chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .chip{border:1px solid var(--border);background:#fff;border-radius:20px;padding:7px 14px;font-size:14px;cursor:pointer;display:flex;gap:8px;align-items:center}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip .x{opacity:.6;font-weight:700}
+  .chip .x:hover{opacity:1}
+
+  /* LED panels — gestapeld, volle breedte */
+  .pcol{display:flex;flex-direction:column;gap:14px}
+  .panel{background:linear-gradient(180deg,var(--panel-1),var(--panel-2));border-radius:16px;padding:18px 16px 20px;box-shadow:inset 0 2px 8px rgba(0,0,0,.6);overflow:hidden}
+  .plab{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 12px;text-align:center}
+  .clock{display:flex;align-items:center;justify-content:center;gap:5px}
+  .digit{width:clamp(24px,6.2vw,46px)}
+  .digit svg{width:100%;height:auto;display:block}
+  .seg{fill:var(--led-off)}
+  .seg.on{fill:var(--led);filter:drop-shadow(0 0 5px rgba(255,59,48,.8))}
+  .colon{display:flex;flex-direction:column;gap:12px;padding:0 3px 6px}
+  .colon .dot{width:9px;height:9px;border-radius:50%;background:var(--led);box-shadow:0 0 5px rgba(255,59,48,.8)}
+
+  .watch-row{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+  .nudge-col{display:flex;flex-direction:column;gap:6px}
+  .nudge{width:44px;height:38px;font-size:16px;line-height:1;background:#262626;color:#fff;border:none}
+  .nudge:hover{background:#333}
+
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  .led-stat{background:#141414;border-radius:10px;padding:12px;text-align:center;font-family:"Courier New",monospace;color:var(--led);font-weight:700;font-size:24px}
+  .led-stat.rate{color:#ff8a3c}
+  .led-stat small{display:block;color:var(--muted);font-size:11px;font-weight:400;letter-spacing:1px;margin-bottom:4px;font-family:inherit;text-transform:uppercase}
+
+  .sync-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+  .hint{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.5}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--border)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .empty{color:var(--muted);font-size:14px;padding:14px 2px}
+
+  .spark{margin-top:14px}
+
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:18px}
+  .notice{background:#fde9e0;border:1px solid #f3c3ad;color:#8a3a1d;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px;display:none}
+
+  .banner{margin-top:26px;background:var(--banner);color:#fff;font-weight:700;text-align:center;padding:16px;border-radius:8px;font-size:15px}
+  footer{margin-top:22px;color:#9a9a9a;font-size:13px;text-align:center}
+
+  @media(max-width:600px){
+    .card{padding:22px 16px 26px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Watch Rate Meter</h1>
+    <p class="sub">Meet de gangafwijking van je horloges — The Sioux Watch Café</p>
+
+    <div class="notice" id="notice"></div>
+
+    <!-- WATCHES -->
+    <div class="row">
+      <input type="text" id="newWatch" class="grow" placeholder="Naam van horloge (bv. Seiko SARB033)">
+      <button class="primary" id="addWatch">Toevoegen</button>
+    </div>
+    <div class="chips" id="watchChips"></div>
+
+    <!-- METER -->
+    <div class="block" id="meterBlock">
+      <h2>Meten — <span id="activeWatchName" style="color:var(--accent);text-transform:none;letter-spacing:0">—</span></h2>
+
+      <div class="pcol">
+        <div class="panel">
+          <p class="plab">Referentie · Amsterdam</p>
+          <div class="clock" id="clkRef"></div>
+        </div>
+        <div class="panel">
+          <p class="plab">Jouw horloge</p>
+          <div class="watch-row">
+            <div class="clock" id="clkWatch"></div>
+            <div class="nudge-col">
+              <button class="nudge" id="nUp" aria-label="Seconde vooruit">&#9650;</button>
+              <button class="nudge" id="nDown" aria-label="Seconde achteruit">&#9660;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="readout">
+        <div class="led-stat"><small>Offset nu</small><span id="offVal">±0 s</span></div>
+        <div class="led-stat rate"><small>Gang</small><span id="rateVal">— s/dag</span></div>
+      </div>
+
+      <div class="sync-row">
+        <button id="syncBtn"><b>Tik-sync</b> &nbsp;(tik op de hele seconde)</button>
+        <span class="hint" id="syncInfo" style="margin-top:0"></span>
+      </div>
+      <p class="hint">Stel met &#9650;/&#9660; het horloge gelijk tot op de seconde. Tik daarna een paar keer op <b>Tik-sync</b> op het moment dat de secondewijzer 12 passeert — dat verfijnt de offset tot op ~0,1 s. Leg de meting daarna vast.</p>
+
+      <div class="row" style="margin-top:14px;align-items:flex-end">
+        <div style="flex:1 1 180px">
+          <label class="fld" for="posSel">Positie</label>
+          <select id="posSel">
+            <option value="">— niet opgegeven —</option>
+            <option>Wijzerplaat boven</option>
+            <option>Wijzerplaat onder</option>
+            <option>Kroon boven</option>
+            <option>Kroon onder</option>
+            <option>Kroon links</option>
+            <option>Kroon rechts</option>
+            <option>Gedragen (aan pols)</option>
+          </select>
+        </div>
+        <div style="flex:2 1 220px">
+          <label class="fld" for="noteIn">Notitie</label>
+          <input type="text" id="noteIn" placeholder="optioneel">
+        </div>
+        <button class="primary" id="recordBtn">Meting vastleggen</button>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="block">
+      <h2>Metingen</h2>
+      <div id="rateSummary" class="hint" style="margin:0 0 6px"></div>
+      <svg class="spark" id="spark" width="100%" height="80" viewBox="0 0 600 80" preserveAspectRatio="none" style="display:none"></svg>
+      <div id="historyWrap"></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="sm ghost" id="exportBtn">Exporteer back-up (.json)</button>
+      <button class="sm ghost" id="importBtn">Importeer back-up</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+    </div>
+
+    <div class="banner">Next meeting: every last Friday of the month @Labs during the Vrijmibo</div>
+    <footer>© 2026 The Sioux Watch Café — info@watchcafe.eu</footer>
+  </div>
+</div>
+
+<script>
+/* ===== seven-segment ===== */
+var SEG={a:"12,14 18,8 62,8 68,14 62,20 18,20",b:"66,16 72,22 72,62 66,68 60,62 60,22",
+c:"66,72 72,78 72,118 66,124 60,118 60,78",d:"12,126 18,120 62,120 68,126 62,132 18,132",
+e:"14,72 20,78 20,118 14,124 8,118 8,78",f:"14,16 20,22 20,62 14,68 8,62 8,22",
+g:"12,70 18,64 62,64 68,70 62,76 18,76"};
+var ORDER=["a","b","c","d","e","f","g"];
+var MAP={"0":"abcdef","1":"bc","2":"abged","3":"abgcd","4":"fgbc","5":"afgcd","6":"afgedc","7":"abc","8":"abcdefg","9":"abcdfg"};
+function buildClock(el){
+  var ns="http://www.w3.org/2000/svg",digs=[];
+  function digit(){var s=document.createElementNS(ns,"svg");s.setAttribute("viewBox","0 0 80 140");var o={};
+    ORDER.forEach(function(id){var p=document.createElementNS(ns,"polygon");p.setAttribute("points",SEG[id]);p.setAttribute("class","seg");s.appendChild(p);o[id]=p;});
+    var d=document.createElement("div");d.className="digit";d.appendChild(s);return{wrap:d,seg:o};}
+  function colon(){var c=document.createElement("div");c.className="colon";c.innerHTML='<span class="dot"></span><span class="dot"></span>';return c;}
+  for(var i=0;i<6;i++){var dg=digit();el.appendChild(dg.wrap);digs.push(dg.seg);if(i===1||i===3)el.appendChild(colon());}
+  return digs;
+}
+function setClock(digs,str){for(var i=0;i<6;i++){var on=MAP[str[i]]||"";ORDER.forEach(function(id){digs[i][id].classList.toggle("on",on.indexOf(id)>-1);});}}
+function fmtAms(ms){var f=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Amsterdam",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});var o={};f.formatToParts(new Date(ms)).forEach(function(p){o[p.type]=p.value;});return o.hour+o.minute+o.second;}
+
+var refDigs=buildClock(document.getElementById("clkRef"));
+var watchDigs=buildClock(document.getElementById("clkWatch"));
+
+/* ===== storage ===== */
+var KEY="siouxWatchRateMeter";
+var memOnly=false, state;
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function migrate(d){
+  if(d&&d.watches)return d;
+  if(d&&d.users){var ws=[];d.users.forEach(function(u){(u.watches||[]).forEach(function(w){ws.push({id:w.id||uid(),name:w.name,measurements:w.measurements||[]});});});
+    return {version:2,activeWatch:ws[0]?ws[0].id:null,watches:ws};}
+  return d;
+}
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw){return migrate(JSON.parse(raw));}}
+  catch(e){memOnly=true;}
+  return null;
+}
+function save(){
+  if(memOnly)return;
+  try{localStorage.setItem(KEY,JSON.stringify(state));}
+  catch(e){memOnly=true;showNotice();}
+}
+function showNotice(){
+  if(memOnly){var n=document.getElementById("notice");n.style.display="block";
+    n.textContent="Let op: opslag is hier niet beschikbaar (bv. in deze preview), dus metingen worden niet bewaard. Op GitHub Pages of als je het bestand normaal opent, blijft alles wél bewaard.";}
+}
+function seed(){return {version:2,activeWatch:null,watches:[]};}
+state=load()||seed();
+if(memOnly)showNotice();
+
+/* ===== helpers ===== */
+function activeWatch(){return state.watches.find(function(w){return w.id===state.activeWatch;})||state.watches[0]||null;}
+function rateOf(w){
+  if(!w||w.measurements.length<2)return null;
+  var pts=w.measurements.slice().sort(function(a,b){return a.t-b.t;});
+  var n=pts.length,sT=0,sO=0,sTT=0,sTO=0;
+  pts.forEach(function(p){sT+=p.t;sO+=p.offset;sTT+=p.t*p.t;sTO+=p.t*p.offset;});
+  var den=n*sTT-sT*sT; if(den===0)return null;
+  var slope=(n*sTO-sT*sO)/den;
+  return {rate:slope*86400000, span:pts[n-1].t-pts[0].t, n:n};
+}
+function signSec(n,dec){var v=dec?Math.abs(n).toFixed(1):String(Math.round(Math.abs(n)));return (n>0?"+":n<0?"\u2212":"\u00b1")+v+" s";}
+function humanSpan(ms){var d=ms/86400000;if(d>=1)return d.toFixed(1)+" dagen";var h=ms/3600000;if(h>=1)return h.toFixed(1)+" uur";return Math.round(ms/60000)+" min";}
+
+/* ===== meter session ===== */
+var offsetN=0, syncTaps=[];
+function currentOffset(){return syncTaps.length? syncTaps.reduce(function(a,b){return a+b;},0)/syncTaps.length : offsetN;}
+function resetSession(){offsetN=0;syncTaps=[];}
+
+/* ===== render ===== */
+function renderWatches(){
+  var box=document.getElementById("watchChips");box.innerHTML="";
+  if(!state.watches.length){box.innerHTML='<span class="empty">Nog geen horloges. Voeg er één toe om te beginnen.</span>';}
+  if(state.watches.length&&!state.watches.some(function(w){return w.id===state.activeWatch;}))state.activeWatch=state.watches[0].id;
+  state.watches.forEach(function(w){
+    var c=document.createElement("div");c.className="chip"+(w.id===state.activeWatch?" active":"");
+    c.innerHTML='<span>'+escapeHtml(w.name)+'</span><span class="x" title="Verwijder">&times;</span>';
+    c.querySelector("span").onclick=function(){state.activeWatch=w.id;resetSession();save();renderAll();};
+    c.onclick=function(ev){if(ev.target.classList.contains("x"))return;state.activeWatch=w.id;resetSession();save();renderAll();};
+    c.querySelector(".x").onclick=function(ev){ev.stopPropagation();if(confirm('Horloge "'+w.name+'" en al zijn metingen verwijderen?')){state.watches=state.watches.filter(function(x){return x.id!==w.id;});save();renderAll();}};
+    box.appendChild(c);
+  });
+}
+function renderMeter(){
+  var w=activeWatch();
+  document.getElementById("meterBlock").style.opacity=w?"1":".45";
+  document.getElementById("activeWatchName").textContent=w?w.name:"— kies een horloge —";
+  document.getElementById("recordBtn").disabled=!w;
+  var dec=syncTaps.length>0;
+  document.getElementById("offVal").textContent=signSec(currentOffset(),dec);
+  document.getElementById("syncInfo").textContent=syncTaps.length?("verfijnd uit "+syncTaps.length+" tik"+(syncTaps.length>1?"ken":"")):"";
+  var r=rateOf(w);
+  document.getElementById("rateVal").textContent=r?((r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" s/dag"):"— s/dag";
+}
+function renderHistory(){
+  var w=activeWatch(),wrap=document.getElementById("historyWrap"),sum=document.getElementById("rateSummary"),spark=document.getElementById("spark");
+  if(!w||!w.measurements.length){wrap.innerHTML='<div class="empty">Nog geen metingen vastgelegd.</div>';sum.textContent="";spark.style.display="none";return;}
+  var pts=w.measurements.slice().sort(function(a,b){return b.t-a.t;});
+  var r=rateOf(w);
+  sum.innerHTML=r?("Gang: <b>"+(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" s/dag</b> &mdash; uit "+r.n+" metingen over "+humanSpan(r.span)+"."):"Leg minstens 2 metingen vast om de gang te berekenen.";
+  var html='<table><thead><tr><th>Tijdstip</th><th>Offset</th><th>Positie</th><th>Notitie</th><th></th></tr></thead><tbody>';
+  pts.forEach(function(m){
+    var d=new Date(m.t).toLocaleString("nl-NL",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+    html+='<tr><td class="num">'+d+'</td><td class="num">'+signSec(m.offset,true)+'</td><td>'+escapeHtml(m.position||"—")+'</td><td>'+escapeHtml(m.note||"")+'</td><td><button class="sm danger ghost" data-id="'+m.id+'">verwijder</button></td></tr>';
+  });
+  html+="</tbody></table>";wrap.innerHTML=html;
+  wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){w.measurements=w.measurements.filter(function(x){return x.id!==b.getAttribute("data-id");});save();renderAll();};});
+  drawSpark(w);
+}
+function drawSpark(w){
+  var spark=document.getElementById("spark");
+  if(w.measurements.length<2){spark.style.display="none";return;}
+  var pts=w.measurements.slice().sort(function(a,b){return a.t-b.t;});
+  var t0=pts[0].t,t1=pts[pts.length-1].t,offs=pts.map(function(p){return p.offset;});
+  var mn=Math.min.apply(null,offs),mx=Math.max.apply(null,offs);if(mn===mx){mn-=1;mx+=1;}
+  var W=600,H=80,pad=8;
+  function X(t){return pad+(t1===t0?0:(t-t0)/(t1-t0))*(W-2*pad);}
+  function Y(o){return H-pad-((o-mn)/(mx-mn))*(H-2*pad);}
+  var dpath=pts.map(function(p,i){return (i?"L":"M")+X(p.t).toFixed(1)+" "+Y(p.offset).toFixed(1);}).join(" ");
+  var dots=pts.map(function(p){return '<circle cx="'+X(p.t).toFixed(1)+'" cy="'+Y(p.offset).toFixed(1)+'" r="3" fill="#c25a36"/>';}).join("");
+  var zero="";if(mn<0&&mx>0){var zy=Y(0).toFixed(1);zero='<line x1="'+pad+'" y1="'+zy+'" x2="'+(W-pad)+'" y2="'+zy+'" stroke="#bbb" stroke-dasharray="3 3"/>';}
+  spark.innerHTML=zero+'<path d="'+dpath+'" fill="none" stroke="#c25a36" stroke-width="2"/>'+dots;
+  spark.style.display="block";
+}
+function renderAll(){renderWatches();renderMeter();renderHistory();}
+function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+/* ===== clock loop ===== */
+function tick(){var now=Date.now();setClock(refDigs,fmtAms(now));setClock(watchDigs,fmtAms(now+offsetN*1000));}
+tick();setInterval(tick,200);
+
+/* ===== events ===== */
+document.getElementById("addWatch").onclick=addWatch;
+document.getElementById("newWatch").addEventListener("keydown",function(e){if(e.key==="Enter")addWatch();});
+function addWatch(){var inp=document.getElementById("newWatch");var name=inp.value.trim();if(!name)return;var w={id:uid(),name:name,measurements:[]};state.watches.push(w);state.activeWatch=w.id;inp.value="";resetSession();save();renderAll();}
+
+document.getElementById("nUp").onclick=function(){offsetN++;syncTaps=[];renderMeter();};
+document.getElementById("nDown").onclick=function(){offsetN--;syncTaps=[];renderMeter();};
+document.getElementById("syncBtn").onclick=function(){var f=(Date.now()%1000)/1000;var centered=f>0.5?f-1:f;syncTaps.push(offsetN-centered);renderMeter();};
+document.getElementById("recordBtn").onclick=function(){
+  var w=activeWatch();if(!w)return;
+  w.measurements.push({id:uid(),t:Date.now(),offset:Math.round(currentOffset()*10)/10,
+    position:document.getElementById("posSel").value,note:document.getElementById("noteIn").value.trim()});
+  document.getElementById("noteIn").value="";save();renderAll();
+};
+
+document.getElementById("exportBtn").onclick=function(){
+  var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="watch-rate-meter-backup.json";a.click();URL.revokeObjectURL(a.href);
+};
+document.getElementById("importBtn").onclick=function(){document.getElementById("importFile").click();};
+document.getElementById("importFile").onchange=function(e){
+  var file=e.target.files[0];if(!file)return;var r=new FileReader();
+  r.onload=function(){try{var d=migrate(JSON.parse(r.result));if(!d.watches)throw 0;
+    if(confirm("Back-up importeren? Dit vervangt je huidige gegevens in deze browser.")){state=d;if(!state.activeWatch&&state.watches[0])state.activeWatch=state.watches[0].id;save();renderAll();}
+  }catch(err){alert("Kon dit bestand niet lezen als geldige back-up.");}};
+  r.readAsText(file);e.target.value="";
+};
+
+renderAll();
+</script>
+</body>
+</html>
