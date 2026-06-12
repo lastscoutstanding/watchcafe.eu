@@ -201,6 +201,65 @@
       font-size: 14px;
     }
 
+    /* ===== Beep toggle ===== */
+    .sound-control {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .sound-label {
+      user-select: none;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #c9c3bc;
+      transition: 0.25s;
+      border-radius: 999px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+    }
+
+    .slider::before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.25s;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+    }
+
+    .switch input:checked + .slider {
+      background-color: var(--accent);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+    }
+
     .next {
       margin-top: 24px;
       background: #d89a78;
@@ -274,9 +333,7 @@
 <body>
 
   <div class="header">
-    <!-- <img src="../img/SiouxWatchCafeLogo.jpg" alt="The Sioux Watch Café Logo"> -->
-    <h1>The Sioux Watch Café</h1>
-    <p>A relaxed gathering for Sioux colleagues who like watches.</p>
+    <!-- <img src="../img/SiouxWatchCafeLogo.jpg" alt="The Sioux Watch Café Logo <p>A relaxed gathering for Sioux colleagues who like watches.</p>
   </div>
 
   <div class="divider"></div>
@@ -359,6 +416,15 @@
         Europe/Amsterdam time
       </div>
 
+      <div class="sound-control">
+        <span class="sound-label">10 sec beep</span>
+
+        <label class="switch" aria-label="Toggle 10 second beep">
+          <input type="checkbox" id="beepToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
       <div class="next">
         Next meeting: every last Friday of the month @Labs during the Vrijmibo
       </div>
@@ -378,6 +444,44 @@
       "8": ["a", "b", "c", "d", "e", "f", "g"],
       "9": ["a", "b", "c", "d", "f", "g"]
     };
+
+    let audioContext = null;
+    let beepEnabled = false;
+    let lastBeepSecond = null;
+
+    const beepToggle = document.getElementById("beepToggle");
+
+    beepToggle.addEventListener("change", async () => {
+      beepEnabled = beepToggle.checked;
+
+      if (beepEnabled && !audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      if (beepEnabled && audioContext && audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
+    });
+
+    function playSubtleBeep() {
+      if (!beepEnabled || !audioContext) return;
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+
+      gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.04, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.08);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.09);
+    }
 
     function setDigit(elementId, numberChar) {
       const digit = document.getElementById(elementId);
@@ -421,6 +525,21 @@
       }).replace(/,/g, "").toUpperCase();
 
       document.getElementById("dateDisplay").textContent = dateText;
+
+      const currentSecond = now.getSeconds();
+
+      if (
+        beepEnabled &&
+        currentSecond % 10 === 0 &&
+        lastBeepSecond !== currentSecond
+      ) {
+        playSubtleBeep();
+        lastBeepSecond = currentSecond;
+      }
+
+      if (currentSecond % 10 !== 0) {
+        lastBeepSecond = null;
+      }
     }
 
     updateClock();
