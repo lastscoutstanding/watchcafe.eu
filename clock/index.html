@@ -201,63 +201,85 @@
       font-size: 14px;
     }
 
-    .sound-control {
-      margin-top: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      color: #666;
-      font-size: 14px;
-    }
+.sound-control {
+  margin-top: 14px;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(255, 80, 80, 0.88);
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,0.03),
+    0 0 8px rgba(255, 43, 43, 0.08);
+}
+
+.sound-label {
+  user-select: none;
+  text-shadow:
+    0 0 4px rgba(255, 43, 43, 0.45),
+    0 0 10px rgba(255, 43, 43, 0.12);
+}
     
-    .sound-label {
-      user-select: none;
-    }
-    
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 46px;
-      height: 24px;
-    }
-    
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background-color: #c9c3bc;
-      transition: 0.25s;
-      border-radius: 999px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
-    }
-    
-    .slider::before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.25s;
-      border-radius: 50%;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
-    }
-    
-    .switch input:checked + .slider {
-      background-color: var(--accent);
-    }
-    
-    .switch input:checked + .slider::before {
-      transform: translateX(22px);
-    }
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #2a1b1b;
+  transition: 0.25s;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 3px rgba(0,0,0,0.65),
+    0 0 4px rgba(255, 43, 43, 0.08);
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background-color: white;
+  transition: transform 0.25s ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+}
+
+.switch input:checked + .slider {
+  background-color: #5a1717;
+  box-shadow:
+    inset 0 1px 3px rgba(0,0,0,0.55),
+    0 0 8px rgba(255, 43, 43, 0.35),
+    0 0 14px rgba(255, 43, 43, 0.18);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
     .next {
       margin-top: 24px;
       background: #d89a78;
@@ -410,19 +432,21 @@
         </div>
 
         <div class="date-led" id="dateDisplay">MON 01 JAN 2026</div>
+
+	<div class="sound-control">
+  	  <span class="sound-label">10 sec tick</span>
+  	  <label class="switch" aria-label="Toggle 10 second tick">
+    		<input type="checkbox" id="tickToggle">
+    		<span class="slider"></span>
+  	  </label>
+	</div>
       </div>
 
       <div class="clock-caption">
         Europe/Amsterdam time
       </div>
       
-      <div class="sound-control">
-        <span class="sound-label">10 sec beep</span>
-        <label class="switch" aria-label="Toggle 10 second beep">
-          <input type="checkbox" id="beepToggle">
-          <span class="slider"></span>
-        </label>
-      </div>
+
       <div class="next">
         Next meeting: every last Friday of the month @Labs during the Vrijmibo
       </div>
@@ -462,28 +486,28 @@
     }
     
     let audioContext = null;
-    let beepEnabled = false;
-    let lastBeepSecond = null;
+    let tickEnabled = false;
+    let lasttickSecond = null;
     
-    function initBeepToggle() {
-      const beepToggle = document.getElementById("beepToggle");
-      if (!beepToggle) return;
+    function inittickToggle() {
+      const tickToggle = document.getElementById("tickToggle");
+      if (!tickToggle) return;
     
-      beepToggle.addEventListener("change", async () => {
-        beepEnabled = beepToggle.checked;
+      tickToggle.addEventListener("change", async () => {
+        tickEnabled = tickToggle.checked;
     
-        if (beepEnabled && !audioContext) {
+        if (tickEnabled && !audioContext) {
           audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
     
-        if (beepEnabled && audioContext && audioContext.state === "suspended") {
+        if (tickEnabled && audioContext && audioContext.state === "suspended") {
           await audioContext.resume();
         }
       });
     }
     
-    function playSubtleBeep() {
-      if (!beepEnabled || !audioContext) return;
+    function playSubtletick() {
+      if (!tickEnabled || !audioContext) return;
     
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -528,19 +552,19 @@
       const currentSecond = now.getSeconds();
       
       if (
-        beepEnabled &&
+        tickEnabled &&
         currentSecond % 10 === 0 &&
-        lastBeepSecond !== currentSecond
+        lasttickSecond !== currentSecond
       ) {
-        playSubtleBeep();
-        lastBeepSecond = currentSecond;
+        playSubtletick();
+        lasttickSecond = currentSecond;
       }
       
       if (currentSecond % 10 !== 0) {
-        lastBeepSecond = null;
+        lasttickSecond = null;
 }
     }
-    initBeepToggle();
+    inittickToggle();
     updateClock();
     setInterval(updateClock, 1000);
   </script>
