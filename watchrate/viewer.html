@@ -11,21 +11,21 @@
     font-weight:700;font-style:normal;font-display:swap;
   }
   :root{
-    --page:#ececec; --card:#f5f3ef; --accent:#c25a36; --accent-d:#a8492b;
-    --banner:#d68f6b; --muted:#777; --border:#ddd9d1; --ink:#2b2b2b;
+    --page:#121215; --card:#1c1c21; --accent:#d96a41; --accent-d:#c25a36;
+    --banner:#b06a4a; --muted:#a09da6; --border:#33333c; --ink:#e9e7e2;
     --panel-top:#2c2c2c; --panel-bot:#0a0a0a; --panel-line:#1c1c1c;
     --led-amber:#ff9e3d; --led-amber-off:#3a230a;
     --sans:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --mono:ui-monospace,"SF Mono","Roboto Mono",Menlo,Consolas,monospace;
     /* positiekleuren op lichte achtergrond */
-    --p-dialup:#d98324; --p-dialdown:#b5651d; --p-crownup:#2a9d8f; --p-crowndown:#386fa4;
-    --p-crownleft:#8e6fb5; --p-crownright:#c44d6a; --p-worn:#4f9d4f; --p-flat:#8a8a8a;
+    --p-dialup:#f0a03a; --p-dialdown:#cf7f35; --p-crownup:#35c2b1; --p-crowndown:#5b93cf;
+    --p-crownleft:#a98bd4; --p-crownright:#e0678a; --p-worn:#63c063; --p-flat:#8a8a8a;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{background:var(--page);color:var(--ink);font-family:var(--sans);min-height:100vh;padding:28px 16px 64px;-webkit-font-smoothing:antialiased}
   .wrap{max-width:880px;margin:0 auto}
-  .card{background:var(--card);border-radius:16px;padding:30px 34px 34px;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+  .card{background:var(--card);border-radius:16px;padding:30px 34px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
   @media (max-width:560px){.card{padding:22px 18px 26px}}
 
   /* header */
@@ -33,29 +33,29 @@
   h1{color:var(--accent);font-size:clamp(20px,3.2vw,30px);font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
   .sub{color:var(--muted);font-size:14px;margin:0}
   .head-tools{display:flex;align-items:center;gap:10px;flex:0 0 auto}
-  .qbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--muted);
+  .qbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:#26262c;color:var(--muted);
     font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .qbtn:hover{color:var(--accent);border-color:var(--accent)}
-  .lang{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:#fff}
+  .lang{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:#26262c}
   .lang button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;
     padding:7px 13px;cursor:pointer}
   .lang button.on{background:var(--accent);color:#fff}
 
   /* guide */
-  .guide{margin-top:20px;border:1px solid var(--banner);background:rgba(214,143,107,.10);border-radius:12px;padding:18px 20px;position:relative}
+  .guide{margin-top:20px;border:1px solid #45332a;background:#241d1a;border-radius:12px;padding:18px 20px;position:relative}
   .guide h2{margin:0 0 10px;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-d)}
   .guide ol{margin:0;padding-left:0;list-style:none;counter-reset:g}
   .guide li{counter-increment:g;position:relative;padding:5px 0 5px 34px;font-size:14px;color:var(--ink)}
   .guide li::before{content:counter(g);position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;
     background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
-  .guide .note{margin:12px 0 0;font-size:13px;color:var(--accent-d);background:rgba(194,90,54,.08);
+  .guide .note{margin:12px 0 0;font-size:13px;color:#eda57f;background:#2e221c;
     border-left:3px solid var(--accent);padding:9px 12px;border-radius:0 8px 8px 0}
   .guide .gx{position:absolute;top:12px;right:14px;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;border:0;background:none}
   .guide .gx:hover{color:var(--accent)}
 
   /* dropzone */
-  .drop{margin-top:20px;border:1.5px dashed var(--border);border-radius:12px;background:#fff;padding:26px 22px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
-  .drop:hover,.drop.hot{border-color:var(--accent);background:rgba(194,90,54,.04)}
+  .drop{margin-top:20px;border:1.5px dashed var(--border);border-radius:12px;background:#1f1f25;padding:26px 22px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+  .drop:hover,.drop.hot{border-color:var(--accent);background:rgba(217,106,65,.08)}
   .drop .big{font-size:15px;color:var(--ink)}
   .drop .small{font-size:13px;color:var(--muted);margin-top:5px}
   .drop .pills{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -65,27 +65,27 @@
   .pillbtn.solid:hover{background:var(--accent-d);color:#fff}
 
   /* controls */
-  .bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:22px;padding:12px 16px;background:#fff;border:1px solid var(--border);border-radius:12px}
+  .bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:22px;padding:12px 16px;background:#1f1f25;border:1px solid var(--border);border-radius:12px}
   .grp{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)}
   select{font:inherit;font-size:13px;background:var(--card);color:var(--ink);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
   .switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;color:var(--ink)}
   .switch input{display:none}
-  .track{width:38px;height:22px;border-radius:999px;background:#e2ded6;border:1px solid var(--border);position:relative;transition:background .15s}
-  .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#aaa;transition:transform .15s,background .15s}
+  .track{width:38px;height:22px;border-radius:999px;background:#34343c;border:1px solid var(--border);position:relative;transition:background .15s}
+  .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#8f8c96;transition:transform .15s,background .15s}
   .switch input:checked + .track{background:var(--banner);border-color:var(--accent)}
   .switch input:checked + .track::after{transform:translateX(16px);background:#fff}
   .chips{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
   .fchip{font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:999px;padding:4px 10px;display:inline-flex;align-items:center;gap:8px}
   .fchip b{color:var(--ink);font-weight:600}
-  .fchip .x{cursor:pointer;color:#bbb}
+  .fchip .x{cursor:pointer;color:#777}
   .fchip .x:hover{color:var(--accent)}
 
   .summary{font-size:12.5px;color:var(--muted);margin:16px 2px 4px}
 
   /* watch cards (stacked) */
   .list{margin-top:14px;display:flex;flex-direction:column;gap:16px}
-  .wcard{border:1px solid var(--border);border-radius:14px;padding:18px 20px 16px;background:#fbfaf7}
-  .wcard.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(194,90,54,.25)}
+  .wcard{border:1px solid var(--border);border-radius:14px;padding:18px 20px 16px;background:#202026}
+  .wcard.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(217,106,65,.3)}
   .wtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
   .wname{font-size:17px;font-weight:700;color:var(--ink)}
   .wmeta{font-size:12px;color:var(--muted);margin-top:3px}
@@ -122,6 +122,7 @@
   footer{margin-top:26px;text-align:center;color:var(--muted);font-size:11.5px}
   .hide{display:none !important}
 </style>
+  <script src="/nav.js" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -244,7 +245,7 @@ const POS={
   worn:{en:"Worn",nl:"Gedragen",color:"var(--p-worn)"},
   flat:{en:"Flat",nl:"Plat / liggend",color:"var(--p-flat)"}
 };
-const FALLBACK=["#d98324","#2a9d8f","#386fa4","#8e6fb5","#c44d6a","#4f9d4f","#b5651d","#8a8a8a"];
+const FALLBACK=["#f0a03a","#35c2b1","#5b93cf","#a98bd4","#e0678a","#63c063","#cf7f35","#8a8a8a"];
 function posInfo(code,idx){
   if(POS[code]) return {label:POS[code][lang],abbr:abbrOf(code),color:POS[code].color};
   const pretty=String(code||"?").replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
@@ -330,15 +331,15 @@ function chartSVG(w){
   const uniq=[...new Set(pts.map(q=>q.position))];
   let g="";
   for(let i=0;i<=4;i++){const o=oMin+(oMax-oMin)*i/4,y=Y(o);
-    g+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#e6e1d8" stroke-width="1"/>`;
-    g+=`<text x="${padL-7}" y="${(y+3).toFixed(1)}" fill="#a39a8c" font-size="10" text-anchor="end" font-family="${'ui-monospace,monospace'}">${o.toFixed(0)}</text>`;}
+    g+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#2e2e36" stroke-width="1"/>`;
+    g+=`<text x="${padL-7}" y="${(y+3).toFixed(1)}" fill="#8f8c96" font-size="10" text-anchor="end" font-family="${'ui-monospace,monospace'}">${o.toFixed(0)}</text>`;}
   for(let i=0;i<=3;i++){const t=tMin+(tMax-tMin)*i/3,x=X(t);
-    g+=`<text x="${x.toFixed(1)}" y="${H-8}" fill="#a39a8c" font-size="10" text-anchor="${i===0?'start':i===3?'end':'middle'}" font-family="${'ui-monospace,monospace'}">${fmtDate(t)}</text>`;}
+    g+=`<text x="${x.toFixed(1)}" y="${H-8}" fill="#8f8c96" font-size="10" text-anchor="${i===0?'start':i===3?'end':'middle'}" font-family="${'ui-monospace,monospace'}">${fmtDate(t)}</text>`;}
   if(w.fit){const yAt=t=>w.fit.intercept+w.fit.slope*(t-w.fit.x0);
     g+=`<line x1="${X(tMin).toFixed(1)}" y1="${Y(yAt(tMin)).toFixed(1)}" x2="${X(tMax).toFixed(1)}" y2="${Y(yAt(tMax)).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`;}
   pts.forEach(p=>{const info=posInfo(p.position,uniq.indexOf(p.position));
     const title=`${fmtDateTime(p.t)} \u00B7 ${p.offset.toFixed(1)}s \u00B7 ${info.label}${p.note?` \u00B7 ${p.note}`:""}`;
-    g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.offset).toFixed(1)}" r="3.4" fill="${info.color}" stroke="#fbfaf7" stroke-width="1"><title>${esc(title)}</title></circle>`;});
+    g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.offset).toFixed(1)}" r="3.4" fill="${info.color}" stroke="#202026" stroke-width="1"><title>${esc(title)}</title></circle>`;});
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="offset / time">${g}</svg>`;
 }
 
