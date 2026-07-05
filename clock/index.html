@@ -287,13 +287,35 @@
   transform: translateX(22px);
 }
 
-    .next {
+    .next-meeting {
       margin-top: 24px;
-      background: #b06a4a;
-      color: #fff;
-      padding: 16px 20px;
-      border-radius: 8px;
-      font-weight: 600;
+      background: linear-gradient(180deg, #1d1d1d 0%, #111 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 18px 20px;
+      text-align: center;
+      box-shadow: inset 0 -4px 10px rgba(0,0,0,0.35);
+    }
+    .nm-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      color: #a09da6;
+      text-transform: uppercase;
+    }
+    .nm-date {
+      color: var(--accent);
+      font-weight: 700;
+      margin-top: 7px;
+      font-size: 1.05rem;
+    }
+    .nm-count {
+      margin-top: 9px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 1.6rem;
+      color: var(--led-on);
+      text-shadow: 0 0 5px rgba(255,43,43,0.55), 0 0 12px rgba(255,43,43,0.2);
+      letter-spacing: 0.06em;
+      font-variant-numeric: tabular-nums;
     }
 
     @media (max-width: 768px) {
@@ -356,7 +378,7 @@
       }
     }
   </style>
-  <script src="/nav.js" defer></script>
+  <script src="/nav.js" defer></script><script src="/meetings.js" defer></script>
 </head>
 <body>
  <!-- <div class="header">
@@ -453,8 +475,10 @@
       </div>
       
 
-      <div class="next">
-        Next meeting: every last Friday of the month @Labs during the Vrijmibo
+      <div class="next-meeting">
+        <div class="nm-label">Next Watch Café — @Labs during the Vrijmibo</div>
+        <div class="nm-date" data-countdown-date>&hellip;</div>
+        <div class="nm-count" data-countdown></div>
       </div>
     </div>
   </div>

@@ -10,7 +10,7 @@
   ];
 
   var css = ''
-  + '.swc-nav{position:sticky;top:0;z-index:1000;background:#17171b;border-bottom:1px solid #2a2a31;'
+  + '.swc-nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:#17171b;border-bottom:1px solid #2a2a31;'
   +   'font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}'
   + '.swc-in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:0 16px;height:52px}'
   + '.swc-brand{color:#e9e7e2;font-weight:700;font-size:15px;text-decoration:none;letter-spacing:.2px;'
@@ -48,7 +48,10 @@
     + '<button class="swc-burger" aria-label="Menu" aria-expanded="false">\u2630</button>'
     + '<div class="swc-links">' + links + '</div>'
     + '</div>';
-  document.body.insertBefore(nav, document.body.firstChild);
+  var spacer = document.createElement('div');
+  spacer.style.height = '52px';
+  document.body.insertBefore(spacer, document.body.firstChild);
+  document.body.insertBefore(nav, spacer);
 
   var burger = nav.querySelector('.swc-burger');
   var menu = nav.querySelector('.swc-links');

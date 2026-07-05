@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Sioux Watch Café</title>
   <script src="/nav.js" defer></script>
+  <script src="/meetings.js" defer></script>
   <style>
     :root{
       --bg:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -15,8 +16,6 @@
     body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
 
     header{text-align:center;padding:44px 20px 36px}
-    .logo-tile{display:inline-block;background:#f5f3ef;border-radius:16px;padding:14px 22px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
-    .logo-tile img{max-width:230px;display:block}
     h1{color:var(--accent);margin:22px 0 8px;font-size:clamp(26px,4.5vw,38px);letter-spacing:.3px}
     header p{color:var(--muted);font-size:16px;margin:0}
 
@@ -28,6 +27,8 @@
     p{line-height:1.65}
 
     .date-box{background:var(--banner);border-left:6px solid var(--accent);padding:18px;font-size:1.1rem;border-radius:8px;color:#fff;margin:6px 0 8px}
+    .date-box .nm{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.25);font-size:1rem}
+    .date-box .nm b{font-variant-numeric:tabular-nums;font-family:Consolas,"Courier New",monospace;font-size:1.15rem;margin-left:6px}
 
     /* tools grid */
     .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:6px}
@@ -49,7 +50,6 @@
 <body>
 
 <header>
-  <span class="logo-tile"><img src="img/SiouxWatchCafeLogo.jpg" alt="The Sioux Watch Café Logo"></span>
   <h1>The Sioux Watch Café</h1>
   <p>A relaxed gathering for Sioux colleagues who like watches.</p>
 </header>
@@ -67,6 +67,7 @@
     <h2>Next Café Date</h2>
     <div class="date-box">
       <strong>Next meeting:</strong> every last friday of the month @<strong>Labs</strong> during the Vrijmibo
+      <div class="nm"><span data-countdown-date></span> &mdash; starts in<b data-countdown></b></div>
     </div>
 
     <h2>Our Tools</h2>
