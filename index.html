@@ -85,7 +85,7 @@
         <span class="go">Start measuring &rarr;</span>
       </a>
       <a class="tool" href="/watchrate/viewer.html">
-        <span class="icon">&#128202;</span>
+        <span class="icon">&#9201;</span>
         <b>Backup Viewer</b>
         <span>Load your Rate Meter backup files and browse rates, positions and offset traces per watch.</span>
         <span class="go">Open the viewer &rarr;</span>
@@ -107,17 +107,9 @@
       Grab a drink, enjoy the atmosphere, and talk time with fellow Sioux watch fans!
     </p>
 
-    <h2>Previous Café Dates</h2>
-    <div class="cafe-log">
-      <strong>Friday, April 3th 2026:</strong> The first Watch Café at Sioux Labs was a success! We had a nice turnout and enjoyed many fun conversations about watch types and the unique stories behind them.
-We opened up several timepieces to get a closer look at the movements. For many, it was their first time seeing the intricate mechanical parts and functions up close. We also put a few watches on the timegrapher, which provided some revealing data on their overall condition and accuracy.<br>
-We're already looking forward to the next one! Keep an eye on this page and the Sioux Intranet timeline for the next date. See you there!
-    </div>
-
-    <div class="cafe-log">
-      <strong>Friday, May 22th 2026:</strong> We, again, had a nice turnout of even more tic toc minded people :)
-      Yanko told a very interesting story on how he gathered all components online to build his own watch. That story for sure made several of us consider to do the same. Next to this we also had several watches on the timegrapher and somehow managed to magically repair Bram's watch by doing nothing to it ;) <br>
-      See you next time!
+    <div id="cafeLogSec" style="display:none">
+      <h2>Previous Café Dates</h2>
+      <div id="cafeLog"></div>
     </div>
   </div>
 </main>
@@ -126,5 +118,26 @@ We're already looking forward to the next one! Keep an eye on this page and the 
   © 2026 The Sioux Watch Café — Created by and for Sioux colleagues - info@watchcafe.eu
 </footer>
 
+<script>
+(function(){
+  fetch('/cafe-log.txt',{cache:'no-store'}).then(function(r){
+    if(!r.ok) throw 0; return r.text();
+  }).then(function(txt){
+    var lines = txt.split(/\r?\n/).filter(function(l){ return l.trim().charAt(0) !== '#'; });
+    var blocks = lines.join('\n').split(/\n\s*---+\s*\n/).map(function(b){ return b.trim(); }).filter(Boolean);
+    if(!blocks.length) return;
+    function esc(t){ return t.replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    var box = document.getElementById('cafeLog');
+    box.innerHTML = blocks.map(function(b){
+      var i = b.indexOf('\n');
+      var title = i < 0 ? b : b.slice(0, i);
+      var body  = i < 0 ? '' : b.slice(i + 1).trim();
+      return '<div class="cafe-log"><strong>' + esc(title) + '</strong>' +
+             (body ? '<br>' + esc(body).replace(/\n/g, '<br>') : '') + '</div>';
+    }).join('');
+    document.getElementById('cafeLogSec').style.display = '';
+  }).catch(function(){ /* geen logbestand: sectie blijft verborgen */ });
+})();
+</script>
 </body>
 </html>
