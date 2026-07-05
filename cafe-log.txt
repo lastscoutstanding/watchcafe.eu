@@ -2,7 +2,7 @@
 # First line of each entry = title (shown bold), lines below = text.
 # Separate entries with a line containing only ---
 # Entries are shown in the order of this file. Lines starting with # are ignored.
----
+# Test 1
 Friday, June 26th 2026
 Even the Dutch heatwave did not stop us from having a nice watch cafe at Sioux Labs (the airconditioning did help quite a bit here ;) Peter showed his vibe coded tool to measure your watch deviation over longer periodes of time (you can now find it on top of this page as "Rate Meter" Next to that, some new and watch-interested colleagues joined the cafe and we had the opportunity to check their watches on the time grapher. Of course the Tudor BB58 performed like expected, solid as a rock. Meanwhile enjoying the new Sioux beer called Brut ESPecial, a refreshing beer made with white wine yeast, best enjoyed on a warm day like this :)
 ---
