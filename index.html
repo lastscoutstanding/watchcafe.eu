@@ -1,150 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Sioux Watch Café</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Sioux Watch Café</title>
+  <script src="/nav.js" defer></script>
+  <style>
+    :root{
+      --bg:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
+      --accent:#d96a41; --accent-d:#c25a36; --banner:#b06a4a;
+      --ink:#e9e7e2; --muted:#a09da6;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
 
-    <style>
-        :root {
-            /* Colors inspired by the logo */
-            --copper: #c76d47;
-            --copper-light: #eaa889;
-            --beige: #f9f4f0;
-            --text-dark: #4a3b34;
-        }
+    header{text-align:center;padding:44px 20px 36px}
+    .logo-tile{display:inline-block;background:#f5f3ef;border-radius:16px;padding:14px 22px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+    .logo-tile img{max-width:230px;display:block}
+    h1{color:var(--accent);margin:22px 0 8px;font-size:clamp(26px,4.5vw,38px);letter-spacing:.3px}
+    header p{color:var(--muted);font-size:16px;margin:0}
 
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background-color: var(--beige);
-            color: var(--text-dark);
-        }
+    main{max-width:900px;margin:0 auto 60px;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px 32px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+    @media(max-width:560px){.card{padding:22px 18px}}
+    h2{color:var(--accent);margin:34px 0 14px;font-size:20px}
+    h2:first-child{margin-top:0}
+    p{line-height:1.65}
 
-        header {
-            text-align: center;
-            padding: 40px 20px;
-            background: white;
-            border-bottom: 4px solid var(--copper);
-        }
+    .date-box{background:var(--banner);border-left:6px solid var(--accent);padding:18px;font-size:1.1rem;border-radius:8px;color:#fff;margin:6px 0 8px}
 
-        header img {
-            max-width: 260px;
-            margin-bottom: 10px;
-        }
+    /* tools grid */
+    .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:6px}
+    .tool{display:block;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;
+      text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
+    .tool:hover{border-color:var(--accent);transform:translateY(-2px)}
+    .tool .icon{font-size:26px;margin-bottom:10px;display:block;color:var(--accent)}
+    .tool b{display:block;font-size:16px;margin-bottom:6px}
+    .tool span{color:var(--muted);font-size:13.5px;line-height:1.5;display:block}
+    .tool .go{color:var(--accent);font-size:13px;font-weight:600;margin-top:12px;display:inline-block}
 
-        h1 {
-            color: var(--copper);
-            margin-top: 0;
-            letter-spacing: 1px;
-        }
+    ul{line-height:1.8;padding-left:22px}
+    .cafe-log{background:var(--card2);border-left:6px solid var(--accent);padding:18px;font-size:1rem;border-radius:8px;color:var(--ink);margin-bottom:18px;line-height:1.6}
+    .cafe-log strong{color:var(--accent)}
 
-        main {
-            max-width: 900px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            border: 1px solid #eee;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        }
-
-        h2 {
-            color: var(--copper);
-            margin-top: 40px;
-        }
-
-        .date-box {
-            background: var(--copper-light);
-            border-left: 6px solid var(--copper);
-            padding: 18px;
-            font-size: 1.2rem;
-            border-radius: 6px;
-            color: #fff;
-            margin-bottom: 30px;
-        }
-
-        .cafe-log {
-            background: var(--copper-light);
-            border-left: 6px solid var(--copper);
-            padding: 18px;
-            font-size: 1rem;
-            border-radius: 6px;
-            color: #fff;
-            margin-bottom: 30px;
-        }
-        
-        ul {
-            line-height: 1.6;
-        }
-
-        footer {
-            margin-top: 60px;
-            text-align: center;
-            padding: 25px;
-            color: #7a6b64;
-        }
-
-    </style>
+    footer{margin-top:50px;text-align:center;padding:25px;color:#8f8c96;font-size:14px}
+  </style>
 </head>
-
 <body>
 
 <header>
-    <img src="img/SiouxWatchCafeLogo.jpg" alt="The Sioux Watch Café Logo">
-    <h1>The Sioux Watch Café</h1>
-    <p>A relaxed gathering for Sioux colleagues who like watches.</p>
+  <span class="logo-tile"><img src="img/SiouxWatchCafeLogo.jpg" alt="The Sioux Watch Café Logo"></span>
+  <h1>The Sioux Watch Café</h1>
+  <p>A relaxed gathering for Sioux colleagues who like watches.</p>
 </header>
 
 <main>
+  <div class="card">
     <h2>Welcome!</h2>
     <p>
-        The Sioux Watch Café is an informal meet-up for watch enthusiasts from Sioux.
-        Join us for relaxed conversations about all aspects of horology—from mechanical
-        movements and complications to design, materials, diving watches, chronographs,
-        and the stories behind unique timepieces.
+      The Sioux Watch Café is an informal meet-up for watch enthusiasts from Sioux.
+      Join us for relaxed conversations about all aspects of horology—from mechanical
+      movements and complications to design, materials, diving watches, chronographs,
+      and the stories behind unique timepieces.
     </p>
 
     <h2>Next Café Date</h2>
     <div class="date-box">
-        <strong>Next meeting:</strong> every last friday of the month @<strong>Labs</strong> during the Vrijmibo
+      <strong>Next meeting:</strong> every last friday of the month @<strong>Labs</strong> during the Vrijmibo
     </div>
-    
+
+    <h2>Our Tools</h2>
+    <div class="tools">
+      <a class="tool" href="/clock/">
+        <span class="icon">&#9202;</span>
+        <b>Live Clock</b>
+        <span>A big LED reference clock on Amsterdam time — with an optional soft tick every 10 seconds.</span>
+        <span class="go">Open the clock &rarr;</span>
+      </a>
+      <a class="tool" href="/watchrate/">
+        <span class="icon">&#9201;</span>
+        <b>Watch Rate Meter</b>
+        <span>Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.</span>
+        <span class="go">Start measuring &rarr;</span>
+      </a>
+      <a class="tool" href="/watchrate/viewer.html">
+        <span class="icon">&#128202;</span>
+        <b>Backup Viewer</b>
+        <span>Load your Rate Meter backup files and browse rates, positions and offset traces per watch.</span>
+        <span class="go">Open the viewer &rarr;</span>
+      </a>
+    </div>
+
     <h2>Topics We Explore</h2>
     <ul>
-        <li>Movement technology & craftsmanship</li>
-        <li>Dive watches and underwater engineering</li>
-        <li>Chronographs and other complications</li>
-        <li>Watch design, materials, and aesthetics</li>
-        <li>Maintenance, straps, and daily-use tips</li>
-        <li>Collecting stories and iconic models</li>
+      <li>Movement technology &amp; craftsmanship</li>
+      <li>Dive watches and underwater engineering</li>
+      <li>Chronographs and other complications</li>
+      <li>Watch design, materials, and aesthetics</li>
+      <li>Maintenance, straps, and daily-use tips</li>
+      <li>Collecting stories and iconic models</li>
     </ul>
 
     <p>
-        Everyone is welcome — whether you're a seasoned collector or simply curious.
-        Grab a drink, enjoy the atmosphere, and talk time with fellow Sioux watch fans!
+      Everyone is welcome — whether you're a seasoned collector or simply curious.
+      Grab a drink, enjoy the atmosphere, and talk time with fellow Sioux watch fans!
     </p>
 
     <h2>Previous Café Dates</h2>
     <div class="cafe-log">
-        <strong>Friday, April 3th 2026:</strong> The first Watch Café at Sioux Labs was a success! We had a nice turnout and enjoyed many fun conversations about watch types and the unique stories behind them.
+      <strong>Friday, April 3th 2026:</strong> The first Watch Café at Sioux Labs was a success! We had a nice turnout and enjoyed many fun conversations about watch types and the unique stories behind them.
 We opened up several timepieces to get a closer look at the movements. For many, it was their first time seeing the intricate mechanical parts and functions up close. We also put a few watches on the timegrapher, which provided some revealing data on their overall condition and accuracy.<br>
-We’re already looking forward to the next one! Keep an eye on this page and the Sioux Intranet timeline for the next date. See you there!
-
+We're already looking forward to the next one! Keep an eye on this page and the Sioux Intranet timeline for the next date. See you there!
     </div>
-    
+
     <div class="cafe-log">
-        <strong>Friday, May 22th 2026:</strong> We, again, had a nice turnout of even more tic toc minded people :)
-        Yanko told a very interesting story on how he gathered all components online to build his own watch. That story for sure made several of us consider to do the same. Next to this we also had several watches on the timegrapher and somehow managed to magically repair Bram's watch by doing nothing to it ;) <br>
-        See you next time!
-
+      <strong>Friday, May 22th 2026:</strong> We, again, had a nice turnout of even more tic toc minded people :)
+      Yanko told a very interesting story on how he gathered all components online to build his own watch. That story for sure made several of us consider to do the same. Next to this we also had several watches on the timegrapher and somehow managed to magically repair Bram's watch by doing nothing to it ;) <br>
+      See you next time!
     </div>
-    
+  </div>
 </main>
 
 <footer>
-    © 2026 The Sioux Watch Café — Created by and for Sioux colleagues - info@watchcafe.eu
-
+  © 2026 The Sioux Watch Café — Created by and for Sioux colleagues - info@watchcafe.eu
 </footer>
 
 </body>
