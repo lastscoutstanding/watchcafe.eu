@@ -11,6 +11,7 @@
     --banner:#b06a4a; --muted:#a09da6; --border:#33333c; --ink:#e9e7e2;
   }
   *{box-sizing:border-box}
+  html{color-scheme:dark}
   html,body{margin:0;padding:0}
   body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
   .wrap{max-width:680px;margin:0 auto}
@@ -33,7 +34,7 @@
   .grow{flex:1 1 auto;min-width:0}
   label.fld{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 5px}
 
-  select,input[type=text]{font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);width:100%}
+  select,input[type=text],input[type=number],input[type=date]{font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);width:100%}
 
   button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);touch-action:manipulation}
   button:hover{background:#30303a}
@@ -113,10 +114,10 @@
   .guide-note{margin:14px 0 0;font-size:13px;color:#eda57f;background:#2e221c;border-radius:8px;padding:10px 12px}
 
   .tgbox{background:#1f1f25;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:12px}
-  .tgt{width:100%;border-collapse:collapse}
+  .tgt{width:100%;border-collapse:collapse;table-layout:fixed}
   .tgt th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);text-align:left;padding:4px 6px}
   .tgt td{padding:4px 6px}
-  .tgt input,.tgt select{padding:7px 9px;font-size:13.5px}
+  .tgt input,.tgt select{width:100%;padding:7px 9px;font-size:13.5px}
   .tgt .xbtn{border:none;background:transparent;color:#777;font-size:16px;padding:4px 8px}
   .tgt .xbtn:hover{color:#ff6b5e;background:transparent}
   .tgcmp{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
@@ -232,7 +233,7 @@
             <div style="flex:0 0 160px"><label class="fld" id="tgLblDate" for="tgDate"></label><input type="date" id="tgDate"></div>
             <div class="grow"><label class="fld" id="tgLblNote" for="tgNote"></label><input type="text" id="tgNote"></div>
           </div>
-          <table class="tgt"><thead><tr><th id="tgThPos" style="width:34%"></th><th id="tgThRate"></th><th id="tgThAmp"></th><th id="tgThBeat"></th><th style="width:34px"></th></tr></thead><tbody id="tgRows"></tbody></table>
+          <table class="tgt"><thead><tr><th id="tgThPos" style="width:33%"></th><th id="tgThRate"></th><th id="tgThAmp"></th><th id="tgThBeat"></th><th style="width:36px"></th></tr></thead><tbody id="tgRows"></tbody></table>
           <div class="row" style="margin-top:10px;justify-content:space-between">
             <button class="sm ghost" id="tgAddRow"></button>
             <div style="display:flex;gap:8px"><button class="sm" id="tgCancel"></button><button class="sm primary" id="tgSave"></button></div>
