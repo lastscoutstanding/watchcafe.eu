@@ -36,9 +36,9 @@
   }
 
   function fmtDate(t){
-    return new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Amsterdam',
+    return new Intl.DateTimeFormat('en-GB',{
       weekday:'short',day:'numeric',month:'short',year:'numeric',
-      hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(t)).replace(',',', ');
+      hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(t));
   }
   function pad(n){return (n<10?'0':'')+n;}
   function fmtLeft(ms){

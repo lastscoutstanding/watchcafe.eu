@@ -1,0 +1,118 @@
+# Sioux Watch Cafe - glossary / begrippenlijst
+# Format per entry:
+#   line 1: English term / Dutch term   (one name if identical)
+#   EN: one-line English definition
+#   NL: one-line Dutch definition
+# Separate entries with a line containing only ---
+# Lines starting with # are ignored.
+Movement / Uurwerk
+EN: The complete inner mechanism of a watch that keeps time and drives the hands and complications.
+NL: Het complete binnenwerk van een horloge dat de tijd bijhoudt en de wijzers en complicaties aandrijft.
+---
+Caliber / Kaliber
+EN: The specific model or design of a movement, usually indicated by a maker's number (e.g. ETA 2824).
+NL: Het specifieke model of ontwerp van een uurwerk, meestal aangeduid met een fabrikantsnummer (bv. ETA 2824).
+---
+Escapement / Echappement
+EN: The mechanism that releases the mainspring's energy in small, equal steps and gives a mechanical watch its tick.
+NL: Het mechanisme dat de energie van de opwindveer in kleine, gelijke stapjes vrijgeeft en een mechanisch horloge zijn tik geeft.
+---
+Balance wheel / Balans
+EN: The oscillating wheel that, together with the hairspring, forms the heart of a mechanical movement; its swing rate determines timekeeping.
+NL: Het heen en weer draaiende wiel dat samen met de spiraalveer het hart van een mechanisch uurwerk vormt; het slingertempo bepaalt de tijdmeting.
+---
+Hairspring / Spiraalveer
+EN: The very fine spiral spring that makes the balance wheel swing back and forth at a constant rate.
+NL: De zeer fijne spiraalvormige veer die de balans met een constant tempo heen en weer laat slingeren.
+---
+Mainspring / Opwindveer
+EN: The coiled spring that stores the energy which powers a mechanical watch; wound by hand or by a rotor.
+NL: De opgerolde veer die de energie opslaat waarop een mechanisch horloge loopt; opgewonden met de hand of door een rotor.
+---
+Power reserve / Gangreserve
+EN: How long a fully wound watch keeps running without being wound again, typically 38 to 80 hours.
+NL: Hoe lang een volledig opgewonden horloge blijft lopen zonder opnieuw op te winden, doorgaans 38 tot 80 uur.
+---
+Complication / Complicatie
+EN: Any function of a watch beyond showing hours, minutes and seconds, such as a date, moonphase or chronograph.
+NL: Elke functie van een horloge naast het tonen van uren, minuten en seconden, zoals een datum, maanfase of chronograaf.
+---
+Chronograph / Chronograaf
+EN: A watch with a built-in stopwatch function, operated with pushers on the case.
+NL: Een horloge met ingebouwde stopwatchfunctie, bediend met drukkers op de kast.
+---
+Chronometer
+EN: A precision watch whose movement has passed official rate testing (e.g. COSC: -4 to +6 s/day).
+NL: Een precisiehorloge waarvan het uurwerk officiele gangtests heeft doorstaan (bv. COSC: -4 tot +6 s/dag).
+---
+Tourbillon
+EN: A rotating cage that carries the balance and escapement to average out the effect of gravity in different positions.
+NL: Een roterende kooi waarin balans en echappement meedraaien om het effect van de zwaartekracht in verschillende posities uit te middelen.
+---
+Jewels / Stenen
+EN: Synthetic rubies used as low-friction bearings at pivot points in a movement.
+NL: Synthetische robijnen die als lagers met weinig wrijving dienen op draaipunten in het uurwerk.
+---
+Frequency (bph) / Frequentie (bph)
+EN: How often the balance swings, in beats per hour; common rates are 18,000, 21,600, 28,800 and 36,000 bph (2.5-5 Hz).
+NL: Hoe vaak de balans slingert, in slagen per uur; gangbare waarden zijn 18.000, 21.600, 28.800 en 36.000 bph (2,5-5 Hz).
+---
+Rate / Gang
+EN: How many seconds per day a watch gains or loses; the main measure of accuracy and what the Rate Meter tracks.
+NL: Hoeveel seconden per dag een horloge voor- of achterloopt; de belangrijkste maat voor nauwkeurigheid en wat de Rate Meter meet.
+---
+Offset
+EN: The difference between what your watch shows and the reference time at one moment; the change in offset over time gives the rate.
+NL: Het verschil tussen wat je horloge aangeeft en de referentietijd op een moment; de verandering van de offset over de tijd geeft de gang.
+---
+Amplitude
+EN: The rotation angle of the balance wheel swing, in degrees; healthy movements typically show 250-310 degrees, low amplitude can indicate a service is due.
+NL: De rotatiehoek van de balansslag, in graden; gezonde uurwerken zitten meestal op 250-310 graden, een lage amplitude kan op onderhoudsbehoefte wijzen.
+---
+Beat error / Slagfout
+EN: The asymmetry between the tick and the tock, in milliseconds; ideally below about 0.5 ms.
+NL: De asymmetrie tussen de tik en de tak, in milliseconden; idealiter onder circa 0,5 ms.
+---
+Lift angle / Lifthoek
+EN: A movement-specific angle (often 52 degrees) a timegrapher needs to calculate amplitude correctly from the sound of the escapement.
+NL: Een uurwerkspecifieke hoek (vaak 52 graden) die een timegrapher nodig heeft om de amplitude correct uit het geluid van het echappement te berekenen.
+---
+Positional variance / Positievariatie
+EN: The difference in rate between positions (dial up, crown down, etc.); smaller spread means better adjustment.
+NL: Het verschil in gang tussen posities (wijzerplaat boven, kroon onder, enz.); een kleinere spreiding betekent een beter geregleerd uurwerk.
+---
+Regulation / Reguleren
+EN: Adjusting a movement (usually the effective hairspring length or balance screws) so it runs closer to true time.
+NL: Het bijstellen van een uurwerk (meestal de effectieve lengte van de spiraalveer of balansschroefjes) zodat het dichter bij de juiste tijd loopt.
+---
+Timegrapher
+EN: An instrument that listens to the escapement and instantly shows rate, amplitude and beat error per position.
+NL: Een instrument dat naar het echappement luistert en direct de gang, amplitude en slagfout per positie toont.
+---
+Automatic / Automaat
+EN: A mechanical watch that winds its mainspring with a rotor driven by the motion of your wrist.
+NL: Een mechanisch horloge dat zijn opwindveer opwindt met een rotor die door de beweging van je pols wordt aangedreven.
+---
+Manual wind / Handopwinder
+EN: A mechanical watch that must be wound by turning the crown, typically once a day.
+NL: Een mechanisch horloge dat met de kroon moet worden opgewonden, doorgaans eens per dag.
+---
+Quartz / Kwarts
+EN: A battery-powered watch regulated by a quartz crystal vibrating at 32,768 Hz; typically accurate to seconds per month.
+NL: Een horloge op batterij, geregeld door een kwartskristal dat trilt op 32.768 Hz; doorgaans nauwkeurig tot seconden per maand.
+---
+Crown / Kroon
+EN: The knob on the side of the case used to set the time and, on manual watches, wind the mainspring.
+NL: De knop aan de zijkant van de kast waarmee je de tijd instelt en bij handopwinders de veer opwindt.
+---
+Bezel / Lunette
+EN: The ring around the crystal; on dive watches it rotates to track elapsed time.
+NL: De ring rond het glas; bij duikhorloges draaibaar om verstreken tijd bij te houden.
+---
+Lume
+EN: Luminescent material on hands and markers that glows in the dark, usually Super-LumiNova or tritium tubes.
+NL: Lichtgevend materiaal op wijzers en indexen dat oplicht in het donker, meestal Super-LumiNova of tritiumbuisjes.
+---
+Water resistance / Waterdichtheid
+EN: The pressure rating of a case, in meters or bar; 100 m or more is generally suitable for swimming.
+NL: De drukklasse van een kast, in meters of bar; vanaf 100 m is een horloge doorgaans geschikt om mee te zwemmen.

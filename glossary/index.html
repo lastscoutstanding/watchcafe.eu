@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glossary — Sioux Watch Café</title>
+<script src="/nav.js" defer></script>
+<style>
+  :root{
+    --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
+    --accent:#d96a41; --accent-d:#c25a36; --ink:#e9e7e2; --muted:#a09da6;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
+  .wrap{max-width:680px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:30px 30px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px}
+  h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .lang{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:none}
+  .lang button{border:none;background:#26262c;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;touch-action:manipulation}
+  .lang button.active{background:var(--accent);color:#fff}
+  .lang button:hover:not(.active){background:#30303a}
+  input[type=text]{font:inherit;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink)}
+  input[type=text]::placeholder{color:#77747d}
+  .count{color:var(--muted);font-size:13px;margin:10px 2px 0}
+  dl{margin:18px 0 0}
+  .entry{border-top:1px solid var(--border);padding:14px 2px}
+  .entry:last-child{padding-bottom:0}
+  dt{color:var(--accent);font-weight:700;font-size:15.5px;margin:0 0 4px}
+  dt small{color:var(--muted);font-weight:400;font-size:12.5px;margin-left:8px}
+  dd{margin:0;font-size:14.5px;line-height:1.6;color:var(--ink)}
+  .empty{color:var(--muted);font-size:14px;padding:20px 2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="hdr">
+      <div>
+        <h1 id="title">Watch glossary</h1>
+        <p class="sub" id="sub"></p>
+      </div>
+      <div class="lang">
+        <button data-lang="en">EN</button>
+        <button data-lang="nl">NL</button>
+      </div>
+    </div>
+    <input type="text" id="search" autocomplete="off">
+    <p class="count" id="count"></p>
+    <dl id="list"></dl>
+  </div>
+</div>
+
+<script>
+var UI={
+  en:{title:"Watch glossary",sub:"Common watch and timegrapher terms \u2014 The Sioux Watch Caf\u00e9",
+      search:"Search terms\u2026",count:function(n){return n+" term"+(n===1?"":"s");},
+      none:"No terms match your search.",fail:"Could not load the glossary. It works on the live site (watchcafe.eu)."},
+  nl:{title:"Horloge-begrippenlijst",sub:"Veelgebruikte horloge- en timegrapher-begrippen \u2014 The Sioux Watch Caf\u00e9",
+      search:"Zoek een begrip\u2026",count:function(n){return n+" begrip"+(n===1?"":"pen");},
+      none:"Geen begrippen gevonden voor je zoekopdracht.",fail:"Kon de begrippenlijst niet laden. Op de live site (watchcafe.eu) werkt dit wel."}
+};
+var LKEY="siouxWatchRateMeterLang";
+var lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})();
+var TERMS=[], query="";
+
+function parse(txt){
+  var lines=txt.split(/\r?\n/).filter(function(l){return l.trim().charAt(0)!=="#";});
+  return lines.join("\n").split(/\n\s*---+\s*\n/).map(function(b){return b.trim();}).filter(Boolean).map(function(b){
+    var ls=b.split("\n"), names=ls[0].split("/").map(function(x){return x.trim();});
+    var en="", nl="";
+    ls.slice(1).forEach(function(l){
+      if(/^EN:/i.test(l)) en=l.replace(/^EN:\s*/i,"").trim();
+      else if(/^NL:/i.test(l)) nl=l.replace(/^NL:\s*/i,"").trim();
+    });
+    return {en:names[0], nl:names[1]||names[0], defEn:en, defNl:nl};
+  }).filter(function(e){return e.en&&(e.defEn||e.defNl);});
+}
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+function render(){
+  var u=UI[lang], list=document.getElementById("list");
+  var items=TERMS.slice().sort(function(a,b){return a[lang].localeCompare(b[lang],lang);});
+  if(query){
+    var q=query.toLowerCase();
+    items=items.filter(function(e){
+      return (e.en+" "+e.nl+" "+e.defEn+" "+e.defNl).toLowerCase().indexOf(q)>-1;
+    });
+  }
+  document.getElementById("count").textContent=u.count(items.length);
+  if(!items.length){list.innerHTML='<div class="empty">'+u.none+'</div>';return;}
+  list.innerHTML=items.map(function(e){
+    var other=(lang==="en")?e.nl:e.en;
+    var alt=(other&&other!==e[lang])?'<small>'+esc(other)+'</small>':"";
+    var def=(lang==="en")?(e.defEn||e.defNl):(e.defNl||e.defEn);
+    return '<div class="entry"><dt>'+esc(e[lang])+alt+'</dt><dd>'+esc(def)+'</dd></div>';
+  }).join("");
+}
+
+function applyLang(){
+  var u=UI[lang];
+  document.getElementById("title").textContent=u.title;
+  document.getElementById("sub").textContent=u.sub;
+  document.getElementById("search").placeholder=u.search;
+  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);});
+  document.documentElement.lang=lang;
+  render();
+}
+
+[].forEach.call(document.querySelectorAll(".lang button"),function(b){
+  b.onclick=function(){lang=b.getAttribute("data-lang");try{localStorage.setItem(LKEY,lang);}catch(e){}applyLang();};
+});
+document.getElementById("search").addEventListener("input",function(e){query=e.target.value.trim();render();});
+
+fetch("/glossary.txt",{cache:"no-store"}).then(function(r){
+  if(!r.ok)throw 0; return r.text();
+}).then(function(txt){
+  TERMS=parse(txt); applyLang();
+}).catch(function(){
+  applyLang();
+  document.getElementById("list").innerHTML='<div class="empty">'+UI[lang].fail+'</div>';
+  document.getElementById("count").textContent="";
+});
+applyLang();
+</script>
+</body>
+</html>

@@ -112,7 +112,20 @@
   .guide-steps li:last-child{padding-bottom:0}
   .guide-note{margin:14px 0 0;font-size:13px;color:#eda57f;background:#2e221c;border-radius:8px;padding:10px 12px}
 
-  @media(max-width:600px){.card{padding:22px 16px 26px}}
+  .tgbox{background:#1f1f25;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:12px}
+  .tgt{width:100%;border-collapse:collapse}
+  .tgt th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);text-align:left;padding:4px 6px}
+  .tgt td{padding:4px 6px}
+  .tgt input,.tgt select{padding:7px 9px;font-size:13.5px}
+  .tgt .xbtn{border:none;background:transparent;color:#777;font-size:16px;padding:4px 8px}
+  .tgt .xbtn:hover{color:#ff6b5e;background:transparent}
+  .tgcmp{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+  .tgcmp>div{background:#0e0e12;border-radius:10px;padding:11px;text-align:center}
+  .tgcmp small{display:block;color:var(--muted);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  .tgcmp b{font-family:"Courier New",monospace;font-size:19px;font-weight:700;color:#e9e7e2}
+  .tgcmp .dv b{color:var(--accent)}
+  .tgdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
+  @media(max-width:600px){.card{padding:22px 16px 26px}.tgcmp{grid-template-columns:1fr 1fr}}
 </style>
   <script src="/nav.js" defer></script>
 </head>
@@ -210,6 +223,22 @@
       <div class="row" style="margin-top:12px">
         <label class="chk"><input type="checkbox" id="newStartChk"><span id="newStartLbl"></span></label>
       </div>
+      <div class="row" style="margin-top:16px">
+        <button class="sm" id="tgToggle"></button>
+      </div>
+      <div id="tgForm" style="display:none">
+        <div class="tgbox">
+          <div class="row" style="margin-bottom:10px">
+            <div style="flex:0 0 160px"><label class="fld" id="tgLblDate" for="tgDate"></label><input type="date" id="tgDate"></div>
+            <div class="grow"><label class="fld" id="tgLblNote" for="tgNote"></label><input type="text" id="tgNote"></div>
+          </div>
+          <table class="tgt"><thead><tr><th id="tgThPos" style="width:34%"></th><th id="tgThRate"></th><th id="tgThAmp"></th><th id="tgThBeat"></th><th style="width:34px"></th></tr></thead><tbody id="tgRows"></tbody></table>
+          <div class="row" style="margin-top:10px;justify-content:space-between">
+            <button class="sm ghost" id="tgAddRow"></button>
+            <div style="display:flex;gap:8px"><button class="sm" id="tgCancel"></button><button class="sm primary" id="tgSave"></button></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="block">
@@ -224,7 +253,10 @@
         <p class="chart-title" id="chartRateTitle"></p>
         <svg id="chartRate" viewBox="0 0 600 160" preserveAspectRatio="none"></svg>
       </div>
+      <div class="hint" id="tgLegend" style="display:none"></div>
       <p class="hint" id="rateChartHint" style="display:none"></p>
+      <div class="tgcmp" id="tgCompare" style="display:none"></div>
+      <div id="tgList"></div>
 
       <div id="historyWrap"></div>
     </div>
@@ -254,7 +286,7 @@ var I18N={
   noWatches:"No watches yet. Add one to get started.",
   measuringLabel:"Measuring",
   chooseWatch:"\u2014 choose a watch \u2014",
-  reference:"Reference \u00b7 Amsterdam",
+  reference:"Reference",
   yourWatch:"Your watch",
   offsetNow:"Offset now",
   rate:"Rate",
@@ -279,6 +311,13 @@ var I18N={
   exportBtn:"Export backup (.json)", importBtn:"Import backup",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   linkHome:"watchcafe.eu home", linkViewer:"Backup viewer",
+  tgToggle:"Add timegrapher session", tgDate:"Date", tgNote2:"Note", tgPos:"Position",
+  tgRateH:"rate (s/day)", tgAmpH:"amplitude (\u00b0)", tgBeatH:"beat error (ms)",
+  tgAddRow:"+ position", tgSave:"Save session", tgCancel:"Cancel",
+  tgNeedOne:"Enter a rate for at least one position.",
+  tgSessions:"Timegrapher sessions", tgAvg:"avg", tgReadings:"readings",
+  tgLegendTxt:"\u25c7 timegrapher per position \u00b7 \u254c session average",
+  cmpTG:"Timegrapher avg (latest)", cmpMeasured:"Measured rate", cmpDiff:"Difference",
   pos:{"":"\u2014 not specified \u2014",dial_up:"Dial up",dial_down:"Dial down",crown_up:"Crown up",crown_down:"Crown down",crown_left:"Crown left",crown_right:"Crown right",worn:"Worn (on wrist)"}
  },
  nl:{
@@ -289,7 +328,7 @@ var I18N={
   noWatches:"Nog geen horloges. Voeg er \u00e9\u00e9n toe om te beginnen.",
   measuringLabel:"Meten",
   chooseWatch:"\u2014 kies een horloge \u2014",
-  reference:"Referentie \u00b7 Amsterdam",
+  reference:"Referentie",
   yourWatch:"Jouw horloge",
   offsetNow:"Offset nu",
   rate:"Gang",
@@ -314,12 +353,26 @@ var I18N={
   exportBtn:"Exporteer back-up (.json)", importBtn:"Importeer back-up",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   linkHome:"watchcafe.eu home", linkViewer:"Back-up viewer",
+  tgToggle:"Timegrapher-sessie toevoegen", tgDate:"Datum", tgNote2:"Notitie", tgPos:"Positie",
+  tgRateH:"gang (s/dag)", tgAmpH:"amplitude (\u00b0)", tgBeatH:"beat error (ms)",
+  tgAddRow:"+ positie", tgSave:"Sessie opslaan", tgCancel:"Annuleren",
+  tgNeedOne:"Vul bij minstens \u00e9\u00e9n positie een gang in.",
+  tgSessions:"Timegrapher-sessies", tgAvg:"gem.", tgReadings:"metingen",
+  tgLegendTxt:"\u25c7 timegrapher per positie \u00b7 \u254c sessiegemiddelde",
+  cmpTG:"Timegrapher gem. (laatste)", cmpMeasured:"Gemeten gang", cmpDiff:"Verschil",
   pos:{"":"\u2014 niet opgegeven \u2014",dial_up:"Wijzerplaat boven",dial_down:"Wijzerplaat onder",crown_up:"Kroon boven",crown_down:"Kroon onder",crown_left:"Kroon links",crown_right:"Kroon rechts",worn:"Gedragen (aan pols)"}
  }
 };
+var TZ=(function(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"Europe/Amsterdam";}catch(e){return "Europe/Amsterdam";}})();
+function tzCity(){return TZ.split("/").pop().replace(/_/g," ");}
 var LKEY="siouxWatchRateMeterLang";
 var lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})();
 function posLabel(key){var p=I18N[lang].pos;return (key in p)?p[key]:key;}
+
+var POSCOL={dial_up:"#f0a03a",dial_down:"#cf7f35",crown_up:"#35c2b1",crown_down:"#5b93cf",crown_left:"#a98bd4",crown_right:"#e0678a",worn:"#63c063"};
+var POSABBR={dial_up:"DU",dial_down:"DD",crown_up:"CU",crown_down:"CD",crown_left:"CL",crown_right:"CR",worn:"WR"};
+function posColor(c){return POSCOL[c]||"#8a8a8a";}
+function posAbbr(c){return POSABBR[c]||(c||"?").slice(0,2).toUpperCase();}
 
 /* ===== seven-segment ===== */
 var SEG={a:"12,14 18,8 62,8 68,14 62,20 18,20",b:"66,16 72,22 72,62 66,68 60,62 60,22",
@@ -338,7 +391,7 @@ function buildClock(el){
   return digs;
 }
 function setClock(digs,str){for(var i=0;i<6;i++){var on=MAP[str[i]]||"";ORDER.forEach(function(id){digs[i][id].classList.toggle("on",on.indexOf(id)>-1);});}}
-function fmtAms(ms){var f=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Amsterdam",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});var o={};f.formatToParts(new Date(ms)).forEach(function(p){o[p.type]=p.value;});return o.hour+o.minute+o.second;}
+function fmtAms(ms){var f=new Intl.DateTimeFormat("en-GB",{timeZone:TZ,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});var o={};f.formatToParts(new Date(ms)).forEach(function(p){o[p.type]=p.value;});return o.hour+o.minute+o.second;}
 var refDigs=buildClock(document.getElementById("clkRef"));
 var watchDigs=buildClock(document.getElementById("clkWatch"));
 
@@ -402,7 +455,7 @@ function renderWatches(){
   state.watches.forEach(function(w){
     var c=document.createElement("div");c.className="chip"+(w.id===state.activeWatch?" active":"");
     c.innerHTML='<span>'+escapeHtml(w.name)+'</span><span class="x">&times;</span>';
-    function pick(){state.activeWatch=w.id;seedOffset();save();renderAll();}
+    function pick(){state.activeWatch=w.id;seedOffset();closeTG();save();renderAll();}
     c.querySelector("span").onclick=pick;
     c.onclick=function(ev){if(!ev.target.classList.contains("x"))pick();};
     c.querySelector(".x").onclick=function(ev){ev.stopPropagation();
@@ -424,7 +477,7 @@ function renderMeter(){
 }
 function renderHistory(){
   var t=I18N[lang],w=activeWatch(),wrap=document.getElementById("historyWrap"),sum=document.getElementById("rateSummary");
-  if(!w||!w.measurements.length){wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(null);return;}
+  if(!w||!w.measurements.length){wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderTG(w||null);return;}
   var pts=w.measurements.slice().sort(function(a,b){return b.t-a.t;}),r=rateOf(w);
   if(r){var rstr=(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" "+t.perDay;
     var since=r.partial?(" ("+t.sinceStart+")"):"";
@@ -439,6 +492,36 @@ function renderHistory(){
   html+="</tbody></table>";wrap.innerHTML=html;
   wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){w.measurements=w.measurements.filter(function(x){return x.id!==b.getAttribute("data-id");});save();renderAll();};});
   drawCharts(w);
+  renderTG(w);
+}
+
+function renderTG(w){
+  var t=I18N[lang];
+  var cmp=document.getElementById("tgCompare"),list=document.getElementById("tgList");
+  var sessions=tgOf(w);
+  if(!sessions.length){cmp.style.display="none";list.innerHTML="";return;}
+  // vergelijking: laatste sessie vs gemeten gang
+  var last=sessions[sessions.length-1];
+  var r=rateOf(w);
+  function fr(v){return (v>0?"+":v<0?"\u2212":"\u00b1")+Math.abs(v).toFixed(1);}
+  cmp.innerHTML='<div><small>'+t.cmpTG+'</small><b>'+fr(last.avg)+' '+t.perDay+'</b></div>'
+    +'<div><small>'+t.cmpMeasured+'</small><b>'+(r?fr(r.rate)+' '+t.perDay:"\u2014")+'</b></div>'
+    +'<div class="dv"><small>'+t.cmpDiff+'</small><b>'+(r?fr(r.rate-last.avg)+' '+t.perDay:"\u2014")+'</b></div>';
+  cmp.style.display="grid";
+  // sessielijst
+  var loc=lang==="nl"?"nl-NL":"en-GB";
+  var html='<h2 style="margin-top:22px">'+t.tgSessions+'</h2><table><thead><tr><th>'+t.tgDate+'</th><th>'+t.tgAvg+'</th><th>'+t.tgReadings+'</th><th>'+t.tgNote2+'</th><th></th></tr></thead><tbody>';
+  sessions.slice().reverse().forEach(function(sess){
+    var d=new Date(sess.t).toLocaleDateString(loc,{day:"2-digit",month:"short",year:"numeric"});
+    var reads=sess.readings.map(function(r){
+      return '<span title="'+escapeHtml(r.title)+'" style="white-space:nowrap"><span class="tgdot" style="background:'+posColor(r.position)+'"></span>'+posAbbr(r.position)+' '+(r.rate>0?"+":"")+r.rate+'</span>';
+    }).join(" \u00b7 ");
+    html+='<tr><td class="num">'+d+'</td><td class="num">'+fr(sess.avg)+'</td><td>'+reads+'</td><td>'+escapeHtml(sess.note)+'</td><td><button class="sm danger ghost" data-tid="'+sess.id+'">'+t.del+'</button></td></tr>';
+  });
+  html+='</tbody></table>';
+  list.innerHTML=html;
+  list.querySelectorAll("button[data-tid]").forEach(function(b){b.onclick=function(){
+    w.timegrapher=w.timegrapher.filter(function(x){return x.id!==b.getAttribute("data-tid");});save();renderAll();};});
 }
 
 /* ===== charts ===== */
@@ -446,9 +529,10 @@ function colOff(v){v=Math.abs(v);return v<5?"#3be35b":v<15?"#e8d44d":v<30?"#ff8a
 function colRate(v){v=Math.abs(v);return v<5?"#3be35b":v<10?"#e8d44d":v<20?"#ff8a3c":"#ff3b30";}
 var MIN_RATE_GAP=6*3600000; // 6 hours
 
-function chartSVG(svgEl,seriesSegs,colorFn,unit){
+function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions){
   // seriesSegs: array of segments; each segment: array of {t,v}
   var all=[];seriesSegs.forEach(function(s){all=all.concat(s);});
+  (tgSessions||[]).forEach(function(sess){sess.readings.forEach(function(r){all.push({t:sess.t,v:r.rate});});});
   if(all.length<2){return false;}
   var W=600,H=160,L=52,R=10,T=10,B=26;
   var t0=all[0].t,t1=all[all.length-1].t;
@@ -482,6 +566,16 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit){
     }
     s.forEach(function(p){out+='<circle cx="'+X(p.t).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="4" fill="'+colorFn(p.v)+'"/>';});
   });
+  (tgSessions||[]).forEach(function(sess){
+    var x=X(sess.t).toFixed(1);
+    out+='<line x1="'+x+'" y1="'+T+'" x2="'+x+'" y2="'+(H-B)+'" stroke="#d96a41" stroke-width="1" opacity="0.3"/>';
+    if(sess.readings.length>1){var ya=Y(sess.avg).toFixed(1);
+      out+='<line x1="'+(X(sess.t)-22).toFixed(1)+'" y1="'+ya+'" x2="'+(X(sess.t)+22).toFixed(1)+'" y2="'+ya+'" stroke="#d96a41" stroke-width="1.5" stroke-dasharray="5 3"/>';}
+    sess.readings.forEach(function(r){
+      var cx=X(sess.t),cy=Y(r.rate);
+      out+='<rect x="'+(cx-4.5).toFixed(1)+'" y="'+(cy-4.5).toFixed(1)+'" width="9" height="9" transform="rotate(45 '+cx.toFixed(1)+' '+cy.toFixed(1)+')" fill="#0e0e12" stroke="'+posColor(r.position)+'" stroke-width="2"><title>'+escapeHtml(r.title||"")+'</title></rect>';
+    });
+  });
   svgEl.innerHTML=out;
   return true;
 }
@@ -506,9 +600,28 @@ function drawCharts(w){
     }
     return pts;
   }).filter(function(s){return s.length;});
-  var okRate=chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"");
+  var tgSessions=tgOf(w);
+  var okRate=chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions);
   rw.style.display=okRate?"block":"none";
   rh.style.display=(okOff||okRate)?"block":"none";
+  document.getElementById("tgLegend").style.display=(okRate&&tgSessions.length)?"block":"none";
+  document.getElementById("tgLegend").textContent=I18N[lang].tgLegendTxt;
+}
+
+/* ===== timegrapher helpers ===== */
+function tgOf(w){
+  if(!w||!Array.isArray(w.timegrapher))return [];
+  return w.timegrapher.slice().sort(function(a,b){return a.t-b.t;}).map(function(s){
+    var rs=(s.readings||[]).filter(function(r){return isFinite(r.rate);}).map(function(r){
+      var extra=[];
+      if(r.amplitude!=null&&isFinite(r.amplitude))extra.push(r.amplitude+"\u00b0");
+      if(r.beatError!=null&&isFinite(r.beatError))extra.push(r.beatError+" ms");
+      return {position:r.position,rate:+r.rate,amplitude:r.amplitude,beatError:r.beatError,
+        title:posAbbr(r.position)+" "+(r.rate>0?"+":"")+(+r.rate)+" s"+(extra.length?" \u00b7 "+extra.join(" \u00b7 "):"")};
+    });
+    var avg=rs.length?rs.reduce(function(a,r){return a+r.rate;},0)/rs.length:0;
+    return {id:s.id,t:s.t,note:s.note||"",readings:rs,avg:avg};
+  }).filter(function(s){return s.readings.length;});
 }
 
 function renderGuide(){
@@ -526,7 +639,7 @@ function applyLang(){
   document.getElementById("newWatch").placeholder=t.watchPlaceholder;
   document.getElementById("addWatch").textContent=t.add;
   document.getElementById("meterLabel").textContent=t.measuringLabel;
-  document.getElementById("refLabel").textContent=t.reference;
+  document.getElementById("refLabel").textContent=t.reference+" \u00b7 "+tzCity();
   document.getElementById("watchLabel").textContent=t.yourWatch;
   document.getElementById("offLabel").textContent=t.offsetNow;
   document.getElementById("rateLabel").textContent=t.rate;
@@ -553,6 +666,18 @@ function applyLang(){
   document.getElementById("gStep3").innerHTML=t.gStep3;
   document.getElementById("gStep4").innerHTML=t.gStep4;
   document.getElementById("guideNote").textContent=t.guideNote;
+  document.getElementById("tgToggle").textContent=t.tgToggle;
+  document.getElementById("tgLblDate").textContent=t.tgDate;
+  document.getElementById("tgLblNote").textContent=t.tgNote2;
+  document.getElementById("tgNote").placeholder=t.optional;
+  document.getElementById("tgThPos").textContent=t.tgPos;
+  document.getElementById("tgThRate").textContent=t.tgRateH;
+  document.getElementById("tgThAmp").textContent=t.tgAmpH;
+  document.getElementById("tgThBeat").textContent=t.tgBeatH;
+  document.getElementById("tgAddRow").textContent=t.tgAddRow;
+  document.getElementById("tgSave").textContent=t.tgSave;
+  document.getElementById("tgCancel").textContent=t.tgCancel;
+  if(document.getElementById("tgForm").style.display!=="none")buildTGRows(readTGRows());
   var hb=document.getElementById("helpBtn");hb.setAttribute("aria-label",t.help);hb.title=t.help;
   document.getElementById("guideClose").setAttribute("aria-label",t.close);
   var sel=document.getElementById("posSel");
@@ -574,7 +699,70 @@ document.getElementById("guideClose").onclick=function(){guideOpen=false;renderG
 
 document.getElementById("addWatch").onclick=addWatch;
 document.getElementById("newWatch").addEventListener("keydown",function(e){if(e.key==="Enter")addWatch();});
-function addWatch(){var inp=document.getElementById("newWatch");var name=inp.value.trim();if(!name)return;var w={id:uid(),name:name,measurements:[]};state.watches.push(w);state.activeWatch=w.id;inp.value="";seedOffset();save();renderAll();}
+function addWatch(){var inp=document.getElementById("newWatch");var name=inp.value.trim();if(!name)return;var w={id:uid(),name:name,measurements:[]};state.watches.push(w);state.activeWatch=w.id;inp.value="";seedOffset();closeTG();save();renderAll();}
+
+/* ===== timegrapher formulier ===== */
+var TG_DEFAULT=["dial_up","crown_down","crown_left"];
+function tgPosOptions(sel){
+  var t=I18N[lang],codes=["dial_up","dial_down","crown_up","crown_down","crown_left","crown_right","worn"];
+  return codes.map(function(c){return '<option value="'+c+'"'+(c===sel?' selected':'')+'>'+t.pos[c]+'</option>';}).join("");
+}
+function tgRowHTML(r){
+  r=r||{};
+  return '<tr>'
+    +'<td><select class="tg-pos">'+tgPosOptions(r.position||"dial_up")+'</select></td>'
+    +'<td><input type="number" step="0.1" class="tg-rate" value="'+(r.rate!=null?r.rate:"")+'"></td>'
+    +'<td><input type="number" step="1" class="tg-amp" value="'+(r.amplitude!=null?r.amplitude:"")+'"></td>'
+    +'<td><input type="number" step="0.1" class="tg-beat" value="'+(r.beatError!=null?r.beatError:"")+'"></td>'
+    +'<td><button type="button" class="xbtn" aria-label="x">\u00d7</button></td></tr>';
+}
+function buildTGRows(rows){
+  var tb=document.getElementById("tgRows");
+  tb.innerHTML=rows.map(tgRowHTML).join("");
+  tb.querySelectorAll(".xbtn").forEach(function(b){b.onclick=function(){var tr=b.closest("tr");if(tb.children.length>1)tr.remove();};});
+}
+function readTGRows(){
+  return [].map.call(document.getElementById("tgRows").children,function(tr){
+    function num(cls){var v=tr.querySelector(cls).value.trim();return v===""?null:+v;}
+    return {position:tr.querySelector(".tg-pos").value,rate:num(".tg-rate"),amplitude:num(".tg-amp"),beatError:num(".tg-beat")};
+  });
+}
+function localDateStr(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
+function openTG(){
+  var w=activeWatch();if(!w)return;
+  document.getElementById("tgDate").value=localDateStr(new Date());
+  document.getElementById("tgNote").value="";
+  var prev=(w.timegrapher&&w.timegrapher.length)?w.timegrapher[w.timegrapher.length-1].readings.map(function(r){return {position:r.position};}):TG_DEFAULT.map(function(c){return {position:c};});
+  buildTGRows(prev);
+  document.getElementById("tgForm").style.display="block";
+}
+function closeTG(){document.getElementById("tgForm").style.display="none";}
+document.getElementById("tgToggle").onclick=function(){
+  if(document.getElementById("tgForm").style.display==="none")openTG();else closeTG();
+};
+document.getElementById("tgAddRow").onclick=function(){
+  var tb=document.getElementById("tgRows");
+  tb.insertAdjacentHTML("beforeend",tgRowHTML());
+  tb.lastElementChild.querySelector(".xbtn").onclick=function(){if(tb.children.length>1)tb.removeChild(tb.lastElementChild);};
+};
+document.getElementById("tgCancel").onclick=closeTG;
+document.getElementById("tgSave").onclick=function(){
+  var w=activeWatch();if(!w)return;
+  var rows=readTGRows().filter(function(r){return r.rate!=null&&isFinite(r.rate);});
+  if(!rows.length){alert(I18N[lang].tgNeedOne);return;}
+  var dv=document.getElementById("tgDate").value, ts;
+  if(dv===localDateStr(new Date())||!dv){ts=Date.now();}
+  else{var p=dv.split("-");ts=new Date(+p[0],+p[1]-1,+p[2],12,0,0).getTime();}
+  var readings=rows.map(function(r){
+    var o={position:r.position,rate:r.rate};
+    if(r.amplitude!=null&&isFinite(r.amplitude))o.amplitude=r.amplitude;
+    if(r.beatError!=null&&isFinite(r.beatError))o.beatError=r.beatError;
+    return o;
+  });
+  if(!Array.isArray(w.timegrapher))w.timegrapher=[];
+  w.timegrapher.push({id:uid(),t:ts,note:document.getElementById("tgNote").value.trim(),readings:readings});
+  closeTG();save();renderAll();
+};
 
 document.getElementById("nUp").onclick=function(){offsetN++;syncTaps=[];renderMeter();};
 document.getElementById("nDown").onclick=function(){offsetN--;syncTaps=[];renderMeter();};

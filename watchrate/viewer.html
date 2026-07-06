@@ -86,6 +86,12 @@
   .list{margin-top:14px;display:flex;flex-direction:column;gap:16px}
   .wcard{border:1px solid var(--border);border-radius:14px;padding:18px 20px 16px;background:#202026}
   .wcard.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(217,106,65,.3)}
+  .tgsec{margin-top:14px;border-top:1px dashed var(--border);padding-top:10px}
+  .tghead{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:6px}
+  .pos.tg .tgreads{font-size:12.5px;line-height:1.9}
+  .pos.tg .tgreads i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
+  .tgnote{color:var(--muted);font-style:italic}
+  .tgdelta b{color:var(--accent)}
   .wtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
   .wname{font-size:17px;font-weight:700;color:var(--ink)}
   .wmeta{font-size:12px;color:var(--muted);margin-top:3px}
@@ -279,7 +285,14 @@ function linreg(pts){
   const r2=ssTot>0?1-ssRes/ssTot:null;
   return {ratePerDay:slope*MS_PER_DAY,slope,intercept,x0,r2,n};
 }
-function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||""};}
+function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||"",newStart:!!m.newStart};}
+function normTG(sess){
+  const readings=(sess.readings||[]).map(r=>({position:r.position||"unknown",rate:Number(r.rate),
+    amplitude:(r.amplitude!=null&&isFinite(r.amplitude))?Number(r.amplitude):null,
+    beatError:(r.beatError!=null&&isFinite(r.beatError))?Number(r.beatError):null}))
+    .filter(r=>Number.isFinite(r.rate));
+  return {id:sess.id,t:Number(sess.t),note:sess.note||"",readings};
+}
 
 function collectWatches(){
   const out=[];
@@ -287,7 +300,7 @@ function collectWatches(){
     const byKey=new Map();
     for(const f of FILES) for(const w of f.watches){
       const key=(w.id!=null?"id:"+w.id:"name:"+(w.name||"")).toLowerCase();
-      if(!byKey.has(key)) byKey.set(key,{id:w.id,name:w.name,sources:new Set(),measById:new Map(),active:false});
+      if(!byKey.has(key)) byKey.set(key,{id:w.id,name:w.name,sources:new Set(),measById:new Map(),tgById:new Map(),active:false});
       const agg=byKey.get(key); agg.sources.add(f.name);
       if(f.activeWatch!=null && String(f.activeWatch)===String(w.id)) agg.active=true;
       (w.measurements||[]).forEach((m,i)=>{
@@ -295,22 +308,33 @@ function collectWatches(){
         const mk=nm.id!=null?"id:"+nm.id:("t:"+nm.t+"|o:"+nm.offset+"|i:"+i+"|"+f.name);
         if(!agg.measById.has(mk)) agg.measById.set(mk,nm);
       });
+      (w.timegrapher||[]).forEach((sess,i)=>{
+        const ns=normTG(sess);
+        const tk=ns.id!=null?"id:"+ns.id:("t:"+ns.t+"|i:"+i+"|"+f.name);
+        if(!agg.tgById.has(tk)) agg.tgById.set(tk,ns);
+      });
     }
-    for(const a of byKey.values()) out.push({id:a.id,name:a.name,sources:[...a.sources],active:a.active,measurements:[...a.measById.values()]});
+    for(const a of byKey.values()) out.push({id:a.id,name:a.name,sources:[...a.sources],active:a.active,measurements:[...a.measById.values()],timegrapher:[...a.tgById.values()]});
   } else {
     for(const f of FILES) for(const w of f.watches) out.push({
       id:w.id,name:w.name,sources:[f.name],
       active:f.activeWatch!=null && String(f.activeWatch)===String(w.id),
-      measurements:(w.measurements||[]).map(normMeas)
+      measurements:(w.measurements||[]).map(normMeas),
+      timegrapher:(w.timegrapher||[]).map(normTG)
     });
   }
   for(const w of out){
     w.measurements.sort((a,b)=>a.t-b.t);
     const valid=w.measurements.filter(m=>Number.isFinite(m.t)&&Number.isFinite(m.offset));
-    w.valid=valid; w.fit=linreg(valid.map(m=>({x:m.t,y:m.offset})));
+    w.valid=valid;
+    let si=0; valid.forEach((m,i)=>{if(m.newStart)si=i;});
+    const fitPts=valid.slice(si);
+    w.fit=linreg(fitPts.map(m=>({x:m.t,y:m.offset})));
+    w.fitStart=fitPts.length?fitPts[0].t:null;
+    w.hasReset=si>0;
     w.tMin=valid.length?valid[0].t:null; w.tMax=valid.length?valid[valid.length-1].t:null;
     const groups=new Map();
-    valid.forEach(m=>{if(!groups.has(m.position))groups.set(m.position,[]);groups.get(m.position).push(m);});
+    fitPts.forEach(m=>{if(!groups.has(m.position))groups.set(m.position,[]);groups.get(m.position).push(m);});
     let pi=0; const positions=[];
     for(const [code,arr] of groups){
       const info=posInfo(code,pi++); const f=linreg(arr.map(m=>({x:m.t,y:m.offset})));
@@ -320,6 +344,8 @@ function collectWatches(){
     w.positions=positions;
     const rated=positions.filter(p=>p.ratePerDay!=null).map(p=>p.ratePerDay);
     w.delta=rated.length>=2?Math.max(...rated)-Math.min(...rated):null;
+    w.timegrapher=(w.timegrapher||[]).filter(sess=>Number.isFinite(sess.t)&&sess.readings.length).sort((a,b)=>a.t-b.t);
+    w.timegrapher.forEach(sess=>{sess.avg=sess.readings.reduce((a,r)=>a+r.rate,0)/sess.readings.length;});
   }
   return out;
 }
@@ -347,10 +373,11 @@ function chartSVG(w){
   for(let i=0;i<=3;i++){const t=tMin+(tMax-tMin)*i/3,x=X(t);
     g+=`<text x="${x.toFixed(1)}" y="${H-8}" fill="#8f8c96" font-size="10" text-anchor="${i===0?'start':i===3?'end':'middle'}" font-family="${'ui-monospace,monospace'}">${fmtDate(t)}</text>`;}
   if(w.fit){const yAt=t=>w.fit.intercept+w.fit.slope*(t-w.fit.x0);
-    g+=`<line x1="${X(tMin).toFixed(1)}" y1="${Y(yAt(tMin)).toFixed(1)}" x2="${X(tMax).toFixed(1)}" y2="${Y(yAt(tMax)).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`;}
+    const fs=Math.max(tMin, w.fitStart??tMin);
+    g+=`<line x1="${X(fs).toFixed(1)}" y1="${Y(yAt(fs)).toFixed(1)}" x2="${X(tMax).toFixed(1)}" y2="${Y(yAt(tMax)).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`;}
   pts.forEach(p=>{const info=posInfo(p.position,uniq.indexOf(p.position));
     const title=`${fmtDateTime(p.t)} \u00B7 ${p.offset.toFixed(1)}s \u00B7 ${info.label}${p.note?` \u00B7 ${p.note}`:""}`;
-    g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.offset).toFixed(1)}" r="3.4" fill="${info.color}" stroke="#202026" stroke-width="1"><title>${esc(title)}</title></circle>`;});
+    g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.offset).toFixed(1)}" r="${p.newStart?4:3.4}" fill="${info.color}" stroke="${p.newStart?'var(--accent)':'#202026'}" stroke-width="${p.newStart?1.6:1}"><title>${esc(title)}</title></circle>`;});
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="offset / time">${g}</svg>`;
 }
 
@@ -382,8 +409,39 @@ function cardHTML(w){
     <div class="legend">${legend}</div>
     ${w.positions.length?`<table class="pos"><thead><tr><th class="dot"></th><th>${t().posHead}</th><th class="num">${t().n}</th><th class="num">${t().sday}</th></tr></thead><tbody>${rows}</tbody></table>`:""}
     ${w.delta!=null?`<div class="delta"><span>${t().spread}</span><b>${w.delta.toFixed(1)} ${t().sday}</b></div>`:""}
+    ${tgHTML(w)}
   </div>`;
 }
+
+function tgHTML(w){
+  const tg=w.timegrapher||[];
+  if(!tg.length) return "";
+  const last=tg[tg.length-1];
+  const wr=w.fit?.ratePerDay ?? null;
+  let cmp="";
+  if(wr!=null){
+    const d=wr-last.avg;
+    cmp=`<div class="delta tgdelta"><span>${t().tgVs}</span><b>TG ${signOf(last.avg)}${fmtMag(last.avg)} \u00b7 ${t().tgWorn} ${signOf(wr)}${fmtMag(wr)} \u00b7 \u0394 ${signOf(d)}${fmtMag(d)} ${t().sday}</b></div>`;
+  }
+  const rows=tg.slice().reverse().map(sess=>{
+    const reads=sess.readings.map((r,i)=>{
+      const info=posInfo(r.position,i);
+      const extra=[r.amplitude!=null?r.amplitude+"\u00b0":null,r.beatError!=null?r.beatError+" ms":null].filter(Boolean).join(" \u00b7 ");
+      return `<span title="${esc(info.label+(extra?" \u00b7 "+extra:""))}" style="white-space:nowrap"><i style="background:${info.color}"></i>${info.abbr} ${signOf(r.rate)}${Math.abs(r.rate)}</span>`;
+    }).join(" \u00b7 ");
+    return `<tr><td class="num">${fmtDate(sess.t)}</td><td class="num">${signOf(sess.avg)}${fmtMag(sess.avg)}</td><td class="tgreads">${reads}${sess.note?` <span class="tgnote">\u2014 ${esc(sess.note)}</span>`:""}</td></tr>`;
+  }).join("");
+  return `<div class="tgsec"><div class="tghead">${t().tgHead}</div>
+    <table class="pos tg"><thead><tr><th>${t().tgDate}</th><th class="num">${t().tgAvg}</th><th>${t().tgReadings}</th></tr></thead><tbody>${rows}</tbody></table>
+    ${cmp}</div>`;
+}
+
+T.en.tgHead="Timegrapher"; T.nl.tgHead="Timegrapher";
+T.en.tgDate="date"; T.nl.tgDate="datum";
+T.en.tgAvg="avg"; T.nl.tgAvg="gem.";
+T.en.tgReadings="readings"; T.nl.tgReadings="metingen";
+T.en.tgVs="machine vs worn"; T.nl.tgVs="machine vs gedragen";
+T.en.tgWorn="worn"; T.nl.tgWorn="pols";
 
 function t(){return T[lang];}
 
