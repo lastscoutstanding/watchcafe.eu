@@ -5,9 +5,10 @@
      <span data-countdown></span>       -> "25d 03:12:44" (tikt per seconde)
    Vergeet niet: <script src="/meetings.js" defer></script> */
 (function(){
-  var dateEls  = document.querySelectorAll('[data-countdown-date]');
-  var countEls = document.querySelectorAll('[data-countdown]');
-  if(!dateEls.length && !countEls.length) return;
+  var dateEls   = document.querySelectorAll('[data-countdown-date]');
+  var countEls  = document.querySelectorAll('[data-countdown]');
+  var nightsEls = document.querySelectorAll('[data-countdown-nights]');
+  if(!dateEls.length && !countEls.length && !nightsEls.length) return;
 
   // interpreteer Y-M-D H:M als Europe/Amsterdam en geef epoch-ms terug
   function amsUTC(y,mo,d,h,mi){
@@ -49,6 +50,14 @@
     return (d>0 ? d + 'd ' : '') + pad(h) + ':' + pad(m) + ':' + pad(s);
   }
   function setAll(els, txt){ els.forEach ? els.forEach(f) : [].forEach.call(els, f); function f(e){ e.textContent = txt; } }
+  function nightsUntil(t){
+    var now = new Date();
+    var a = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var e = new Date(t);
+    var b = new Date(e.getFullYear(), e.getMonth(), e.getDate());
+    return Math.max(0, Math.round((b - a) / 86400000));
+  }
+  function nightsTxt(t){ var n = nightsUntil(t); return n === 1 ? '1 night' : n + ' nights'; }
 
   fetch('/meetings.txt', {cache:'no-store'}).then(function(r){
     if(!r.ok) throw 0;
@@ -61,15 +70,18 @@
       if(!dates.length){
         setAll(dateEls, 'date to be announced');
         setAll(countEls, '');
+        setAll(nightsEls, 'a few nights');
         return; // stoppen met tikken
       }
       setAll(dateEls, fmtDate(dates[0]));
       setAll(countEls, fmtLeft(dates[0] - now));
+      setAll(nightsEls, nightsTxt(dates[0]));
       setTimeout(tick, 1000);
     }
     tick();
   }).catch(function(){
     setAll(dateEls, 'see announcement');
     setAll(countEls, '');
+    setAll(nightsEls, 'a few nights');
   });
 })();

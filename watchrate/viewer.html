@@ -88,6 +88,9 @@
   .wcard.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(217,106,65,.3)}
   .tgsec{margin-top:14px;border-top:1px dashed var(--border);padding-top:10px}
   .tghead{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:6px}
+  .pos.tg th,.pos.tg td{padding-right:18px}
+  .pos.tg th:last-child,.pos.tg td:last-child{padding-right:0}
+  .pos.tg td:first-child{white-space:nowrap;color:var(--muted)}
   .pos.tg .tgreads{font-size:12.5px;line-height:1.9}
   .pos.tg .tgreads i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
   .tgnote{color:var(--muted);font-style:italic}
@@ -429,7 +432,7 @@ function tgHTML(w){
       const extra=[r.amplitude!=null?r.amplitude+"\u00b0":null,r.beatError!=null?r.beatError+" ms":null].filter(Boolean).join(" \u00b7 ");
       return `<span title="${esc(info.label+(extra?" \u00b7 "+extra:""))}" style="white-space:nowrap"><i style="background:${info.color}"></i>${info.abbr} ${signOf(r.rate)}${Math.abs(r.rate)}</span>`;
     }).join(" \u00b7 ");
-    return `<tr><td class="num">${fmtDate(sess.t)}</td><td class="num">${signOf(sess.avg)}${fmtMag(sess.avg)}</td><td class="tgreads">${reads}${sess.note?` <span class="tgnote">\u2014 ${esc(sess.note)}</span>`:""}</td></tr>`;
+    return `<tr><td>${fmtDate(sess.t)}</td><td class="num">${signOf(sess.avg)}${fmtMag(sess.avg)}</td><td class="tgreads">${reads}${sess.note?` <span class="tgnote">\u2014 ${esc(sess.note)}</span>`:""}</td></tr>`;
   }).join("");
   return `<div class="tgsec"><div class="tghead">${t().tgHead}</div>
     <table class="pos tg"><thead><tr><th>${t().tgDate}</th><th class="num">${t().tgAvg}</th><th>${t().tgReadings}</th></tr></thead><tbody>${rows}</tbody></table>
