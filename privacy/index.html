@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy — Sioux Watch Café</title>
+<script src="/nav.js" defer></script>
+<style>
+  :root{
+    --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
+    --accent:#d96a41; --accent-d:#c25a36; --ink:#e9e7e2; --muted:#a09da6;
+    --led:#ff3b30; --led-off:#350707; --ok:#3be35b;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  html,body{margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
+  .wrap{max-width:680px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:30px 30px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px}
+  h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .lang{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:none}
+  .lang button{border:none;background:#26262c;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;touch-action:manipulation}
+  .lang button.active{background:var(--accent);color:#fff}
+  .lang button:hover:not(.active){background:#30303a}
+
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:28px 0 12px;font-weight:700;border-top:1px solid var(--border);padding-top:22px}
+  p{line-height:1.65;font-size:14.5px;margin:10px 0}
+  code{background:#26262c;border-radius:5px;padding:1px 6px;font-size:13px}
+  a{color:var(--accent)}
+
+  /* LED cookie counter */
+  .panel{background:linear-gradient(180deg,#1c1c1c,#0b0b0b);border-radius:16px;padding:26px 16px 22px;box-shadow:inset 0 2px 8px rgba(0,0,0,.6);text-align:center}
+  .leds{display:flex;justify-content:center;gap:6px}
+  .digit{width:52px}
+  .digit svg{width:100%;height:auto;display:block}
+  .seg{fill:var(--led-off)}
+  .seg.on{fill:var(--led);filter:drop-shadow(0 0 6px rgba(255,59,48,.8))}
+  .leds.ok .seg.on{fill:var(--ok);filter:drop-shadow(0 0 6px rgba(59,227,91,.7))}
+  .panel .plab{margin:14px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:1.6px;color:var(--muted)}
+  .panel .pnote{margin:6px 0 0;font-size:13px;color:var(--ok)}
+
+  table{width:100%;border-collapse:collapse;margin-top:6px;table-layout:fixed}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  td.k{width:38%;word-break:break-all;font-family:"Courier New",monospace;font-size:13px}
+  td.sz{width:64px;white-space:nowrap;color:var(--muted);font-size:13px}
+  td.act{width:120px;white-space:nowrap;text-align:right}
+  .desc{color:var(--muted);font-size:13px;display:block;margin-top:3px;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  button{font:inherit;cursor:pointer;border-radius:8px;padding:6px 10px;border:1px solid var(--border);background:#26262c;color:var(--ink);font-size:13px;touch-action:manipulation}
+  button:hover{background:#30303a}
+  button.danger{color:#ff6b5e}
+  pre{background:#141418;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;overflow:auto;max-height:260px;white-space:pre-wrap;word-break:break-all;margin:8px 0 2px}
+  .empty{color:var(--muted);font-size:14px;padding:12px 2px}
+  .toolbar{display:flex;justify-content:flex-end;margin-top:12px}
+  .notice{background:#2e221c;border:1px solid #45332a;color:#eda57f;padding:10px 14px;border-radius:8px;font-size:13px;margin:14px 0 0;display:none}
+  .foot{margin-top:26px;color:#8f8c96;font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="hdr">
+      <div>
+        <h1 id="title"></h1>
+        <p class="sub" id="sub"></p>
+      </div>
+      <div class="lang">
+        <button data-lang="en">EN</button>
+        <button data-lang="nl">NL</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="leds" id="cookieLeds"></div>
+      <p class="plab" id="cookieLabel"></p>
+      <p class="pnote" id="cookieNote"></p>
+    </div>
+    <div id="cookieDetail"></div>
+
+    <h2 id="lsHead"></h2>
+    <p id="lsIntro"></p>
+    <div id="lsTable"></div>
+    <div class="toolbar"><button class="danger" id="clearAll" style="display:none"></button></div>
+    <div class="notice" id="notice"></div>
+
+    <h2 id="howHead"></h2>
+    <p id="how1"></p>
+    <p id="how2"></p>
+
+    <h2 id="honestHead"></h2>
+    <p id="honest1"></p>
+    <p id="checkTip"></p>
+
+    <p class="foot" id="foot"></p>
+  </div>
+</div>
+
+<script>
+var UI={
+ en:{
+  title:"Gears, not cookies",
+  sub:"A live look at what this site stores in your browser \u2014 The Sioux Watch Caf\u00e9",
+  cookieLabel:"cookies on this site",
+  cookieNoteZero:"Measured live in your browser, just now.",
+  cookieNoteSome:"Unexpected! Listed below \u2014 they are not set by this site.",
+  lsHead:"Local storage \u2014 measured live",
+  lsIntro:"This is everything this site keeps in your browser's local storage, read out at this very moment. Local storage lives on your device only: it is never sent anywhere, and this site has no server or database to send it to.",
+  lsEmpty:"Local storage is empty \u2014 nothing is stored at all. Use the Rate Meter or Viewer and your data will appear here (and only here).",
+  thKey:"key", thSize:"size", thAct:"",
+  show:"show", hide:"hide", del:"delete", clearAll:"Delete everything",
+  confirmOne:function(k){return 'Delete "'+k+'" from this browser? If this is your watch data, it cannot be restored (export a backup first).';},
+  confirmAll:"Delete ALL locally stored data of this site, including your watches and measurements? This cannot be undone (export a backup first).",
+  known:{
+    siouxWatchRateMeter:"Your watches, measurements and timegrapher sessions (Rate Meter)",
+    swcViewerFiles:"Backup files you loaded in the Backup Viewer",
+    siouxWatchRateMeterLang:"Your language choice (EN/NL)"
+  },
+  unknown:"Not set by this site (possibly a browser extension)",
+  howHead:"How this works",
+  how1:"This website is a set of static files hosted on GitHub Pages. There is no backend, no database, no analytics, no trackers and no third-party scripts. The pages cannot collect your data, because there is nowhere for it to go.",
+  how2:"Everything you enter \u2014 watches, measurements, timegrapher sessions \u2014 is stored with the browser's localStorage API, on your own device, per browser. Even we cannot see it. That is also why your data does not follow you to another device: use the export/import buttons for that.",
+  honestHead:"The honest fine print",
+  honest1:"Like any web host, GitHub Pages sees standard traffic when serving the files (such as IP addresses in server logs). That is between your browser and GitHub \u2014 we do not see, receive or store anything.",
+  checkTip:"Don't take our word for it: open the developer tools (F12 or \u2318\u2325I), look under Application \u2192 Cookies and Local Storage, or check the Network tab \u2014 you will see that nothing is sent anywhere.",
+  foot:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
+  notice:"Storage could not be read here (e.g. in a preview). On the live site this page shows the real contents."
+ },
+ nl:{
+  title:"Tandwielen, geen cookies",
+  sub:"Live inzage in wat deze site in je browser bewaart \u2014 The Sioux Watch Caf\u00e9",
+  cookieLabel:"cookies op deze site",
+  cookieNoteZero:"Zojuist live gemeten in jouw browser.",
+  cookieNoteSome:"Onverwacht! Hieronder weergegeven \u2014 ze worden niet door deze site gezet.",
+  lsHead:"Local storage \u2014 live gemeten",
+  lsIntro:"Dit is alles wat deze site in de local storage van je browser bewaart, op dit moment uitgelezen. Local storage staat alleen op jouw apparaat: het wordt nergens naartoe gestuurd, en deze site heeft niet eens een server of database om het naartoe te sturen.",
+  lsEmpty:"De local storage is leeg \u2014 er is helemaal niets opgeslagen. Gebruik de Rate Meter of Viewer en je data verschijnt hier (en alleen hier).",
+  thKey:"sleutel", thSize:"omvang", thAct:"",
+  show:"toon", hide:"verberg", del:"verwijder", clearAll:"Alles verwijderen",
+  confirmOne:function(k){return '"'+k+'" uit deze browser verwijderen? Als dit je horlogedata is, is die niet terug te halen (exporteer eerst een back-up).';},
+  confirmAll:"ALLE lokaal opgeslagen data van deze site verwijderen, inclusief je horloges en metingen? Dit kan niet ongedaan worden gemaakt (exporteer eerst een back-up).",
+  known:{
+    siouxWatchRateMeter:"Je horloges, metingen en timegrapher-sessies (Rate Meter)",
+    swcViewerFiles:"Back-upbestanden die je in de Backup Viewer hebt geladen",
+    siouxWatchRateMeterLang:"Je taalkeuze (EN/NL)"
+  },
+  unknown:"Niet door deze site gezet (mogelijk een browserextensie)",
+  howHead:"Hoe dit werkt",
+  how1:"Deze website is een verzameling statische bestanden op GitHub Pages. Er is geen backend, geen database, geen analytics, geen trackers en geen scripts van derden. De pagina's k\u00fannen je gegevens niet verzamelen, want er is geen plek om ze naartoe te sturen.",
+  how2:"Alles wat je invoert \u2014 horloges, metingen, timegrapher-sessies \u2014 wordt met de localStorage-API van je browser opgeslagen, op je eigen apparaat, per browser. Zelfs wij kunnen er niet bij. Daarom reist je data ook niet mee naar een ander apparaat: gebruik daarvoor de export/import-knoppen.",
+  honestHead:"De eerlijke kleine lettertjes",
+  honest1:"Zoals elke webhost ziet GitHub Pages standaard verkeer bij het serveren van de bestanden (zoals IP-adressen in serverlogs). Dat speelt tussen jouw browser en GitHub \u2014 wij zien, ontvangen en bewaren niets.",
+  checkTip:"Geloof ons niet op ons woord: open de developer tools (F12 of \u2318\u2325I), kijk onder Application \u2192 Cookies en Local Storage, of bekijk het Network-tabblad \u2014 je ziet dat er nergens iets naartoe gaat.",
+  foot:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
+  notice:"Opslag kon hier niet worden uitgelezen (bv. in een preview). Op de live site toont deze pagina de echte inhoud."
+ }
+};
+var LKEY="siouxWatchRateMeterLang";
+var lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})();
+var openKeys={};
+
+/* ---- seven-segment (klein) ---- */
+var SEG={a:"12,14 18,8 62,8 68,14 62,20 18,20",b:"66,16 72,22 72,62 66,68 60,62 60,22",
+c:"66,72 72,78 72,118 66,124 60,118 60,78",d:"12,126 18,120 62,120 68,126 62,132 18,132",
+e:"14,72 20,78 20,118 14,124 8,118 8,78",f:"14,16 20,22 20,62 14,68 8,62 8,22",
+g:"12,70 18,64 62,64 68,70 62,76 18,76"};
+var ORDER=["a","b","c","d","e","f","g"];
+var MAP={"0":"abcdef","1":"bc","2":"abged","3":"abgcd","4":"fgbc","5":"afgcd","6":"afgedc","7":"abc","8":"abcdefg","9":"abcdfg"};
+function ledDigits(container,str,ok){
+  container.innerHTML="";container.classList.toggle("ok",!!ok);
+  var ns="http://www.w3.org/2000/svg";
+  for(var i=0;i<str.length;i++){
+    var d=document.createElement("div");d.className="digit";
+    var svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 80 140");
+    var on=MAP[str[i]]||"";
+    ORDER.forEach(function(id){var p=document.createElementNS(ns,"polygon");p.setAttribute("points",SEG[id]);p.setAttribute("class","seg"+(on.indexOf(id)>-1?" on":""));svg.appendChild(p);});
+    d.appendChild(svg);container.appendChild(d);
+  }
+}
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function kb(n){return n<1024?n+" B":(n/1024).toFixed(1)+" kB";}
+
+function cookieList(){
+  var raw=(document.cookie||"").trim();
+  if(!raw)return [];
+  return raw.split(";").map(function(c){return c.trim();}).filter(Boolean);
+}
+
+function render(){
+  var u=UI[lang];
+  document.getElementById("title").textContent=u.title;
+  document.getElementById("sub").textContent=u.sub;
+  document.getElementById("cookieLabel").textContent=u.cookieLabel;
+  document.getElementById("lsHead").textContent=u.lsHead;
+  document.getElementById("lsIntro").textContent=u.lsIntro;
+  document.getElementById("howHead").textContent=u.howHead;
+  document.getElementById("how1").textContent=u.how1;
+  document.getElementById("how2").textContent=u.how2;
+  document.getElementById("honestHead").textContent=u.honestHead;
+  document.getElementById("honest1").textContent=u.honest1;
+  document.getElementById("checkTip").textContent=u.checkTip;
+  document.getElementById("foot").textContent=u.foot;
+  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);});
+  document.documentElement.lang=lang;
+
+  /* cookies: live meten */
+  var cookies=cookieList();
+  ledDigits(document.getElementById("cookieLeds"),String(cookies.length),cookies.length===0);
+  document.getElementById("cookieNote").textContent=cookies.length?u.cookieNoteSome:u.cookieNoteZero;
+  document.getElementById("cookieDetail").innerHTML=cookies.length?
+    '<pre>'+esc(cookies.join("\n"))+'</pre>':"";
+
+  /* localStorage: live uitlezen */
+  var box=document.getElementById("lsTable"),clearBtn=document.getElementById("clearAll");
+  var keys=[];
+  try{
+    for(var i=0;i<localStorage.length;i++)keys.push(localStorage.key(i));
+  }catch(e){
+    box.innerHTML="";clearBtn.style.display="none";
+    var n=document.getElementById("notice");n.style.display="block";n.textContent=u.notice;
+    return;
+  }
+  keys.sort();
+  if(!keys.length){box.innerHTML='<div class="empty">'+u.lsEmpty+'</div>';clearBtn.style.display="none";return;}
+  var html='<table><thead><tr><th>'+u.thKey+'</th><th>'+u.thSize+'</th><th></th></tr></thead><tbody>';
+  keys.forEach(function(k){
+    var v="";try{v=localStorage.getItem(k)||"";}catch(e){}
+    var desc=u.known[k]||u.unknown;
+    html+='<tr><td class="k">'+esc(k)+'<span class="desc">'+esc(desc)+'</span></td>'
+      +'<td class="sz">'+kb(v.length)+'</td>'
+      +'<td class="act"><button data-show="'+esc(k)+'">'+(openKeys[k]?u.hide:u.show)+'</button> '
+      +'<button class="danger" data-del="'+esc(k)+'">'+u.del+'</button></td></tr>';
+    if(openKeys[k]){
+      var shown=v.length>6000?v.slice(0,6000)+"\n\u2026 ("+kb(v.length)+")":v;
+      html+='<tr><td colspan="3" style="border-bottom:1px solid var(--border)"><pre>'+esc(shown)+'</pre></td></tr>';
+    }
+  });
+  html+='</tbody></table>';
+  box.innerHTML=html;
+  clearBtn.style.display="inline-block";
+  clearBtn.textContent=u.clearAll;
+  box.querySelectorAll("button[data-show]").forEach(function(b){b.onclick=function(){
+    var k=b.getAttribute("data-show");openKeys[k]=!openKeys[k];render();};});
+  box.querySelectorAll("button[data-del]").forEach(function(b){b.onclick=function(){
+    var k=b.getAttribute("data-del");
+    if(confirm(u.confirmOne(k))){try{localStorage.removeItem(k);}catch(e){}delete openKeys[k];render();}};});
+}
+
+document.getElementById("clearAll").onclick=function(){
+  var u=UI[lang];
+  if(confirm(u.confirmAll)){try{localStorage.clear();}catch(e){}openKeys={};render();}
+};
+[].forEach.call(document.querySelectorAll(".lang button"),function(b){
+  b.onclick=function(){lang=b.getAttribute("data-lang");try{localStorage.setItem(LKEY,lang);}catch(e){}render();};
+});
+render();
+</script>
+</body>
+</html>
