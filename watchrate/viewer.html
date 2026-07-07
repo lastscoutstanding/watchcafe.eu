@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -278,7 +278,10 @@ function posInfo(code,idx){
 function abbrOf(code){return ({dial_up:"DU",dial_down:"DD",crown_up:"CU",crown_down:"CD",crown_left:"CL",crown_right:"CR",worn:"WR",flat:"FL"})[code]||(code||"?").slice(0,2).toUpperCase();}
 
 /* ---------- state ---------- */
-let FILES=[], merge=false, sortBy="name", lang="nl", guideOpen=false;
+var LKEY="siouxWatchRateMeterLang";
+let FILES=[], merge=false, sortBy="name",
+    lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})(),
+    guideOpen=false;
 
 /* ---------- math ---------- */
 function linreg(pts){
@@ -391,7 +394,8 @@ function chartSVG(w){
 /* ---------- render ---------- */
 function ledHTML(r){
   if(r==null) return `<div class="ledwrap"><div class="led-label">${t().rate}</div><div class="led-none">${t().noRate}</div></div>`;
-  const mag=fmtMag(r), ghost=mag.replace(/\d/g,"8");
+  const moon=(r>0&&Math.abs(r-1.969)<0.02);
+  const mag=moon?"1.969":fmtMag(r), ghost=mag.replace(/\d/g,"8");
   return `<div class="ledwrap"><div class="led-label">${t().rate}</div>
     <div class="led"><span class="led-sign">${signOf(r)}</span>
       <span class="led-seg"><span class="led-ghost">${ghost}</span><span class="led-lit">${mag}</span></span>
@@ -531,7 +535,7 @@ document.getElementById("sort").onchange=e=>{sortBy=e.target.value;render();};
 document.getElementById("sampleBtn").onclick=e=>{e.stopPropagation();loadJSON("voorbeeld-backup.json",SAMPLE);};
 document.getElementById("qbtn").onclick=()=>{guideOpen=true;render();};
 document.getElementById("gx").onclick=()=>{guideOpen=false;render();};
-document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;render();});
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem(LKEY,lang);}catch(e){}render();});
 
 /* ---------- sample ---------- */
 const DAY=MS_PER_DAY,T0=Date.parse("2026-06-01T08:00:00");

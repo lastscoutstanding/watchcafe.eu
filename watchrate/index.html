@@ -129,6 +129,16 @@
   .tgcmp b{font-family:"Courier New",monospace;font-size:19px;font-weight:700;color:#e9e7e2}
   .tgcmp .dv b{color:var(--accent)}
   .tgdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
+  .grp{background:#1a1a20;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:14px}
+  .grp-h{display:flex;align-items:center;gap:9px;margin-bottom:12px;font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:700}
+  .grp-n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700}
+  .qbtn{width:20px;height:20px;min-width:20px;padding:0;border-radius:50%;border:1px solid var(--border);background:#26262c;color:var(--muted);font-size:12px;font-weight:700;line-height:1;cursor:pointer;touch-action:manipulation}
+  .qbtn:hover{background:#30303a;color:var(--ink)}
+  .infobox{background:#0e0e12;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:10px}
+  .tgframe{border:1px dashed #4a4a55;border-radius:12px;padding:12px 14px;margin-top:16px}
+  .tgframe-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .tglabel{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted)}
+  .tgbox{background:transparent;border:none;padding:14px 0 2px;margin-top:0}
   @media(max-width:600px){.card{padding:22px 16px 26px}.tgcmp{grid-template-columns:1fr 1fr}}
 </style>
   <script src="/nav.js" defer></script>
@@ -171,6 +181,7 @@
         <li id="gStep4"></li>
       </ol>
       <p class="guide-note" id="guideNote"></p>
+      <div class="row" style="margin-top:14px"><button class="sm" id="sampleBtn"></button></div>
     </div>
 
     <div class="block" id="meterBlock">
@@ -198,40 +209,51 @@
         <div class="led-stat rate"><small id="rateLabel"></small><span id="rateVal"></span></div>
       </div>
 
-      <div class="sync-row">
-        <button id="syncBtn"></button>
-        <span class="hint" id="syncInfo" style="margin-top:0"></span>
+      <div class="grp">
+        <div class="grp-h"><span class="grp-n">1</span><span id="grpAlign"></span></div>
+        <div class="sync-row">
+          <button id="syncBtn"></button>
+          <button class="qbtn" id="syncHelp" aria-label="?">?</button>
+          <span class="hint" id="syncInfo" style="margin-top:0"></span>
+        </div>
+        <p class="hint infobox" id="hint" style="display:none"></p>
       </div>
-      <p class="hint" id="hint"></p>
 
-      <div class="row" style="margin-top:14px;align-items:flex-end">
-        <div style="flex:1 1 180px">
-          <label class="fld" id="lblPos" for="posSel"></label>
-          <select id="posSel">
-            <option value=""></option>
-            <option value="dial_up"></option>
-            <option value="dial_down"></option>
-            <option value="crown_up"></option>
-            <option value="crown_down"></option>
-            <option value="crown_left"></option>
-            <option value="crown_right"></option>
-            <option value="worn"></option>
-          </select>
+      <div class="grp">
+        <div class="grp-h"><span class="grp-n">2</span><span id="grpRecord"></span></div>
+        <div class="row" style="align-items:flex-end">
+          <div style="flex:1 1 180px">
+            <label class="fld" id="lblPos" for="posSel"></label>
+            <select id="posSel">
+              <option value=""></option>
+              <option value="dial_up"></option>
+              <option value="dial_down"></option>
+              <option value="crown_up"></option>
+              <option value="crown_down"></option>
+              <option value="crown_left"></option>
+              <option value="crown_right"></option>
+              <option value="worn"></option>
+            </select>
+          </div>
+          <div style="flex:2 1 220px">
+            <label class="fld" id="lblNote" for="noteIn"></label>
+            <input type="text" id="noteIn">
+          </div>
         </div>
-        <div style="flex:2 1 220px">
-          <label class="fld" id="lblNote" for="noteIn"></label>
-          <input type="text" id="noteIn">
+        <div class="row" style="margin-top:12px;justify-content:space-between;align-items:center">
+          <label class="chk"><input type="checkbox" id="newStartChk"><span id="newStartLbl"></span><button class="qbtn" id="nsHelp" aria-label="?">?</button></label>
+          <button class="primary" id="recordBtn"></button>
         </div>
-        <button class="primary" id="recordBtn"></button>
+        <p class="hint infobox" id="nsHint" style="display:none"></p>
       </div>
-      <div class="row" style="margin-top:12px">
-        <label class="chk"><input type="checkbox" id="newStartChk"><span id="newStartLbl"></span></label>
-      </div>
-      <div class="row" style="margin-top:16px">
-        <button class="sm" id="tgToggle"></button>
-      </div>
-      <div id="tgForm" style="display:none">
-        <div class="tgbox">
+
+      <div class="tgframe" id="tgFrame">
+        <div class="tgframe-h">
+          <span class="tglabel" id="tgFrameLabel"></span>
+          <button class="sm" id="tgToggle"></button>
+        </div>
+        <div id="tgForm" style="display:none">
+          <div class="tgbox">
           <div class="row" style="margin-bottom:10px">
             <div style="flex:0 0 160px"><label class="fld" id="tgLblDate" for="tgDate"></label><input type="date" id="tgDate"></div>
             <div class="grow"><label class="fld" id="tgLblNote" for="tgNote"></label><input type="text" id="tgNote"></div>
@@ -240,6 +262,7 @@
           <div class="row" style="margin-top:10px;justify-content:space-between">
             <button class="sm ghost" id="tgAddRow"></button>
             <div style="display:flex;gap:8px"><button class="sm" id="tgCancel"></button><button class="sm primary" id="tgSave"></button></div>
+          </div>
           </div>
         </div>
       </div>
@@ -316,7 +339,12 @@ var I18N={
   exportBtn:"Export backup (.json)", importBtn:"Import backup",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   linkHome:"watchcafe.eu home", linkViewer:"Backup viewer",
-  tgToggle:"Add timegrapher session", tgDate:"Date", tgNote2:"Note", tgPos:"Position",
+  grpAlign:"Align to your watch", grpRecord:"Record",
+  syncHelp:"Nudge with the arrows until the green clock matches your watch to the second, then tap Tap-sync a few times the moment your watch's seconds advance \u2014 any whole second \u2014 to refine the offset to about 0.1 s.",
+  nsHint:"Tick this if the watch was stopped and restarted, or reset to the correct time. The rate calculation then starts fresh from this measurement instead of counting the jump as drift.",
+  tgFrameLabel:"Timegrapher",
+  loadSample:"Load sample data", clearSample:"Remove samples",
+  tgToggle:"Add session", tgToggleClose:"Close", tgDate:"Date", tgNote2:"Note", tgPos:"Position",
   tgRateH:"rate (s/day)", tgAmpH:"amplitude (\u00b0)", tgBeatH:"beat error (ms)",
   tgAddRow:"+ position", tgSave:"Save session", tgCancel:"Cancel",
   tgNeedOne:"Enter a rate for at least one position.",
@@ -358,7 +386,12 @@ var I18N={
   exportBtn:"Exporteer back-up (.json)", importBtn:"Importeer back-up",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   linkHome:"watchcafe.eu home", linkViewer:"Back-up viewer",
-  tgToggle:"Timegrapher-sessie toevoegen", tgDate:"Datum", tgNote2:"Notitie", tgPos:"Positie",
+  grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
+  syncHelp:"Stel met de pijltjes de groene klok gelijk aan je horloge tot op de seconde, en tik daarna een paar keer op Tik-sync op het moment dat de seconde van je horloge verspringt \u2014 elke hele seconde \u2014 om de offset te verfijnen tot op ~0,1 s.",
+  nsHint:"Vink dit aan als het horloge heeft stilgestaan en opnieuw is gestart, of opnieuw gelijk is gezet. De gangberekening begint dan opnieuw vanaf deze meting in plaats van de sprong als afwijking mee te tellen.",
+  tgFrameLabel:"Timegrapher",
+  loadSample:"Voorbeelddata laden", clearSample:"Voorbeelden verwijderen",
+  tgToggle:"Sessie toevoegen", tgToggleClose:"Sluiten", tgDate:"Datum", tgNote2:"Notitie", tgPos:"Positie",
   tgRateH:"gang (s/dag)", tgAmpH:"amplitude (\u00b0)", tgBeatH:"beat error (ms)",
   tgAddRow:"+ positie", tgSave:"Sessie opslaan", tgCancel:"Annuleren",
   tgNeedOne:"Vul bij minstens \u00e9\u00e9n positie een gang in.",
@@ -633,6 +666,8 @@ function renderGuide(){
   var empty=state.watches.length===0;
   document.getElementById("guide").style.display=(empty||guideOpen)?"block":"none";
   document.getElementById("guideClose").style.display=empty?"none":"inline-block";
+  var sb=document.getElementById("sampleBtn");
+  if(sb)sb.textContent=empty?I18N[lang].loadSample:I18N[lang].clearSample;
 }
 function renderAll(){renderWatches();renderMeter();renderHistory();renderGuide();}
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
@@ -649,7 +684,6 @@ function applyLang(){
   document.getElementById("offLabel").textContent=t.offsetNow;
   document.getElementById("rateLabel").textContent=t.rate;
   document.getElementById("syncBtn").innerHTML=t.syncBtn;
-  document.getElementById("hint").innerHTML=t.hint;
   document.getElementById("lblPos").textContent=t.position;
   document.getElementById("lblNote").textContent=t.note;
   document.getElementById("noteIn").placeholder=t.optional;
@@ -671,7 +705,15 @@ function applyLang(){
   document.getElementById("gStep3").innerHTML=t.gStep3;
   document.getElementById("gStep4").innerHTML=t.gStep4;
   document.getElementById("guideNote").textContent=t.guideNote;
-  document.getElementById("tgToggle").textContent=t.tgToggle;
+  document.getElementById("grpAlign").textContent=t.grpAlign;
+  document.getElementById("grpRecord").textContent=t.grpRecord;
+  document.getElementById("tgFrameLabel").innerHTML='<i>\u25c8</i> '+t.tgFrameLabel;
+  document.getElementById("hint").textContent=t.syncHelp;
+  document.getElementById("nsHint").textContent=t.nsHint;
+  var tgOpen=document.getElementById("tgForm").style.display!=="none";
+  document.getElementById("tgToggle").textContent=tgOpen?t.tgToggleClose:t.tgToggle;
+  var sb=document.getElementById("sampleBtn");
+  if(sb)sb.textContent=state.watches.length?t.clearSample:t.loadSample;
   document.getElementById("tgLblDate").textContent=t.tgDate;
   document.getElementById("tgLblNote").textContent=t.tgNote2;
   document.getElementById("tgNote").placeholder=t.optional;
@@ -701,6 +743,19 @@ tick();setInterval(tick,200);
 
 document.getElementById("helpBtn").onclick=function(){guideOpen=!guideOpen;renderGuide();if(guideOpen)document.getElementById("guide").scrollIntoView({behavior:"smooth",block:"nearest"});};
 document.getElementById("guideClose").onclick=function(){guideOpen=false;renderGuide();};
+
+function toggleInfo(id){var el=document.getElementById(id);el.style.display=el.style.display==="none"?"block":"none";}
+document.getElementById("syncHelp").onclick=function(){toggleInfo("hint");};
+document.getElementById("nsHelp").onclick=function(ev){ev.preventDefault();toggleInfo("nsHint");};
+
+document.getElementById("sampleBtn").onclick=function(){
+  if(state.watches.length){
+    var msg=lang==="nl"?"Alle horloges verwijderen? (dit zijn de voorbeelden \u2014 of je eigen horloges als je die hebt toegevoegd)":"Remove all watches? (these are the samples \u2014 or your own if you added any)";
+    if(confirm(msg)){state.watches=[];state.activeWatch=null;seedOffset();closeTG();save();renderAll();}
+  }else{
+    state.watches=sampleWatches();state.activeWatch=state.watches[0].id;seedOffset();save();renderAll();
+  }
+};
 
 document.getElementById("addWatch").onclick=addWatch;
 document.getElementById("newWatch").addEventListener("keydown",function(e){if(e.key==="Enter")addWatch();});
@@ -744,6 +799,7 @@ function openTG(){
 function closeTG(){document.getElementById("tgForm").style.display="none";}
 document.getElementById("tgToggle").onclick=function(){
   if(document.getElementById("tgForm").style.display==="none")openTG();else closeTG();
+  document.getElementById("tgToggle").textContent=document.getElementById("tgForm").style.display==="none"?I18N[lang].tgToggle:I18N[lang].tgToggleClose;
 };
 document.getElementById("tgAddRow").onclick=function(){
   var tb=document.getElementById("tgRows");
@@ -795,6 +851,12 @@ document.getElementById("importFile").onchange=function(e){
   }catch(err){alert(lang==="nl"?"Kon dit bestand niet lezen als geldige back-up.":"Could not read this file as a valid backup.");}};
   r.readAsText(file);e.target.value="";
 };
+
+function sampleWatches(){return [
+  {id:uid(),name:"Omega Speedmaster ’69",measurements:[{t:1781661600000,offset:0.6,position:"dial_up",note:"set to time"},{t:1781787600000,offset:3.5,position:"worn"},{t:1781874000000,offset:5.5,position:"crown_down"},{t:1782007200000,offset:8.6,position:"dial_up"},{t:1782133200000,offset:11.4,position:"worn"},{t:1782219600000,offset:13.4,position:"crown_left"},{t:1782352800000,offset:16.3,position:"worn"},{t:1782478800000,offset:19.4,position:"dial_up"},{t:1782651600000,offset:23.1,position:"worn"},{t:1782698400000,offset:24.2,position:"crown_down"},{t:1782910800000,offset:29.1,position:"dial_up"},{t:1782997200000,offset:31.1,position:"worn"},{t:1783130400000,offset:34.1,position:"crown_left"},{t:1783342800000,offset:39,position:"worn"}],timegrapher:[{t:1781978400000,note:"moon-landing anniversary check",readings:[{position:"dial_up",rate:2,amplitude:295,beatError:0.1},{position:"crown_down",rate:1,amplitude:271,beatError:0.2},{position:"crown_left",rate:3,amplitude:264,beatError:0.2}]},{t:1783015200000,note:"",readings:[{position:"dial_up",rate:2,amplitude:289,beatError:0.1},{position:"crown_down",rate:1,amplitude:266,beatError:0.2}]}]},
+  {id:uid(),name:"Tudor Black Bay 58",measurements:[{t:1781492400000,offset:2.8,position:"dial_up",note:"set to time"},{t:1781618400000,offset:13.3,position:"crown_down"},{t:1781704800000,offset:20.4,position:"worn"},{t:1781751600000,offset:24.4,position:"dial_up"},{t:1781877600000,offset:34.8,position:"crown_left"},{t:1781964000000,offset:41.9,position:"dial_up"},{t:1782010800000,offset:45.9,position:"crown_down"},{t:1782136800000,offset:56.5,position:"worn"},{t:1782223200000,offset:63.7,position:"dial_up"},{t:1782270000000,offset:67.4,position:"crown_left"},{t:1782396000000,offset:78.1,position:"dial_up"},{t:1782482400000,offset:85.2,position:"crown_down"},{t:1782529200000,offset:0.2,position:"dial_up",note:"stopped over the weekend, rewound and set",newStart:true},{t:1782604800000,offset:-3.6,position:"crown_down"},{t:1782716400000,offset:-9.6,position:"worn"},{t:1782777600000,offset:-12.6,position:"crown_left"},{t:1782889200000,offset:-18.5,position:"dial_up"},{t:1782950400000,offset:-21.7,position:"crown_down"},{t:1783062000000,offset:-27.7,position:"worn"},{t:1783123200000,offset:-30.7,position:"crown_left"},{t:1783234800000,offset:-36.7,position:"dial_up"},{t:1783296000000,offset:-39.6,position:"crown_down"}],timegrapher:[{t:1781719200000,note:"full wind",readings:[{position:"dial_up",rate:6,amplitude:298,beatError:0.1},{position:"crown_down",rate:8,amplitude:272,beatError:0.2},{position:"crown_left",rate:9,amplitude:265,beatError:0.2}]},{t:1782842400000,note:"after regulation attempt",readings:[{position:"dial_up",rate:-4,amplitude:294,beatError:0.1},{position:"crown_down",rate:-6,amplitude:268,beatError:0.3},{position:"crown_left",rate:-3,amplitude:262,beatError:0.2}]}]},
+  {id:uid(),name:"Casio A300U",measurements:[{t:1781589600000,offset:0,position:"dial_up"},{t:1781848800000,offset:0.3,position:"dial_up"},{t:1782108000000,offset:0.6,position:"dial_up"},{t:1782367200000,offset:0.9,position:"dial_up"},{t:1782626400000,offset:1.2,position:"dial_up"},{t:1782885600000,offset:1.5,position:"dial_up"},{t:1783144800000,offset:1.8,position:"dial_up"},{t:1783404000000,offset:2.1,position:"dial_up"}]}
+];}
 
 /* ===== init ===== */
 if(state.watches.length&&!state.watches.some(function(w){return w.id===state.activeWatch;}))state.activeWatch=state.watches[0].id;
