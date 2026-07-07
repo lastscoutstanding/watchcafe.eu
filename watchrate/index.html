@@ -131,7 +131,7 @@
   .tgdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
   .grp{background:#1a1a20;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:14px}
   .grp-h{display:flex;align-items:center;gap:9px;margin-bottom:12px;font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:700}
-  .grp-n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700}
+  .grp-n{color:var(--muted);font-weight:700}
   .qbtn{width:20px;height:20px;min-width:20px;padding:0;border-radius:50%;border:1px solid var(--border);background:#26262c;color:var(--muted);font-size:12px;font-weight:700;line-height:1;cursor:pointer;touch-action:manipulation}
   .qbtn:hover{background:#30303a;color:var(--ink)}
   .infobox{background:#0e0e12;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:10px}
@@ -222,7 +222,7 @@
       <div class="grp">
         <div class="grp-h"><span class="grp-n">2</span><span id="grpRecord"></span></div>
         <div class="row" style="align-items:flex-end">
-          <div style="flex:1 1 180px">
+          <div style="flex:1 1 0">
             <label class="fld" id="lblPos" for="posSel"></label>
             <select id="posSel">
               <option value=""></option>
@@ -235,14 +235,14 @@
               <option value="worn"></option>
             </select>
           </div>
-          <div style="flex:2 1 220px">
+          <div style="flex:1 1 0">
             <label class="fld" id="lblNote" for="noteIn"></label>
             <input type="text" id="noteIn">
           </div>
         </div>
-        <div class="row" style="margin-top:12px;justify-content:space-between;align-items:center">
-          <label class="chk"><input type="checkbox" id="newStartChk"><span id="newStartLbl"></span><button class="qbtn" id="nsHelp" aria-label="?">?</button></label>
-          <button class="primary" id="recordBtn"></button>
+        <div class="row" style="margin-top:14px;justify-content:space-between;align-items:center;gap:12px">
+          <label class="chk" style="margin:0"><input type="checkbox" id="newStartChk"><span id="newStartLbl"></span><button class="qbtn" id="nsHelp" aria-label="?">?</button></label>
+          <button class="primary" id="recordBtn" style="flex:none"></button>
         </div>
         <p class="hint infobox" id="nsHint" style="display:none"></p>
       </div>
@@ -319,10 +319,10 @@ var I18N={
   offsetNow:"Offset now",
   rate:"Rate",
   perDay:"s/day",
-  syncBtn:"<b>Tap-sync</b> &nbsp;(tap on the whole second)",
+  syncBtn:"<b>Tap-sync</b>",
   hint:"Use &#9650;/&#9660; to set the watch to the nearest second. Then tap <b>Tap-sync</b> a few times at the exact moment your watch's seconds advance \u2014 any whole second works \u2014 to refine the offset to about 0.1 s. Then record the measurement.",
   position:"Position", note:"Note", optional:"optional", record:"Record measurement",
-  newStart:"New start \u2014 the watch was stopped or set to time again (rate calculation restarts from this measurement)",
+  newStart:"New start",
   measurements:"Measurements", noMeasurements:"No measurements recorded yet.", needTwo:"Record at least 2 measurements to calculate the rate.",
   sinceStart:"since the last new start",
   thTime:"Time", thOffset:"Offset", thPosition:"Position", thNote:"Note", del:"delete",
@@ -366,10 +366,10 @@ var I18N={
   offsetNow:"Offset nu",
   rate:"Gang",
   perDay:"s/dag",
-  syncBtn:"<b>Tik-sync</b> &nbsp;(tik op de hele seconde)",
+  syncBtn:"<b>Tik-sync</b>",
   hint:"Stel met &#9650;/&#9660; het horloge gelijk tot op de seconde. Tik daarna een paar keer op <b>Tik-sync</b> precies op het moment dat de seconde van je horloge verspringt \u2014 elke willekeurige seconde is goed \u2014 om de offset te verfijnen tot op ~0,1 s. Leg de meting daarna vast.",
   position:"Positie", note:"Notitie", optional:"optioneel", record:"Meting vastleggen",
-  newStart:"Nieuwe start \u2014 het horloge heeft stilgestaan of is opnieuw gelijkgezet (gangberekening begint opnieuw vanaf deze meting)",
+  newStart:"Nieuwe start",
   measurements:"Metingen", noMeasurements:"Nog geen metingen vastgelegd.", needTwo:"Leg minstens 2 metingen vast om de gang te berekenen.",
   sinceStart:"sinds de laatste nieuwe start",
   thTime:"Tijdstip", thOffset:"Offset", thPosition:"Positie", thNote:"Notitie", del:"verwijder",
