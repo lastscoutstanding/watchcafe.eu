@@ -6,6 +6,7 @@
     { title: "Home",          url: "/" },
     { title: "Live Clock",    url: "/clock/" },
     { title: "Rate Meter",    url: "/watchrate/" },
+    { title: "Power Reserve", url: "/powerreserve/" },
     { title: "Backup Viewer", url: "/watchrate/viewer.html" },
     { title: "Glossary",      url: "/glossary/" }
   ];

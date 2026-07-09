@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Power Reserve — Sioux Watch Café</title>
+<script src="/nav.js" defer></script>
+<style>
+  :root{
+    --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
+    --accent:#d96a41; --accent-d:#c25a36; --ink:#e9e7e2; --muted:#a09da6;
+    --amber:#ff8a3c; --amber-off:#3a1e0a; --green:#3be35b;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  html,body{margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
+  .wrap{max-width:680px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:30px 30px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px}
+  h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .lang{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:none}
+  .lang button{border:none;background:#26262c;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;touch-action:manipulation}
+  .lang button.active{background:var(--accent);color:#fff}
+  .lang button:hover:not(.active){background:#30303a}
+
+  select,input[type=text]{font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);width:100%}
+  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 5px}
+  button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);touch-action:manipulation}
+  button:hover{background:#30303a}
+  button:active{transform:scale(.98)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{background:var(--accent-d)}
+  button.sm{padding:6px 10px;font-size:13px}
+  button.danger{color:#ff6b5e}
+  button.ghost{background:transparent}
+
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+  .grow{flex:1 1 auto;min-width:0}
+  .lab{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+
+  /* LED */
+  .led{display:flex;align-items:center;justify-content:center;gap:4px}
+  .led .digit{width:26px}
+  .led .digit svg{width:100%;height:auto;display:block}
+  .led .seg{fill:var(--amber-off)}
+  .led .seg.on{fill:var(--amber);filter:drop-shadow(0 0 4px rgba(255,138,60,.75))}
+  .led .colon{display:flex;flex-direction:column;gap:8px;padding:0 2px 4px}
+  .led .colon .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 4px rgba(255,138,60,.75)}
+  .led.green .seg.on{fill:var(--green);filter:drop-shadow(0 0 4px rgba(59,227,91,.7))}
+  .led.green .colon .dot{background:var(--green);box-shadow:0 0 4px rgba(59,227,91,.7)}
+  .led.sm .digit{width:19px}
+  .led-text{font-family:"Courier New",monospace;color:var(--amber);font-size:26px;text-align:center;text-shadow:0 0 5px rgba(255,138,60,.5);letter-spacing:1px}
+  .led.sm .colon .dot{width:5px;height:5px}
+
+  .greenclock{display:flex;align-items:center;gap:12px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin:6px 0 20px}
+  .greenclock .txt{font-size:12.5px;color:var(--muted);line-height:1.5}
+
+  .prcard{border:0.5px solid var(--border);border-radius:12px;background:var(--card2);padding:16px 18px;margin-bottom:12px}
+  .prcard.stopped{border-color:var(--accent)}
+  .prcard .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}
+  .prcard .top b{font-size:15px}
+  .prcard .meta{font-size:11px;color:var(--muted);white-space:nowrap}
+  .prpanel{background:#111114;border-radius:12px;padding:16px 0;margin-bottom:12px}
+  .btns{display:flex;gap:8px}
+  .btns button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px}
+  .confirmline{font-size:11px;color:var(--muted);margin:8px 0 0;text-align:center}
+  .calc{font-size:11px;color:var(--muted);margin:8px 0 0}
+  .saverow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:12px;margin-top:12px}
+  .reserve{font-size:14px;color:var(--ink)}
+  .reserve b{font-family:"Courier New",monospace;color:var(--amber)}
+
+  .block{border-top:1px solid var(--border);margin-top:26px;padding-top:22px}
+  .block h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:0 0 12px;font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid var(--border)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  td.num{font-variant-numeric:tabular-nums;font-family:"Courier New",monospace;white-space:nowrap}
+  .empty{color:var(--muted);font-size:14px;padding:14px 2px;line-height:1.6}
+  .empty a{color:var(--accent)}
+  .notice{background:#2e221c;border:1px solid #45332a;color:#eda57f;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px;display:none}
+
+  .banner{margin-top:26px;background:#b06a4a;color:#fff;font-weight:700;text-align:center;padding:16px;border-radius:8px;font-size:15px}
+  .links{display:flex;justify-content:center;gap:22px;margin-top:16px;font-size:14px;flex-wrap:wrap}
+  .links a{color:var(--accent);text-decoration:none;font-weight:600}
+  .links a:hover{text-decoration:underline}
+  .gears{margin-top:14px;text-align:center;font-size:12.5px;color:#8f8c96}
+  .gears a{color:var(--accent);text-decoration:none}
+  .gears a:hover{text-decoration:underline}
+
+  @media(max-width:600px){.card{padding:22px 16px 26px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="hdr">
+      <div>
+        <h1 id="title">Power Reserve</h1>
+        <p class="sub" id="sub"></p>
+      </div>
+      <div class="lang">
+        <button data-lang="en">EN</button>
+        <button data-lang="nl">NL</button>
+      </div>
+    </div>
+
+    <div class="notice" id="notice"></div>
+
+    <div id="startArea">
+      <div class="row">
+        <div class="grow">
+          <label class="fld" id="startLbl" for="watchSel"></label>
+          <select id="watchSel"></select>
+        </div>
+        <button class="primary" id="woundBtn"></button>
+      </div>
+      <div class="greenclock">
+        <div class="led green" id="greenClock"></div>
+        <span class="txt" id="greenTxt"></span>
+      </div>
+    </div>
+
+    <p class="lab" id="runningLbl" style="display:none"></p>
+    <div id="running"></div>
+
+    <div class="block">
+      <h2 id="histH2"></h2>
+      <div class="row" style="margin-bottom:8px">
+        <div class="grow">
+          <label class="fld" id="histSelLbl" for="histSel"></label>
+          <select id="histSel"></select>
+        </div>
+      </div>
+      <div id="histWrap"></div>
+    </div>
+
+    <div class="banner" id="banner"></div>
+    <div class="links">
+      <a href="https://watchcafe.eu" id="linkHome"></a>
+      <a href="/watchrate/" id="linkMeter"></a>
+    </div>
+    <div class="gears" id="gears"></div>
+  </div>
+</div>
+
+<script>
+/* ===== i18n ===== */
+var I18N={
+ en:{
+  title:"Power Reserve", sub:"Measure how long your watch runs on a full wind \u2014 The Sioux Watch Caf\u00e9",
+  start:"Start a measurement for", wound:"Wound \u0026 set",
+  greenTxt:"Watch time from the Rate Meter (offset {o}). Wind fully, set the watch to this, then tap \u2014 no re-setting your rate measurement needed.",
+  greenTxtNoWatch:"Pick a watch above. Its offset comes from the Rate Meter, so a running rate measurement stays intact.",
+  noWatches:"No watches yet. Add one in the ",
+  meterLink:"Rate Meter", noWatchesTail:" first \u2014 the list is shared.",
+  allRunning:"All your watches already have a running measurement.",
+  running:"Running now", elapsed:"Elapsed since fully wound",
+  stillRunning:"Still running", stopped:"Stopped", cancel:"Cancel",
+  woundAt:"wound {d}", offset:"offset {o}",
+  lastConfirmed:"last confirmed running: {d}",
+  readHands:"Stopped \u2014 read the hands",
+  handsAt:"hands at", day:"day", auto:"(auto)",
+  calc:"hands {h} \u2212 offset {o} \u2192 real stop {r}",
+  reserve:"Reserve:", save:"Save", discard:"Discard",
+  histH2:"History", histSel:"Watch",
+  noHist:"No power-reserve measurements saved for this watch yet.",
+  thDate:"Wound", thReserve:"Reserve", thNote:"Note", typical:"Typical:", over:"over {n} measurements",
+  banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
+  linkHome:"watchcafe.eu home", linkMeter:"Rate Meter",
+  gears:"This site runs on gears, not cookies. Your watch data never leaves your browser \u2014 ",
+  gearsLink:"see for yourself \u2192",
+  confirmDiscard:"Discard this running measurement? The wind timestamp will be lost.",
+  confirmDelHist:"Delete this saved power-reserve measurement?",
+  invalidHands:"Enter the stop time as HH:MM (e.g. 03:47)."
+ },
+ nl:{
+  title:"Gangreserve", sub:"Meet hoe lang je horloge loopt op een volledige opwinding \u2014 The Sioux Watch Caf\u00e9",
+  start:"Start een meting voor", wound:"Opgewonden \u0026 gelijk",
+  greenTxt:"Horlogetijd uit de Rate Meter (offset {o}). Wind volledig op, zet het horloge hierop gelijk, en tik \u2014 je hoeft je gangmeting niet opnieuw gelijk te zetten.",
+  greenTxtNoWatch:"Kies hierboven een horloge. De offset komt uit de Rate Meter, zodat een lopende gangmeting intact blijft.",
+  noWatches:"Nog geen horloges. Voeg er eerst \u00e9\u00e9n toe in de ",
+  meterLink:"Rate Meter", noWatchesTail:" \u2014 de lijst is gedeeld.",
+  allRunning:"Al je horloges hebben al een lopende meting.",
+  running:"Nu lopend", elapsed:"Verstreken sinds volledig opgewonden",
+  stillRunning:"Loopt nog", stopped:"Gestopt", cancel:"Annuleren",
+  woundAt:"opgewonden {d}", offset:"offset {o}",
+  lastConfirmed:"laatst bevestigd lopend: {d}",
+  readHands:"Gestopt \u2014 lees de wijzers af",
+  handsAt:"wijzers op", day:"dag", auto:"(auto)",
+  calc:"wijzers {h} \u2212 offset {o} \u2192 echte stop {r}",
+  reserve:"Gangreserve:", save:"Opslaan", discard:"Verwerpen",
+  histH2:"Historie", histSel:"Horloge",
+  noHist:"Nog geen gangreserve-metingen opgeslagen voor dit horloge.",
+  thDate:"Opgewonden", thReserve:"Gangreserve", thNote:"Notitie", typical:"Typisch:", over:"uit {n} metingen",
+  banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
+  linkHome:"watchcafe.eu home", linkMeter:"Rate Meter",
+  gears:"Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit \u2014 ",
+  gearsLink:"zie het zelf \u2192",
+  confirmDiscard:"Deze lopende meting verwerpen? Het opwindmoment gaat verloren.",
+  confirmDelHist:"Deze opgeslagen gangreserve-meting verwijderen?",
+  invalidHands:"Voer de stoptijd in als UU:MM (bv. 03:47)."
+ }
+};
+var LKEY="siouxWatchRateMeterLang";
+var lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})();
+function tr(k,vars){var s=I18N[lang][k];if(vars)for(var p in vars)s=s.replace("{"+p+"}",vars[p]);return s;}
+
+/* ===== seven-segment ===== */
+var SEG={a:"12,14 18,8 62,8 68,14 62,20 18,20",b:"66,16 72,22 72,62 66,68 60,62 60,22",
+c:"66,72 72,78 72,118 66,124 60,118 60,78",d:"12,126 18,120 62,120 68,126 62,132 18,132",
+e:"14,72 20,78 20,118 14,124 8,118 8,78",f:"14,16 20,22 20,62 14,68 8,62 8,22",
+g:"12,70 18,64 62,64 68,70 62,76 18,76"};
+var ORDER=["a","b","c","d","e","f","g"];
+var MAP={"0":"abcdef","1":"bc","2":"abged","3":"abgcd","4":"fgbc","5":"afgcd","6":"afgedc","7":"abc","8":"abcdefg","9":"abcdfg"," ":"","-":"g"};
+function ledInto(el,str,cls){
+  el.className="led"+(cls?(" "+cls):"");
+  el.innerHTML="";
+  var ns="http://www.w3.org/2000/svg";
+  for(var i=0;i<str.length;i++){
+    var ch=str[i];
+    if(ch===":"){var c=document.createElement("div");c.className="colon";c.innerHTML='<span class="dot"></span><span class="dot"></span>';el.appendChild(c);continue;}
+    var on=MAP[ch]||"";
+    var d=document.createElement("div");d.className="digit";
+    var svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 80 140");
+    ORDER.forEach(function(id){var p=document.createElementNS(ns,"polygon");p.setAttribute("points",SEG[id]);p.setAttribute("class","seg"+(on.indexOf(id)>-1?" on":""));svg.appendChild(p);});
+    d.appendChild(svg);el.appendChild(d);
+  }
+}
+
+/* ===== storage (gedeeld met rate meter) ===== */
+var KEY="siouxWatchRateMeter";
+var memOnly=false, state;
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function load(){try{var raw=localStorage.getItem(KEY);if(raw)return JSON.parse(raw);}catch(e){memOnly=true;}return null;}
+function save(){if(memOnly)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){memOnly=true;showNotice();}}
+function showNotice(){var n=document.getElementById("notice");n.style.display="block";n.textContent=lang==="nl"?"Opslag is hier niet beschikbaar (bv. preview). Op de live site blijft alles bewaard.":"Storage isn't available here (e.g. preview). On the live site everything is saved.";}
+function seed(){return {version:2,activeWatch:null,watches:[]};}
+state=load()||seed();
+if(!Array.isArray(state.watches))state.watches=[];
+
+/* ===== helpers ===== */
+function offsetSecOf(w){
+  if(!w.measurements||!w.measurements.length)return 0;
+  var last=w.measurements.slice().sort(function(a,b){return b.t-a.t;})[0];
+  return Math.round(last.offset);
+}
+function fmtOffset(sec){return (sec>0?"+":sec<0?"\u2212":"\u00b1")+Math.abs(sec)+"s";}
+function running(w){return w.prCurrent&&w.prCurrent.start;}
+function fmtDT(ms){return new Date(ms).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).replace(",",",");}
+function fmtDay(ms){return new Date(ms).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",{weekday:"short",day:"numeric",month:"short"});}
+
+/* verstreken tijd -> LED-string, adaptief */
+function elapsedLED(ms){
+  if(ms<0)ms=0;
+  var totalMin=Math.floor(ms/60000);
+  var days=Math.floor(totalMin/1440);
+  if(days>=90){ // heel lang: jaren/maanden/dagen (geen LED-klok maar tekst-achtig)
+    var y=Math.floor(days/365), mo=Math.floor((days%365)/30), dd=(days%365)%30;
+    var s=""; if(y)s+=y+"y "; if(mo||y)s+=mo+"mo "; s+=dd+"d";
+    return {text:s,big:false};
+  }
+  var s2=Math.floor(ms/1000);
+  var d=Math.floor(s2/86400); s2-=d*86400;
+  var h=Math.floor(s2/3600); s2-=h*3600;
+  var mi=Math.floor(s2/60); s2-=mi*60;
+  function p(n){return (n<10?"0":"")+n;}
+  var str=(d>0?d+"d ":"")+p(h)+":"+p(mi)+":"+p(s2);
+  return {text:str,big:true};
+}
+/* reserve compact: uren onder 3 dagen, anders dagen, anders j/mo/d */
+function fmtReserve(ms){
+  if(ms<0)ms=0;
+  var totalMin=Math.round(ms/60000);
+  var days=Math.floor(totalMin/1440);
+  if(days>=90){var y=Math.floor(days/365),mo=Math.floor((days%365)/30),dd=(days%365)%30;var a=[];if(y)a.push(y+"y");if(mo||y)a.push(mo+"mo");a.push(dd+"d");return a.join(" ");}
+  if(totalMin>=72*60){var d=Math.floor(totalMin/1440),h=Math.floor((totalMin%1440)/60),m=totalMin%60;return d+"d "+h+"h "+(m<10?"0":"")+m+"m";}
+  var h2=Math.floor(totalMin/60),m2=totalMin%60;return h2+"h "+(m2<10?"0":"")+m2+"m";
+}
+
+/* wijzertijd HH:MM (horlogetijd) -> echte stopmoment, met dag-resolutie */
+function resolveStop(startMs,lastRunMs,offsetSec,hh,mm,dayIdx){
+  var base=new Date(startMs),cands=[];
+  for(var d=0;d<500;d++){
+    var c=new Date(base.getFullYear(),base.getMonth(),base.getDate()+d,hh,mm,0,0).getTime()-offsetSec*1000;
+    if(c>=startMs-60000)cands.push(c);
+  }
+  if(dayIdx!=null&&cands[dayIdx]!=null)return cands[dayIdx];
+  var lb=lastRunMs||startMs;
+  for(var i=0;i<cands.length;i++)if(cands[i]>=lb)return cands[i];
+  return cands[0]||startMs;
+}
+function stopCandidates(startMs,offsetSec,hh,mm){
+  var base=new Date(startMs),cands=[];
+  for(var d=0;d<40;d++){
+    var c=new Date(base.getFullYear(),base.getMonth(),base.getDate()+d,hh,mm,0,0).getTime()-offsetSec*1000;
+    if(c>=startMs-60000)cands.push(c);
+  }
+  return cands;
+}
+function parseHHMM(v){var m=(v||"").trim().match(/^(\d{1,2})[:.\s](\d{2})$/);if(!m)return null;var h=+m[1],mi=+m[2];if(h>23||mi>59)return null;return {h:h,m:mi};}
+
+/* ===== siteklok (groen, = horlogetijd) ===== */
+function selectedWatch(){var sel=document.getElementById("watchSel");if(!sel)return null;return state.watches.find(function(w){return w.id===sel.value;})||null;}
+function tickClock(){
+  var gc=document.getElementById("greenClock"),gt=document.getElementById("greenTxt");
+  if(gc){
+    var w=selectedWatch();
+    var off=w?offsetSecOf(w):0;
+    var d=new Date(Date.now()+off*1000);
+    function p(n){return (n<10?"0":"")+n;}
+    ledInto(gc,p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds()),"green sm");
+    if(gt)gt.textContent=w?tr("greenTxt",{o:fmtOffset(off)}):tr("greenTxtNoWatch");
+  }
+  // lopende tellers
+  document.querySelectorAll("[data-elapsed]").forEach(function(el){
+    var wid=el.getAttribute("data-elapsed");
+    var ww=state.watches.find(function(x){return x.id===wid;});
+    if(ww&&running(ww)){var r=elapsedLED(Date.now()-ww.prCurrent.start);
+      if(r.big)ledInto(el,r.text,"");else{el.className="led-text";el.textContent=r.text;}}
+  });
+}
+
+/* ===== render ===== */
+function renderStart(){
+  var sel=document.getElementById("watchSel");
+  var avail=state.watches.filter(function(w){return !running(w);});
+  var startArea=document.getElementById("startArea");
+  if(!state.watches.length){
+    startArea.innerHTML='<div class="empty">'+tr("noWatches")+'<a href="/watchrate/">'+tr("meterLink")+'</a>'+tr("noWatchesTail")+'</div>';
+    return;
+  }
+  if(!avail.length){
+    // alles loopt al: toon alleen melding, geen dropdown
+    startArea.querySelector(".row").style.display="none";
+    document.getElementById("greenTxt").textContent=tr("allRunning");
+    document.getElementById("greenClock").innerHTML="";
+    return;
+  }
+  var cur=sel.value;
+  sel.innerHTML=avail.map(function(w){return '<option value="'+w.id+'">'+escapeHtml(w.name)+'</option>';}).join("");
+  if(avail.some(function(w){return w.id===cur;}))sel.value=cur;
+}
+
+function renderRunning(){
+  var box=document.getElementById("running"),lbl=document.getElementById("runningLbl");
+  var runners=state.watches.filter(running);
+  lbl.style.display=runners.length?"block":"none";
+  lbl.textContent=tr("running")+" \u00b7 "+runners.length;
+  box.innerHTML="";
+  runners.forEach(function(w){
+    var pr=w.prCurrent;
+    var card=document.createElement("div");
+    card.className="prcard"+(pr.stopped?" stopped":"");
+    var head='<div class="top"><b>'+escapeHtml(w.name)+'</b><span class="meta">'+tr("woundAt",{d:fmtDT(pr.start)})+' \u00b7 '+tr("offset",{o:fmtOffset(pr.offset)})+'</span></div>';
+    if(!pr.stopped){
+      card.innerHTML=head
+        +'<p class="lab" style="text-align:center">'+tr("elapsed")+'</p>'
+        +'<div class="prpanel"><div class="led" data-elapsed="'+w.id+'"></div></div>'
+        +'<div class="btns"><button data-still="'+w.id+'"><i></i>'+tr("stillRunning")+'</button>'
+        +'<button data-stop="'+w.id+'">'+tr("stopped")+'</button></div>'
+        +(pr.lastRunning?'<p class="confirmline">'+tr("lastConfirmed",{d:fmtDT(pr.lastRunning)})+'</p>':'');
+    }else{
+      var hands=pr.handsInput||"";
+      var parsed=parseHHMM(hands);
+      var cands=parsed?stopCandidates(pr.start,pr.offset,parsed.h,parsed.m):[];
+      var dayOpts=cands.map(function(c,i){return '<option value="'+i+'"'+(pr.dayIdx===i||(pr.dayIdx==null&&isAutoIdx(pr,cands,i))?' selected':'')+'>'+fmtDay(c)+(isAutoIdx(pr,cands,i)?' '+tr("auto"):'')+'</option>';}).join("");
+      var stopMs=parsed?resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx):null;
+      var reserve=stopMs?fmtReserve(stopMs-pr.start):"\u2014";
+      var realStop=stopMs?new Date(stopMs).toLocaleTimeString(lang==="nl"?"nl-NL":"en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}):"";
+      card.innerHTML=head
+        +'<p class="lab"><i class="ti"></i>'+tr("readHands")+'</p>'
+        +'<div class="row">'
+        +'<div style="flex:1 1 120px"><label class="fld">'+tr("handsAt")+'</label><input type="text" data-hands="'+w.id+'" value="'+escapeHtml(hands)+'" placeholder="03:47"></div>'
+        +'<div style="flex:1 1 120px"><label class="fld">'+tr("day")+'</label><select data-day="'+w.id+'"'+(cands.length?"":" disabled")+'>'+dayOpts+'</select></div>'
+        +'</div>'
+        +(parsed?'<p class="calc">'+tr("calc",{h:hands,o:fmtOffset(pr.offset),r:realStop})+'</p>':'')
+        +'<div class="saverow"><span class="reserve">'+tr("reserve")+' <b>'+reserve+'</b></span>'
+        +'<div style="display:flex;gap:8px"><button class="sm" data-discard="'+w.id+'">'+tr("discard")+'</button>'
+        +'<button class="sm primary" data-save="'+w.id+'"'+(stopMs&&stopMs>pr.start?"":" disabled")+'>'+tr("save")+'</button></div></div>';
+    }
+    box.appendChild(card);
+  });
+  wireRunning();
+}
+function isAutoIdx(pr,cands,i){
+  var lb=pr.lastRunning||pr.start;
+  for(var j=0;j<cands.length;j++)if(cands[j]>=lb)return j===i;
+  return i===0;
+}
+
+function wireRunning(){
+  document.querySelectorAll("[data-still]").forEach(function(b){b.onclick=function(){
+    var w=byId(b.getAttribute("data-still"));w.prCurrent.lastRunning=Date.now();save();renderRunning();};});
+  document.querySelectorAll("[data-stop]").forEach(function(b){b.onclick=function(){
+    var w=byId(b.getAttribute("data-stop"));w.prCurrent.stopped=true;save();renderRunning();};});
+  document.querySelectorAll("[data-discard]").forEach(function(b){b.onclick=function(){
+    if(confirm(tr("confirmDiscard"))){var w=byId(b.getAttribute("data-discard"));delete w.prCurrent;save();renderAll();}};});
+  document.querySelectorAll("[data-hands]").forEach(function(inp){
+    inp.oninput=function(){var w=byId(inp.getAttribute("data-hands"));w.prCurrent.handsInput=inp.value;w.prCurrent.dayIdx=null;renderRunning();
+      var el=document.querySelector('[data-hands="'+w.id+'"]');if(el){el.focus();el.setSelectionRange(inp.value.length,inp.value.length);}};});
+  document.querySelectorAll("[data-day]").forEach(function(s){s.onchange=function(){
+    var w=byId(s.getAttribute("data-day"));w.prCurrent.dayIdx=+s.value;save();renderRunning();};});
+  document.querySelectorAll("[data-save]").forEach(function(b){b.onclick=function(){
+    var w=byId(b.getAttribute("data-save"));var pr=w.prCurrent;var parsed=parseHHMM(pr.handsInput);
+    if(!parsed){alert(tr("invalidHands"));return;}
+    var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx);
+    if(!Array.isArray(w.powerReserve))w.powerReserve=[];
+    w.powerReserve.push({id:uid(),start:pr.start,stop:stopMs,offset:pr.offset,reserveMs:stopMs-pr.start,note:""});
+    delete w.prCurrent;save();renderAll();};});
+}
+function byId(id){return state.watches.find(function(w){return w.id===id;});}
+
+function renderHistory(){
+  var sel=document.getElementById("histSel"),wrap=document.getElementById("histWrap");
+  var withHist=state.watches.filter(function(w){return Array.isArray(w.powerReserve)&&w.powerReserve.length;});
+  if(!withHist.length){sel.innerHTML="";sel.style.display="none";wrap.innerHTML='<div class="empty">'+tr("noHist")+'</div>';return;}
+  sel.style.display="";
+  var cur=sel.value;
+  sel.innerHTML=withHist.map(function(w){return '<option value="'+w.id+'">'+escapeHtml(w.name)+'</option>';}).join("");
+  if(withHist.some(function(w){return w.id===cur;}))sel.value=cur;
+  var w=withHist.find(function(x){return x.id===sel.value;})||withHist[0];
+  var list=w.powerReserve.slice().sort(function(a,b){return b.start-a.start;});
+  var html='<table><thead><tr><th>'+tr("thDate")+'</th><th>'+tr("thReserve")+'</th><th></th></tr></thead><tbody>';
+  list.forEach(function(m){
+    html+='<tr><td class="num">'+fmtDay(m.start)+'</td><td class="num">'+fmtReserve(m.reserveMs)+'</td>'
+      +'<td style="text-align:right"><button class="sm danger ghost" data-delh="'+m.id+'" data-delw="'+w.id+'">'+I18N[lang].discard+'</button></td></tr>';
+  });
+  html+='</tbody></table>';
+  var avg=list.reduce(function(a,m){return a+m.reserveMs;},0)/list.length;
+  html+='<p style="font-size:12.5px;color:var(--muted);margin:10px 6px 0">'+tr("typical")+' <b style="font-family:\'Courier New\',monospace;color:var(--ink)">~'+fmtReserve(avg)+'</b> '+tr("over",{n:list.length})+'</p>';
+  wrap.innerHTML=html;
+  wrap.querySelectorAll("[data-delh]").forEach(function(b){b.onclick=function(){
+    if(!confirm(tr("confirmDelHist")))return;
+    var ww=byId(b.getAttribute("data-delw"));ww.powerReserve=ww.powerReserve.filter(function(x){return x.id!==b.getAttribute("data-delh");});save();renderAll();};});
+}
+
+function renderAll(){applyStatic();renderStart();renderRunning();renderHistory();}
+function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+function setTxt(id,txt){var el=document.getElementById(id);if(el)el.textContent=txt;}
+function applyStatic(){
+  setTxt("title",tr("title"));
+  setTxt("sub",tr("sub"));
+  setTxt("startLbl",tr("start"));
+  setTxt("woundBtn",tr("wound"));
+  setTxt("histH2",tr("histH2"));
+  setTxt("histSelLbl",tr("histSel"));
+  setTxt("banner",tr("banner"));
+  setTxt("linkHome",tr("linkHome"));
+  setTxt("linkMeter",tr("linkMeter"));
+  var g=document.getElementById("gears");if(g)g.innerHTML=tr("gears")+'<a href="/privacy/">'+tr("gearsLink")+'</a>';
+  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);});
+  document.documentElement.lang=lang;
+}
+
+/* ===== events ===== */
+document.getElementById("watchSel").onchange=tickClock;
+document.getElementById("histSel").onchange=renderHistory;
+document.getElementById("woundBtn").onclick=function(){
+  var w=selectedWatch();if(!w)return;
+  w.prCurrent={start:Date.now(),offset:offsetSecOf(w),lastRunning:null,stopped:false,handsInput:"",dayIdx:null};
+  save();renderAll();tickClock();
+};
+[].forEach.call(document.querySelectorAll(".lang button"),function(b){
+  b.onclick=function(){lang=b.getAttribute("data-lang");try{localStorage.setItem(LKEY,lang);}catch(e){}renderAll();tickClock();};
+});
+
+/* ===== init ===== */
+if(memOnly)showNotice();
+renderAll();
+tickClock();
+setInterval(tickClock,1000);
+</script>
+</body>
+</html>
