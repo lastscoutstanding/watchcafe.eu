@@ -25,7 +25,7 @@
   .lang button.active{background:var(--accent);color:#fff}
   .lang button:hover:not(.active){background:#30303a}
 
-  select,input[type=text]{font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);width:100%}
+  select,input[type=text],input[type=time]{font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);width:100%}
   label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 5px}
   button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);touch-action:manipulation}
   button:hover{background:#30303a}
@@ -151,7 +151,7 @@ var I18N={
  en:{
   title:"Power Reserve", sub:"Measure how long your watch runs on a full wind \u2014 The Sioux Watch Caf\u00e9",
   start:"Start a measurement for", wound:"Wound \u0026 set",
-  greenTxt:"Watch time from the Rate Meter (offset {o}). Wind fully, set the watch to this, then tap \u2014 no re-setting your rate measurement needed.",
+  greenTxt:"Watch time from the Rate Meter (offset {o})",
   greenTxtNoWatch:"Pick a watch above. Its offset comes from the Rate Meter, so a running rate measurement stays intact.",
   noWatches:"No watches yet. Add one in the ",
   meterLink:"Rate Meter", noWatchesTail:" first \u2014 the list is shared.",
@@ -178,7 +178,7 @@ var I18N={
  nl:{
   title:"Gangreserve", sub:"Meet hoe lang je horloge loopt op een volledige opwinding \u2014 The Sioux Watch Caf\u00e9",
   start:"Start een meting voor", wound:"Opgewonden \u0026 gelijk",
-  greenTxt:"Horlogetijd uit de Rate Meter (offset {o}). Wind volledig op, zet het horloge hierop gelijk, en tik \u2014 je hoeft je gangmeting niet opnieuw gelijk te zetten.",
+  greenTxt:"Horlogetijd uit de Rate Meter (offset {o})",
   greenTxtNoWatch:"Kies hierboven een horloge. De offset komt uit de Rate Meter, zodat een lopende gangmeting intact blijft.",
   noWatches:"Nog geen horloges. Voeg er eerst \u00e9\u00e9n toe in de ",
   meterLink:"Rate Meter", noWatchesTail:" \u2014 de lijst is gedeeld.",
@@ -311,7 +311,8 @@ function tickClock(){
     var d=new Date(Date.now()+off*1000);
     function p(n){return (n<10?"0":"")+n;}
     ledInto(gc,p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds()),"green sm");
-    if(gt)gt.textContent=w?tr("greenTxt",{o:fmtOffset(off)}):tr("greenTxtNoWatch");
+    var row=document.querySelector("#startArea .row");
+    if(gt&&row&&row.style.display!=="none")gt.textContent=w?tr("greenTxt",{o:fmtOffset(off)}):tr("greenTxtNoWatch");
   }
   // lopende tellers
   document.querySelectorAll("[data-elapsed]").forEach(function(el){
@@ -331,13 +332,14 @@ function renderStart(){
     startArea.innerHTML='<div class="empty">'+tr("noWatches")+'<a href="/watchrate/">'+tr("meterLink")+'</a>'+tr("noWatchesTail")+'</div>';
     return;
   }
+  var rowEl=startArea.querySelector(".row");
   if(!avail.length){
-    // alles loopt al: toon alleen melding, geen dropdown
-    startArea.querySelector(".row").style.display="none";
+    if(rowEl)rowEl.style.display="none";
     document.getElementById("greenTxt").textContent=tr("allRunning");
     document.getElementById("greenClock").innerHTML="";
     return;
   }
+  if(rowEl)rowEl.style.display="";
   var cur=sel.value;
   sel.innerHTML=avail.map(function(w){return '<option value="'+w.id+'">'+escapeHtml(w.name)+'</option>';}).join("");
   if(avail.some(function(w){return w.id===cur;}))sel.value=cur;
@@ -372,7 +374,7 @@ function renderRunning(){
       card.innerHTML=head
         +'<p class="lab"><i class="ti"></i>'+tr("readHands")+'</p>'
         +'<div class="row">'
-        +'<div style="flex:1 1 120px"><label class="fld">'+tr("handsAt")+'</label><input type="text" data-hands="'+w.id+'" value="'+escapeHtml(hands)+'" placeholder="03:47"></div>'
+        +'<div style="flex:1 1 120px"><label class="fld">'+tr("handsAt")+'</label><input type="time" data-hands="'+w.id+'" value="'+escapeHtml(hands)+'"></div>'
         +'<div style="flex:1 1 120px"><label class="fld">'+tr("day")+'</label><select data-day="'+w.id+'"'+(cands.length?"":" disabled")+'>'+dayOpts+'</select></div>'
         +'</div>'
         +(parsed?'<p class="calc">'+tr("calc",{h:hands,o:fmtOffset(pr.offset),r:realStop})+'</p>':'')
@@ -398,8 +400,7 @@ function wireRunning(){
   document.querySelectorAll("[data-discard]").forEach(function(b){b.onclick=function(){
     if(confirm(tr("confirmDiscard"))){var w=byId(b.getAttribute("data-discard"));delete w.prCurrent;save();renderAll();}};});
   document.querySelectorAll("[data-hands]").forEach(function(inp){
-    inp.oninput=function(){var w=byId(inp.getAttribute("data-hands"));w.prCurrent.handsInput=inp.value;w.prCurrent.dayIdx=null;renderRunning();
-      var el=document.querySelector('[data-hands="'+w.id+'"]');if(el){el.focus();el.setSelectionRange(inp.value.length,inp.value.length);}};});
+    inp.oninput=function(){var w=byId(inp.getAttribute("data-hands"));w.prCurrent.handsInput=inp.value;w.prCurrent.dayIdx=null;save();renderRunning();};});
   document.querySelectorAll("[data-day]").forEach(function(s){s.onchange=function(){
     var w=byId(s.getAttribute("data-day"));w.prCurrent.dayIdx=+s.value;save();renderRunning();};});
   document.querySelectorAll("[data-save]").forEach(function(b){b.onclick=function(){
@@ -436,7 +437,7 @@ function renderHistory(){
     var ww=byId(b.getAttribute("data-delw"));ww.powerReserve=ww.powerReserve.filter(function(x){return x.id!==b.getAttribute("data-delh");});save();renderAll();};});
 }
 
-function renderAll(){applyStatic();renderStart();renderRunning();renderHistory();}
+function renderAll(){applyStatic();renderStart();renderRunning();renderHistory();tickClock();}
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 
 function setTxt(id,txt){var el=document.getElementById(id);if(el)el.textContent=txt;}
