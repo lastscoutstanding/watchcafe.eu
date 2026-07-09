@@ -377,8 +377,8 @@ function renderRunning(){
         +'<div style="flex:1 1 120px"><label class="fld">'+tr("handsAt")+'</label><input type="time" data-hands="'+w.id+'" value="'+escapeHtml(hands)+'"></div>'
         +'<div style="flex:1 1 120px"><label class="fld">'+tr("day")+'</label><select data-day="'+w.id+'"'+(cands.length?"":" disabled")+'>'+dayOpts+'</select></div>'
         +'</div>'
-        +(parsed?'<p class="calc">'+tr("calc",{h:hands,o:fmtOffset(pr.offset),r:realStop})+'</p>':'')
-        +'<div class="saverow"><span class="reserve">'+tr("reserve")+' <b>'+reserve+'</b></span>'
+        +'<p class="calc" data-calc="'+w.id+'"'+(parsed?'':' style="display:none"')+'>'+(parsed?tr("calc",{h:hands,o:fmtOffset(pr.offset),r:realStop}):'')+'</p>'
+        +'<div class="saverow"><span class="reserve">'+tr("reserve")+' <b data-res="'+w.id+'">'+reserve+'</b></span>'
         +'<div style="display:flex;gap:8px"><button class="sm" data-discard="'+w.id+'">'+tr("discard")+'</button>'
         +'<button class="sm primary" data-save="'+w.id+'"'+(stopMs&&stopMs>pr.start?"":" disabled")+'>'+tr("save")+'</button></div></div>';
     }
@@ -392,6 +392,29 @@ function isAutoIdx(pr,cands,i){
   return i===0;
 }
 
+function refreshStop(w){
+  var pr=w.prCurrent;if(!pr||!pr.stopped)return;
+  var daySel=document.querySelector('[data-day="'+w.id+'"]');
+  var calcEl=document.querySelector('[data-calc="'+w.id+'"]');
+  var resEl=document.querySelector('[data-res="'+w.id+'"]');
+  var saveBtn=document.querySelector('[data-save="'+w.id+'"]');
+  if(!daySel||!calcEl||!resEl||!saveBtn)return;
+  var parsed=parseHHMM(pr.handsInput);
+  if(!parsed){
+    daySel.disabled=true;daySel.innerHTML="";
+    calcEl.style.display="none";resEl.textContent="\u2014";saveBtn.disabled=true;return;
+  }
+  var cands=stopCandidates(pr.start,pr.offset,parsed.h,parsed.m);
+  daySel.disabled=false;
+  daySel.innerHTML=cands.map(function(c,i){return '<option value="'+i+'"'+(pr.dayIdx===i||(pr.dayIdx==null&&isAutoIdx(pr,cands,i))?' selected':'')+'>'+fmtDay(c)+(isAutoIdx(pr,cands,i)?' '+tr("auto"):'')+'</option>';}).join("");
+  var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx);
+  var realStop=new Date(stopMs).toLocaleTimeString(lang==="nl"?"nl-NL":"en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  calcEl.textContent=tr("calc",{h:pr.handsInput,o:fmtOffset(pr.offset),r:realStop});
+  calcEl.style.display="";
+  resEl.textContent=fmtReserve(stopMs-pr.start);
+  saveBtn.disabled=!(stopMs>pr.start);
+}
+
 function wireRunning(){
   document.querySelectorAll("[data-still]").forEach(function(b){b.onclick=function(){
     var w=byId(b.getAttribute("data-still"));w.prCurrent.lastRunning=Date.now();save();renderRunning();};});
@@ -400,9 +423,9 @@ function wireRunning(){
   document.querySelectorAll("[data-discard]").forEach(function(b){b.onclick=function(){
     if(confirm(tr("confirmDiscard"))){var w=byId(b.getAttribute("data-discard"));delete w.prCurrent;save();renderAll();}};});
   document.querySelectorAll("[data-hands]").forEach(function(inp){
-    inp.oninput=function(){var w=byId(inp.getAttribute("data-hands"));w.prCurrent.handsInput=inp.value;w.prCurrent.dayIdx=null;save();renderRunning();};});
+    inp.oninput=function(){var w=byId(inp.getAttribute("data-hands"));w.prCurrent.handsInput=inp.value;w.prCurrent.dayIdx=null;save();refreshStop(w);};});
   document.querySelectorAll("[data-day]").forEach(function(s){s.onchange=function(){
-    var w=byId(s.getAttribute("data-day"));w.prCurrent.dayIdx=+s.value;save();renderRunning();};});
+    var w=byId(s.getAttribute("data-day"));w.prCurrent.dayIdx=+s.value;save();refreshStop(w);};});
   document.querySelectorAll("[data-save]").forEach(function(b){b.onclick=function(){
     var w=byId(b.getAttribute("data-save"));var pr=w.prCurrent;var parsed=parseHHMM(pr.handsInput);
     if(!parsed){alert(tr("invalidHands"));return;}
