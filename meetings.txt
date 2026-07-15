@@ -2,6 +2,7 @@
 # One date per line, format: YYYY-MM-DD HH:MM   (Amsterdam time)
 # Lines starting with # are ignored. Past dates are skipped automatically,
 # so you can list several dates ahead and skip holidays.
-2026-07-31 16:30
+# 2026-08-07 16:30 vervallen door de vakantie periode
+2026-08-07 16:30
 2026-08-28 16:30
 2026-09-25 16:30
