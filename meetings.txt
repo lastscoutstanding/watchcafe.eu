@@ -3,6 +3,10 @@
 # Lines starting with # are ignored. Past dates are skipped automatically,
 # so you can list several dates ahead and skip holidays.
 # 2026-08-07 16:30 vervallen door de vakantie periode
-2026-08-07 16:30
+# 2026-08-07 16:30 vervallen door geen Vrijmibo bij Labs
 2026-08-28 16:30
 2026-09-25 16:30
+2026-10-30 16:30
+2026-11-26 16:30
+2027-01-29 16:30
+2027-02-26 16:30
