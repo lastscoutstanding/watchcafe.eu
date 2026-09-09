@@ -151,19 +151,18 @@ var I18N={
  en:{
   title:"Power Reserve", sub:"Measure how long your watch runs on a full wind \u2014 The Sioux Watch Caf\u00e9",
   start:"Start a measurement for", wound:"Wound \u0026 set",
-  greenTxt:"Watch time from the Rate Meter (offset {o})",
-  greenTxtNoWatch:"Pick a watch above. Its offset comes from the Rate Meter, so a running rate measurement stays intact.",
+  greenTxt:"Set your watch to this clock, wind it fully, then tap.",
+  greenTxtNoWatch:"Pick a watch above, set it to this clock, wind fully, then tap.",
   noWatches:"No watches yet. Add one in the ",
   meterLink:"Rate Meter", noWatchesTail:" first \u2014 the list is shared.",
   allRunning:"All your watches already have a running measurement.",
   running:"Running now", elapsed:"Elapsed since fully wound",
   stillRunning:"Still running", stopped:"Stopped", cancel:"Cancel",
-  woundAt:"wound {d}", offset:"offset {o}",
+  woundAt:"wound {d}",
   lastConfirmed:"last confirmed running: {d}",
   readHands:"Stopped \u2014 read the hands",
   handsAt:"hands at", day:"day", auto:"(auto)",
-  calc:"hands {h} \u2212 offset {o} \u2192 real stop {r}",
-  reserve:"Reserve:", save:"Save", discard:"Discard",
+  reserve:"Reserve:", save:"Save", discard:"Discard", back:"Back",
   histH2:"History", histSel:"Watch",
   noHist:"No power-reserve measurements saved for this watch yet.",
   thDate:"Wound", thReserve:"Reserve", thNote:"Note", typical:"Typical:", over:"over {n} measurements",
@@ -178,19 +177,18 @@ var I18N={
  nl:{
   title:"Gangreserve", sub:"Meet hoe lang je horloge loopt op een volledige opwinding \u2014 The Sioux Watch Caf\u00e9",
   start:"Start een meting voor", wound:"Opgewonden \u0026 gelijk",
-  greenTxt:"Horlogetijd uit de Rate Meter (offset {o})",
-  greenTxtNoWatch:"Kies hierboven een horloge. De offset komt uit de Rate Meter, zodat een lopende gangmeting intact blijft.",
+  greenTxt:"Zet je horloge gelijk aan deze klok, wind volledig op, en tik.",
+  greenTxtNoWatch:"Kies hierboven een horloge, zet het gelijk aan deze klok, wind volledig op, en tik.",
   noWatches:"Nog geen horloges. Voeg er eerst \u00e9\u00e9n toe in de ",
   meterLink:"Rate Meter", noWatchesTail:" \u2014 de lijst is gedeeld.",
   allRunning:"Al je horloges hebben al een lopende meting.",
   running:"Nu lopend", elapsed:"Verstreken sinds volledig opgewonden",
   stillRunning:"Loopt nog", stopped:"Gestopt", cancel:"Annuleren",
-  woundAt:"opgewonden {d}", offset:"offset {o}",
+  woundAt:"opgewonden {d}",
   lastConfirmed:"laatst bevestigd lopend: {d}",
   readHands:"Gestopt \u2014 lees de wijzers af",
   handsAt:"wijzers op", day:"dag", auto:"(auto)",
-  calc:"wijzers {h} \u2212 offset {o} \u2192 echte stop {r}",
-  reserve:"Gangreserve:", save:"Opslaan", discard:"Verwerpen",
+  reserve:"Gangreserve:", save:"Opslaan", discard:"Verwerpen", back:"Terug",
   histH2:"Historie", histSel:"Horloge",
   noHist:"Nog geen gangreserve-metingen opgeslagen voor dit horloge.",
   thDate:"Opgewonden", thReserve:"Gangreserve", thNote:"Notitie", typical:"Typisch:", over:"uit {n} metingen",
@@ -241,12 +239,6 @@ state=load()||seed();
 if(!Array.isArray(state.watches))state.watches=[];
 
 /* ===== helpers ===== */
-function offsetSecOf(w){
-  if(!w.measurements||!w.measurements.length)return 0;
-  var last=w.measurements.slice().sort(function(a,b){return b.t-a.t;})[0];
-  return Math.round(last.offset);
-}
-function fmtOffset(sec){return (sec>0?"+":sec<0?"\u2212":"\u00b1")+Math.abs(sec)+"s";}
 function running(w){return w.prCurrent&&w.prCurrent.start;}
 function fmtDT(ms){return new Date(ms).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).replace(",",",");}
 function fmtDay(ms){return new Date(ms).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",{weekday:"short",day:"numeric",month:"short"});}
@@ -307,12 +299,11 @@ function tickClock(){
   var gc=document.getElementById("greenClock"),gt=document.getElementById("greenTxt");
   if(gc){
     var w=selectedWatch();
-    var off=w?offsetSecOf(w):0;
-    var d=new Date(Date.now()+off*1000);
+    var d=new Date();
     function p(n){return (n<10?"0":"")+n;}
     ledInto(gc,p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds()),"green sm");
     var row=document.querySelector("#startArea .row");
-    if(gt&&row&&row.style.display!=="none")gt.textContent=w?tr("greenTxt",{o:fmtOffset(off)}):tr("greenTxtNoWatch");
+    if(gt&&row&&row.style.display!=="none")gt.textContent=w?tr("greenTxt"):tr("greenTxtNoWatch");
   }
   // lopende tellers
   document.querySelectorAll("[data-elapsed]").forEach(function(el){
@@ -355,7 +346,7 @@ function renderRunning(){
     var pr=w.prCurrent;
     var card=document.createElement("div");
     card.className="prcard"+(pr.stopped?" stopped":"");
-    var head='<div class="top"><b>'+escapeHtml(w.name)+'</b><span class="meta">'+tr("woundAt",{d:fmtDT(pr.start)})+' \u00b7 '+tr("offset",{o:fmtOffset(pr.offset)})+'</span></div>';
+    var head='<div class="top"><b>'+escapeHtml(w.name)+'</b><span class="meta">'+tr("woundAt",{d:fmtDT(pr.start)})+'</span></div>';
     if(!pr.stopped){
       card.innerHTML=head
         +'<p class="lab" style="text-align:center">'+tr("elapsed")+'</p>'
@@ -377,9 +368,9 @@ function renderRunning(){
         +'<div style="flex:1 1 120px"><label class="fld">'+tr("handsAt")+'</label><input type="time" data-hands="'+w.id+'" value="'+escapeHtml(hands)+'"></div>'
         +'<div style="flex:1 1 120px"><label class="fld">'+tr("day")+'</label><select data-day="'+w.id+'"'+(cands.length?"":" disabled")+'>'+dayOpts+'</select></div>'
         +'</div>'
-        +'<p class="calc" data-calc="'+w.id+'"'+(parsed?'':' style="display:none"')+'>'+(parsed?tr("calc",{h:hands,o:fmtOffset(pr.offset),r:realStop}):'')+'</p>'
         +'<div class="saverow"><span class="reserve">'+tr("reserve")+' <b data-res="'+w.id+'">'+reserve+'</b></span>'
-        +'<div style="display:flex;gap:8px"><button class="sm" data-discard="'+w.id+'">'+tr("discard")+'</button>'
+        +'<div style="display:flex;gap:8px"><button class="sm" data-back="'+w.id+'">'+tr("back")+'</button>'
+        +'<button class="sm" data-discard="'+w.id+'">'+tr("discard")+'</button>'
         +'<button class="sm primary" data-save="'+w.id+'"'+(stopMs&&stopMs>pr.start?"":" disabled")+'>'+tr("save")+'</button></div></div>';
     }
     box.appendChild(card);
@@ -395,22 +386,18 @@ function isAutoIdx(pr,cands,i){
 function refreshStop(w){
   var pr=w.prCurrent;if(!pr||!pr.stopped)return;
   var daySel=document.querySelector('[data-day="'+w.id+'"]');
-  var calcEl=document.querySelector('[data-calc="'+w.id+'"]');
   var resEl=document.querySelector('[data-res="'+w.id+'"]');
   var saveBtn=document.querySelector('[data-save="'+w.id+'"]');
-  if(!daySel||!calcEl||!resEl||!saveBtn)return;
+  if(!daySel||!resEl||!saveBtn)return;
   var parsed=parseHHMM(pr.handsInput);
   if(!parsed){
     daySel.disabled=true;daySel.innerHTML="";
-    calcEl.style.display="none";resEl.textContent="\u2014";saveBtn.disabled=true;return;
+    resEl.textContent="\u2014";saveBtn.disabled=true;return;
   }
   var cands=stopCandidates(pr.start,pr.offset,parsed.h,parsed.m);
   daySel.disabled=false;
   daySel.innerHTML=cands.map(function(c,i){return '<option value="'+i+'"'+(pr.dayIdx===i||(pr.dayIdx==null&&isAutoIdx(pr,cands,i))?' selected':'')+'>'+fmtDay(c)+(isAutoIdx(pr,cands,i)?' '+tr("auto"):'')+'</option>';}).join("");
   var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx);
-  var realStop=new Date(stopMs).toLocaleTimeString(lang==="nl"?"nl-NL":"en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
-  calcEl.textContent=tr("calc",{h:pr.handsInput,o:fmtOffset(pr.offset),r:realStop});
-  calcEl.style.display="";
   resEl.textContent=fmtReserve(stopMs-pr.start);
   saveBtn.disabled=!(stopMs>pr.start);
 }
@@ -420,6 +407,8 @@ function wireRunning(){
     var w=byId(b.getAttribute("data-still"));w.prCurrent.lastRunning=Date.now();save();renderRunning();};});
   document.querySelectorAll("[data-stop]").forEach(function(b){b.onclick=function(){
     var w=byId(b.getAttribute("data-stop"));w.prCurrent.stopped=true;save();renderRunning();};});
+  document.querySelectorAll("[data-back]").forEach(function(b){b.onclick=function(){
+    var w=byId(b.getAttribute("data-back"));w.prCurrent.stopped=false;save();renderRunning();};});
   document.querySelectorAll("[data-discard]").forEach(function(b){b.onclick=function(){
     if(confirm(tr("confirmDiscard"))){var w=byId(b.getAttribute("data-discard"));delete w.prCurrent;save();renderAll();}};});
   document.querySelectorAll("[data-hands]").forEach(function(inp){
@@ -484,7 +473,7 @@ document.getElementById("watchSel").onchange=tickClock;
 document.getElementById("histSel").onchange=renderHistory;
 document.getElementById("woundBtn").onclick=function(){
   var w=selectedWatch();if(!w)return;
-  w.prCurrent={start:Date.now(),offset:offsetSecOf(w),lastRunning:null,stopped:false,handsInput:"",dayIdx:null};
+  w.prCurrent={start:Date.now(),offset:0,lastRunning:null,stopped:false,handsInput:"",dayIdx:null};
   save();renderAll();tickClock();
 };
 [].forEach.call(document.querySelectorAll(".lang button"),function(b){
