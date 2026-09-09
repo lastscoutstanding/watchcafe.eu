@@ -211,12 +211,7 @@
 
       <div class="grp">
         <div class="grp-h"><span class="grp-n">1</span><span id="grpAlign"></span></div>
-        <div class="sync-row">
-          <button id="syncBtn"></button>
-          <button class="qbtn" id="syncHelp" aria-label="?">?</button>
-          <span class="hint" id="syncInfo" style="margin-top:0"></span>
-        </div>
-        <p class="hint infobox" id="hint" style="display:none"></p>
+        <p class="hint" id="alignHint" style="margin-top:0"></p>
       </div>
 
       <div class="grp">
@@ -270,6 +265,12 @@
 
     <div class="block">
       <h2 id="histH2"></h2>
+      <div class="row" id="sessionRow" style="margin:0 0 12px;display:none">
+        <div class="grow">
+          <label class="fld" id="sessionLbl" for="sessionSel"></label>
+          <select id="sessionSel"></select>
+        </div>
+      </div>
       <div id="rateSummary" class="hint" style="margin:0 0 6px"></div>
 
       <div class="chart-wrap" id="chartOffWrap" style="display:none">
@@ -340,7 +341,8 @@ var I18N={
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   linkHome:"watchcafe.eu home", linkViewer:"Backup viewer",
   grpAlign:"Align to your watch", grpRecord:"Record",
-  syncHelp:"Nudge with the arrows until the green clock matches your watch to the second, then tap Tap-sync a few times the moment your watch's seconds advance \u2014 any whole second \u2014 to refine the offset to about 0.1 s.",
+  alignHint:"Use the \u25b2/\u25bc arrows so the green clock matches your watch to the second, then record.",
+  sessionLbl:"Session", allSessions:"All sessions",
   nsHint:"Tick this if the watch was stopped and restarted, or reset to the correct time. The rate calculation then starts fresh from this measurement instead of counting the jump as drift.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Load sample data", clearSample:"Remove samples",
@@ -387,7 +389,8 @@ var I18N={
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   linkHome:"watchcafe.eu home", linkViewer:"Back-up viewer",
   grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
-  syncHelp:"Stel met de pijltjes de groene klok gelijk aan je horloge tot op de seconde, en tik daarna een paar keer op Tik-sync op het moment dat de seconde van je horloge verspringt \u2014 elke hele seconde \u2014 om de offset te verfijnen tot op ~0,1 s.",
+  alignHint:"Zet met de \u25b2/\u25bc pijltjes de groene klok gelijk aan je horloge tot op de seconde, en leg dan vast.",
+  sessionLbl:"Sessie", allSessions:"Alle sessies",
   nsHint:"Vink dit aan als het horloge heeft stilgestaan en opnieuw is gestart, of opnieuw gelijk is gezet. De gangberekening begint dan opnieuw vanaf deze meting in plaats van de sprong als afwijking mee te tellen.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Voorbeelddata laden", clearSample:"Voorbeelden verwijderen",
@@ -452,6 +455,27 @@ state=load()||seed();
 /* ===== helpers ===== */
 function activeWatch(){return state.watches.find(function(w){return w.id===state.activeWatch;})||state.watches[0]||null;}
 function sortedPts(w){return w.measurements.slice().sort(function(a,b){return a.t-b.t;});}
+var selectedSession="last"; // "last" | "all" | index
+function sessionLabel(seg,i,total){
+  var a=new Date(seg[0].t),b=new Date(seg[seg.length-1].t);
+  var loc=lang==="nl"?"nl-NL":"en-GB";
+  var f=function(d){return d.toLocaleDateString(loc,{day:"numeric",month:"short"});};
+  var name=(lang==="nl"?"Sessie ":"Session ")+(i+1);
+  return name+" \u00b7 "+f(a)+"\u2013"+f(b)+" ("+seg.length+")";
+}
+function resolvedSegIndex(w){
+  var segs=segments(w);
+  if(selectedSession==="all")return "all";
+  if(selectedSession==="last"||selectedSession>=segs.length)return segs.length-1;
+  return +selectedSession;
+}
+// metingen van de actieve selectie (alle metingen bij "all")
+function selectedMeas(w){
+  var segs=segments(w);if(!segs.length)return [];
+  var idx=resolvedSegIndex(w);
+  if(idx==="all")return sortedPts(w);
+  return segs[idx]||segs[segs.length-1];
+}
 function segments(w){
   var pts=sortedPts(w),segs=[],cur=[];
   pts.forEach(function(p){
@@ -461,15 +485,22 @@ function segments(w){
   if(cur.length)segs.push(cur);
   return segs;
 }
-function rateOf(w){
-  if(!w||!w.measurements.length)return null;
-  var segs=segments(w);
-  var pts=segs[segs.length-1];               // only since the last new start
-  if(pts.length<2)return null;
+function rateOfPts(pts){
+  if(!pts||pts.length<2)return null;
   var n=pts.length,sT=0,sO=0,sTT=0,sTO=0;
   pts.forEach(function(p){sT+=p.t;sO+=p.offset;sTT+=p.t*p.t;sTO+=p.t*p.offset;});
   var den=n*sTT-sT*sT; if(den===0)return null;
-  return {rate:(n*sTO-sT*sO)/den*86400000, span:pts[n-1].t-pts[0].t, n:n, partial:segs.length>1};
+  return {rate:(n*sTO-sT*sO)/den*86400000, span:pts[n-1].t-pts[0].t, n:n};
+}
+function rateOf(w){
+  if(!w||!w.measurements.length)return null;
+  var segs=segments(w);
+  var pts=selectedMeas(w);
+  // bij "all": gang over het laatste segment (zuiverst); anders over de sessie zelf
+  if(resolvedSegIndex(w)==="all")pts=segs[segs.length-1];
+  var r=rateOfPts(pts);
+  if(r)r.partial=segs.length>1;
+  return r;
 }
 function signSec(n,dec){var v=dec?Math.abs(n).toFixed(1):String(Math.round(Math.abs(n)));return (n>0?"+":n<0?"\u2212":"\u00b1")+v+" s";}
 function humanSpan(ms){var d=ms/86400000,h=ms/3600000;
@@ -477,12 +508,11 @@ function humanSpan(ms){var d=ms/86400000,h=ms/3600000;
   if(d>=1)return d.toFixed(1)+" days";if(h>=1)return h.toFixed(1)+" hours";return Math.round(ms/60000)+" min";}
 
 /* ===== meter session ===== */
-var offsetN=0, syncTaps=[], guideOpen=false;
-function currentOffset(){return syncTaps.length? syncTaps.reduce(function(a,b){return a+b;},0)/syncTaps.length : offsetN;}
+var offsetN=0, guideOpen=false;
+function currentOffset(){return offsetN;}
 function seedOffset(){var w=activeWatch();
   if(w&&w.measurements.length){var last=w.measurements.slice().sort(function(a,b){return b.t-a.t;})[0];offsetN=Math.round(last.offset);}
   else offsetN=0;
-  syncTaps=[];
 }
 
 /* ===== render ===== */
@@ -493,7 +523,7 @@ function renderWatches(){
   state.watches.forEach(function(w){
     var c=document.createElement("div");c.className="chip"+(w.id===state.activeWatch?" active":"");
     c.innerHTML='<span>'+escapeHtml(w.name)+'</span><span class="x">&times;</span>';
-    function pick(){state.activeWatch=w.id;seedOffset();closeTG();save();renderAll();}
+    function pick(){state.activeWatch=w.id;selectedSession="last";seedOffset();closeTG();save();renderAll();}
     c.querySelector("span").onclick=pick;
     c.onclick=function(ev){if(!ev.target.classList.contains("x"))pick();};
     c.querySelector(".x").onclick=function(ev){ev.stopPropagation();
@@ -507,16 +537,29 @@ function renderMeter(){
   document.getElementById("meterBlock").style.opacity=w?"1":".45";
   document.getElementById("activeWatchName").textContent=w?w.name:t.chooseWatch;
   document.getElementById("recordBtn").disabled=!w;
-  document.getElementById("offVal").textContent=signSec(currentOffset(),syncTaps.length>0);
-  document.getElementById("syncInfo").textContent=syncTaps.length?
-    (lang==="nl"?"verfijnd uit "+syncTaps.length+" tik"+(syncTaps.length>1?"ken":""):"refined from "+syncTaps.length+" tap"+(syncTaps.length>1?"s":"")):"";
+  document.getElementById("offVal").textContent=signSec(currentOffset(),false);
+
   var r=rateOf(w);
   document.getElementById("rateVal").textContent=r?((r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" "+t.perDay):("\u2014 "+t.perDay);
 }
+function renderSessionPicker(w){
+  var t=I18N[lang],row=document.getElementById("sessionRow"),sel=document.getElementById("sessionSel");
+  var segs=w?segments(w):[];
+  if(!w||segs.length<2){row.style.display="none";return;}
+  row.style.display="";
+  document.getElementById("sessionLbl").textContent=t.sessionLbl;
+  var opts='';
+  for(var i=segs.length-1;i>=0;i--)opts+='<option value="'+i+'">'+sessionLabel(segs[i],i,segs.length)+'</option>';
+  opts+='<option value="all">'+t.allSessions+'</option>';
+  sel.innerHTML=opts;
+  var val=(selectedSession==="last")?(segs.length-1):selectedSession;
+  sel.value=String(val);
+}
 function renderHistory(){
   var t=I18N[lang],w=activeWatch(),wrap=document.getElementById("historyWrap"),sum=document.getElementById("rateSummary");
+  renderSessionPicker(w);
   if(!w||!w.measurements.length){wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderTG(w||null);return;}
-  var pts=w.measurements.slice().sort(function(a,b){return b.t-a.t;}),r=rateOf(w);
+  var pts=selectedMeas(w).slice().sort(function(a,b){return b.t-a.t;}),r=rateOf(w);
   if(r){var rstr=(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" "+t.perDay;
     var since=r.partial?(" ("+t.sinceStart+")"):"";
     sum.innerHTML=(lang==="nl"?"Gang: <b>"+rstr+"</b> &mdash; uit "+r.n+" metingen over "+humanSpan(r.span):"Rate: <b>"+rstr+"</b> &mdash; from "+r.n+" measurements over "+humanSpan(r.span))+since+".";}
@@ -621,7 +664,9 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions){
 function drawCharts(w){
   var ow=document.getElementById("chartOffWrap"),rw=document.getElementById("chartRateWrap"),rh=document.getElementById("rateChartHint");
   if(!w){ow.style.display="none";rw.style.display="none";rh.style.display="none";return;}
-  var segs=segments(w);
+  var allSegs=segments(w);
+  var idx=resolvedSegIndex(w);
+  var segs=(idx==="all")?allSegs:[allSegs[idx]||allSegs[allSegs.length-1]];
   // offset chart
   var offSegs=segs.map(function(s){return s.map(function(p){return {t:p.t,v:p.offset};});});
   var okOff=chartSVG(document.getElementById("chartOff"),offSegs,colOff,"s");
@@ -683,7 +728,6 @@ function applyLang(){
   document.getElementById("watchLabel").textContent=t.yourWatch;
   document.getElementById("offLabel").textContent=t.offsetNow;
   document.getElementById("rateLabel").textContent=t.rate;
-  document.getElementById("syncBtn").innerHTML=t.syncBtn;
   document.getElementById("lblPos").textContent=t.position;
   document.getElementById("lblNote").textContent=t.note;
   document.getElementById("noteIn").placeholder=t.optional;
@@ -706,9 +750,10 @@ function applyLang(){
   document.getElementById("gStep4").innerHTML=t.gStep4;
   document.getElementById("guideNote").textContent=t.guideNote;
   document.getElementById("grpAlign").textContent=t.grpAlign;
+  var _sl=document.getElementById("sessionLbl");if(_sl)_sl.textContent=t.sessionLbl;
   document.getElementById("grpRecord").textContent=t.grpRecord;
   document.getElementById("tgFrameLabel").innerHTML='<i>\u25c8</i> '+t.tgFrameLabel;
-  document.getElementById("hint").textContent=t.syncHelp;
+  document.getElementById("alignHint").textContent=t.alignHint;
   document.getElementById("nsHint").textContent=t.nsHint;
   var tgOpen=document.getElementById("tgForm").style.display!=="none";
   document.getElementById("tgToggle").textContent=tgOpen?t.tgToggleClose:t.tgToggle;
@@ -745,8 +790,8 @@ document.getElementById("helpBtn").onclick=function(){guideOpen=!guideOpen;rende
 document.getElementById("guideClose").onclick=function(){guideOpen=false;renderGuide();};
 
 function toggleInfo(id){var el=document.getElementById(id);el.style.display=el.style.display==="none"?"block":"none";}
-document.getElementById("syncHelp").onclick=function(){toggleInfo("hint");};
 document.getElementById("nsHelp").onclick=function(ev){ev.preventDefault();toggleInfo("nsHint");};
+document.getElementById("sessionSel").onchange=function(e){selectedSession=e.target.value;renderHistory();};
 
 document.getElementById("sampleBtn").onclick=function(){
   if(state.watches.length){
@@ -825,13 +870,12 @@ document.getElementById("tgSave").onclick=function(){
   closeTG();save();renderAll();
 };
 
-document.getElementById("nUp").onclick=function(){offsetN++;syncTaps=[];renderMeter();};
-document.getElementById("nDown").onclick=function(){offsetN--;syncTaps=[];renderMeter();};
-document.getElementById("syncBtn").onclick=function(){var f=(Date.now()%1000)/1000;var centered=f>0.5?f-1:f;syncTaps.push(offsetN-centered);renderMeter();};
+document.getElementById("nUp").onclick=function(){offsetN++;renderMeter();};
+document.getElementById("nDown").onclick=function(){offsetN--;renderMeter();};
 document.getElementById("recordBtn").onclick=function(){
   var w=activeWatch();if(!w)return;
   var chk=document.getElementById("newStartChk");
-  var m={id:uid(),t:Date.now(),offset:Math.round(currentOffset()*10)/10,position:document.getElementById("posSel").value,note:document.getElementById("noteIn").value.trim()};
+  var m={id:uid(),t:Date.now(),offset:offsetN,position:document.getElementById("posSel").value,note:document.getElementById("noteIn").value.trim()};
   if(chk.checked)m.newStart=true;
   w.measurements.push(m);
   document.getElementById("noteIn").value="";chk.checked=false;

@@ -98,6 +98,9 @@
   .wtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
   .wname{font-size:17px;font-weight:700;color:var(--ink)}
   .wmeta{font-size:12px;color:var(--muted);margin-top:3px}
+  .sessionrow{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
+  .sessionrow label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  .sessionrow select{flex:1;font:inherit;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink)}
   .actchip{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:var(--accent);color:#fff;white-space:nowrap}
 
   .ledrow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin:14px 0 4px}
@@ -279,7 +282,7 @@ function abbrOf(code){return ({dial_up:"DU",dial_down:"DD",crown_up:"CU",crown_d
 
 /* ---------- state ---------- */
 var LKEY="siouxWatchRateMeterLang";
-let FILES=[], merge=false, sortBy="name",
+let FILES=[], merge=false, sortBy="name", sessionSel={},
     lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})(),
     guideOpen=false;
 
@@ -337,14 +340,26 @@ function collectWatches(){
     w.measurements.sort((a,b)=>a.t-b.t);
     const valid=w.measurements.filter(m=>Number.isFinite(m.t)&&Number.isFinite(m.offset));
     w.valid=valid;
-    let si=0; valid.forEach((m,i)=>{if(m.newStart)si=i;});
-    const fitPts=valid.slice(si);
-    w.fit=linreg(fitPts.map(m=>({x:m.t,y:m.offset})));
-    w.fitStart=fitPts.length?fitPts[0].t:null;
-    w.hasReset=si>0;
-    w.tMin=valid.length?valid[0].t:null; w.tMax=valid.length?valid[valid.length-1].t:null;
+    // sessies: splitsen op newStart-vlag
+    const sessions=[]; let cur=[];
+    valid.forEach(m=>{if(m.newStart&&cur.length){sessions.push(cur);cur=[];}cur.push(m);});
+    if(cur.length)sessions.push(cur);
+    w.sessions=sessions;
+    // gekozen sessie: "all" of index; default = laatste
+    let selKey=sessionSel[w.id];
+    if(selKey==null)selKey=(sessions.length-1);
+    if(selKey!=="all"&&selKey>=sessions.length)selKey=sessions.length-1;
+    w.selKey=selKey;
+    const shown=(selKey==="all")?valid:(sessions[selKey]||valid);
+    w.shown=shown;
+    // fit/positie-metrics op de getoonde selectie (bij "all": laatste sessie, zuiverst)
+    const metricPts=(selKey==="all")?(sessions[sessions.length-1]||valid):shown;
+    w.fit=linreg(metricPts.map(m=>({x:m.t,y:m.offset})));
+    w.fitStart=metricPts.length?metricPts[0].t:null;
+    w.hasReset=sessions.length>1;
+    w.tMin=shown.length?shown[0].t:null; w.tMax=shown.length?shown[shown.length-1].t:null;
     const groups=new Map();
-    fitPts.forEach(m=>{if(!groups.has(m.position))groups.set(m.position,[]);groups.get(m.position).push(m);});
+    metricPts.forEach(m=>{if(!groups.has(m.position))groups.set(m.position,[]);groups.get(m.position).push(m);});
     let pi=0; const positions=[];
     for(const [code,arr] of groups){
       const info=posInfo(code,pi++); const f=linreg(arr.map(m=>({x:m.t,y:m.offset})));
@@ -370,7 +385,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 /* ---------- chart ---------- */
 function chartSVG(w){
   const W=560,H=200,padL=44,padR=14,padT=12,padB=26;
-  const pts=w.valid; if(!pts.length) return "";
+  const pts=w.shown||w.valid; if(!pts.length) return "";
   let tMin=w.tMin,tMax=w.tMax; if(tMin===tMax){tMin-=MS_PER_DAY/2;tMax+=MS_PER_DAY/2;}
   let oMin=Math.min(...pts.map(p=>p.offset)),oMax=Math.max(...pts.map(p=>p.offset));
   if(oMin===oMax){oMin-=1;oMax+=1;} const op=(oMax-oMin)*0.12; oMin-=op; oMax+=op;
@@ -383,7 +398,7 @@ function chartSVG(w){
   for(let i=0;i<=3;i++){const t=tMin+(tMax-tMin)*i/3,x=X(t);
     g+=`<text x="${x.toFixed(1)}" y="${H-8}" fill="#8f8c96" font-size="10" text-anchor="${i===0?'start':i===3?'end':'middle'}" font-family="${'ui-monospace,monospace'}">${fmtDate(t)}</text>`;}
   if(w.fit){const yAt=t=>w.fit.intercept+w.fit.slope*(t-w.fit.x0);
-    const fs=Math.max(tMin, w.fitStart??tMin);
+    const fs=(w.selKey==="all")?Math.max(tMin, w.fitStart??tMin):tMin;
     g+=`<line x1="${X(fs).toFixed(1)}" y1="${Y(yAt(fs)).toFixed(1)}" x2="${X(tMax).toFixed(1)}" y2="${Y(yAt(tMax)).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`;}
   pts.forEach(p=>{const info=posInfo(p.position,uniq.indexOf(p.position));
     const title=`${fmtDateTime(p.t)} \u00B7 ${p.offset.toFixed(1)}s \u00B7 ${info.label}${p.note?` \u00B7 ${p.note}`:""}`;
@@ -401,6 +416,19 @@ function ledHTML(r){
       <span class="led-seg"><span class="led-ghost">${ghost}</span><span class="led-lit">${mag}</span></span>
       <span class="led-unit">${t().sday}</span></div></div>`;
 }
+function sessionPickerHTML(w){
+  const segs=w.sessions||[];
+  if(segs.length<2) return "";
+  const loc=lang==="nl"?"nl-NL":"en-GB";
+  const f=d=>new Date(d).toLocaleDateString(loc,{day:"numeric",month:"short"});
+  let opts="";
+  for(let i=segs.length-1;i>=0;i--){
+    const seg=segs[i], lbl=(lang==="nl"?"Sessie ":"Session ")+(i+1)+" \u00b7 "+f(seg[0].t)+"\u2013"+f(seg[seg.length-1].t)+" ("+seg.length+")";
+    opts+=`<option value="${i}"${String(w.selKey)===String(i)?" selected":""}>${lbl}</option>`;
+  }
+  opts+=`<option value="all"${w.selKey==="all"?" selected":""}>${t().allSessions}</option>`;
+  return `<div class="sessionrow"><label>${t().sessionLbl}</label><select class="sessionsel" data-wid="${esc(String(w.id))}">${opts}</select></div>`;
+}
 function cardHTML(w){
   const r=w.fit?.ratePerDay ?? null;
   const range=w.tMin!=null?`${fmtDate(w.tMin)} – ${fmtDate(w.tMax)}`:t().noValid;
@@ -412,10 +440,11 @@ function cardHTML(w){
   return `<div class="wcard ${w.active?'active':''}">
     <div class="wtop">
       <div><div class="wname">${esc(w.name||t().unnamed)}</div>
-        <div class="wmeta">${esc(String(w.id??"—"))} · ${t().meas(w.valid.length)} · ${range}${src}</div></div>
+        <div class="wmeta">${esc(String(w.id??"—"))} · ${t().meas(w.valid.length)}${src}</div></div>
       ${w.active?`<span class="actchip">${t().active}</span>`:""}
     </div>
     <div class="ledrow">${ledHTML(r)}</div>
+    ${sessionPickerHTML(w)}
     ${chartSVG(w)}
     <div class="legend">${legend}</div>
     ${w.positions.length?`<table class="pos"><thead><tr><th class="dot"></th><th>${t().posHead}</th><th class="num">${t().n}</th><th class="num">${t().sday}</th></tr></thead><tbody>${rows}</tbody></table>`:""}
@@ -448,6 +477,8 @@ function tgHTML(w){
 }
 
 T.en.tgHead="Timegrapher"; T.nl.tgHead="Timegrapher";
+T.en.sessionLbl="Session"; T.nl.sessionLbl="Sessie";
+T.en.allSessions="All sessions"; T.nl.allSessions="Alle sessies";
 T.en.tgDate="date"; T.nl.tgDate="datum";
 T.en.tgAvg="avg"; T.nl.tgAvg="gem.";
 T.en.tgReadings="readings"; T.nl.tgReadings="metingen";
@@ -507,6 +538,9 @@ function render(){
   document.getElementById("chips").innerHTML=FILES.map((f,i)=>
     `<span class="fchip"><b>${esc(f.name)}</b> ${f.watches.length}♦ <span class="x" data-i="${i}" title="${t().remove}">✕</span></span>`).join("");
   document.querySelectorAll(".fchip .x").forEach(el=>el.onclick=()=>{FILES.splice(+el.dataset.i,1);saveLS();render();});
+  document.querySelectorAll(".sessionsel").forEach(sel=>sel.onchange=()=>{
+    const v=sel.value; sessionSel[sel.dataset.wid]=(v==="all")?"all":+v; render();
+  });
 }
 
 /* ---------- loading ---------- */
