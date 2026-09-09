@@ -4,6 +4,7 @@
 (function(){
   var PAGES = [
     { title: "Home",          url: "/" },
+    { title: "Guide",         url: "/guide/" },
     { title: "Live Clock",    url: "/clock/" },
     { title: "Rate Meter",    url: "/watchrate/" },
     { title: "Power Reserve", url: "/powerreserve/" },

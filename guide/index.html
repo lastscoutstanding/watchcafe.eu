@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide — Sioux Watch Café</title>
+<script src="/nav.js" defer></script>
+<style>
+  :root{
+    --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
+    --accent:#d96a41; --accent-d:#c25a36; --ink:#e9e7e2; --muted:#a09da6;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  html,body{margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:32px 34px 36px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  @media(max-width:560px){.card{padding:24px 18px 28px}}
+
+  .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+  h1{color:var(--accent);font-size:clamp(22px,3.4vw,32px);font-weight:800;margin:0}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 8px}
+  .lang{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:none}
+  .lang button{border:none;background:#26262c;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;touch-action:manipulation}
+  .lang button.active{background:var(--accent);color:#fff}
+  .lang button:hover:not(.active){background:#30303a}
+
+  /* table of contents */
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 8px}
+  .toc a{font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:20px;padding:6px 13px;background:var(--card2)}
+  .toc a:hover{background:#2a2a31}
+
+  section{border-top:1px solid var(--border);margin-top:30px;padding-top:24px;scroll-margin-top:70px}
+  h2{color:var(--accent);font-size:20px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  h2 .ic{font-size:20px}
+  .tagline{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  h3{font-size:15px;margin:20px 0 6px;color:var(--ink)}
+  p{line-height:1.7;font-size:14.5px;margin:10px 0}
+  ul,ol{line-height:1.7;font-size:14.5px;padding-left:22px;margin:10px 0}
+  li{margin:5px 0}
+  b,strong{color:var(--ink)}
+  .lead{font-size:15.5px;line-height:1.7}
+
+  .callout{background:var(--card2);border-left:3px solid var(--accent);border-radius:8px;padding:13px 16px;margin:16px 0;font-size:14px;line-height:1.65}
+  .callout b{color:var(--accent)}
+  kbd{background:#26262c;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-family:"Courier New",monospace;font-size:13px;color:var(--ink)}
+  .go{display:inline-block;margin-top:12px;color:var(--accent);text-decoration:none;font-weight:600;font-size:14px}
+  .go:hover{text-decoration:underline}
+
+  .foot{border-top:1px solid var(--border);margin-top:32px;padding-top:20px;color:var(--muted);font-size:14px;line-height:1.7}
+  .foot a{color:var(--accent);text-decoration:none;font-weight:600}
+  .foot a:hover{text-decoration:underline}
+  .gears{margin-top:22px;text-align:center;font-size:12.5px;color:#8f8c96}
+  .gears a{color:var(--accent);text-decoration:none}
+  .gears a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="hdr">
+      <div>
+        <h1 id="title">Guide</h1>
+      </div>
+      <div class="lang">
+        <button data-lang="en">EN</button>
+        <button data-lang="nl">NL</button>
+      </div>
+    </div>
+    <p class="sub" id="sub"></p>
+
+    <p class="lead" id="intro"></p>
+
+    <nav class="toc" id="toc"></nav>
+
+    <div id="body"></div>
+
+    <div class="foot" id="foot"></div>
+    <div class="gears" id="gears"></div>
+  </div>
+</div>
+
+<script>
+var C={
+ en:{
+  title:"Guide",
+  sub:"How the Sioux Watch Café site and its tools work.",
+  intro:"Everything here runs in your own browser \u2014 nothing is sent anywhere, and your watch data stays on your device. This guide walks through each tool and the few concepts worth knowing. New to measuring watches? Start with \u201cThe two numbers\u201d below.",
+  toc:[["concepts","The two numbers"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Power Reserve"],["viewer","Backup Viewer"],["glossary","Glossary"],["data","Your data & backups"]],
+  sections:[
+    {id:"concepts",ic:"\u2696\ufe0f",h:"The two numbers",tag:"Offset and rate \u2014 the heart of it all.",html:
+      "<p>Two numbers describe how a watch keeps time, and it helps to keep them apart:</p>"+
+      "<ul><li><b>Offset</b> \u2014 how far the watch is from the correct time <i>at one moment</i> (for example, \u201c+12 seconds ahead\u201d). It's a single snapshot.</li>"+
+      "<li><b>Rate</b> \u2014 how many seconds per day the watch gains or loses. This is the number collectors care about, and it's what tells you whether a watch runs well.</li></ul>"+
+      "<div class='callout'><b>The key idea:</b> you can't get a rate from one measurement. You need at least <b>two offset readings taken at different times</b>. The change in offset, divided by the time between the readings, is the rate. The longer you wait between readings, the more accurate that rate becomes \u2014 a full day beats ten minutes.</div>"},
+    {id:"clock",ic:"\u23f2",h:"Live Clock",tag:"An accurate reference to set and check your watch against.",html:
+      "<p>A big LED clock on your device's time zone. Use it as a shared reference during a caf\u00e9 meet-up \u2014 everyone sets their watch to the same screen \u2014 or just to check how far off yours is.</p>"+
+      "<p>The soft tick toggle plays a gentle sound on every 10th second, handy as an audible beat while you set a watch.</p>"+
+      "<div class='callout'>The clock relies on your device's own clock, so make sure that is synced over the internet (it normally is). If your computer's clock is off, you'd be measuring <i>its</i> error, not your watch's.</div>"+
+      "<a class='go' href='/clock/'>Open the Live Clock \u2192</a>"},
+    {id:"ratemeter",ic:"\u23f1",h:"Rate Meter",tag:"Track how many seconds per day your watch gains or loses.",html:
+      "<p>This is the main tool. You record how far your watch is off now, come back later and record again, and it works out the rate for you.</p>"+
+      "<h3>Getting started</h3>"+
+      "<ol><li><b>Add a watch</b> \u2014 type its name and tap Add. Your watches live in this browser and are shared with the Power Reserve tool.</li>"+
+      "<li><b>Align</b> \u2014 use the <kbd>\u25b2</kbd>/<kbd>\u25bc</kbd> arrows so the green clock matches your watch to the second.</li>"+
+      "<li><b>Record</b> the measurement. Add the position (dial up, crown down\u2026) if you like \u2014 it makes the data richer.</li>"+
+      "<li><b>Come back later</b> \u2014 after some hours or a day, measure again. The rate appears automatically.</li></ol>"+
+      "<h3>New start</h3>"+
+      "<p>Tick <b>New start</b> when the watch stopped and was wound and reset, or when you set it to time again. The rate calculation then begins fresh from that point, instead of treating the jump as drift.</p>"+
+      "<h3>Sessions</h3>"+
+      "<p>Each stretch between one \u201cnew start\u201d and the next is a <b>session</b>. When a watch has more than one, a dropdown appears so you can view a single session \u2014 its own chart, table and rate \u2014 without long empty gaps stretching across the graph. Pick <b>All sessions</b> for the full picture.</p>"+
+      "<h3>The charts</h3>"+
+      "<p><b>Offset over time</b> shows each reading; <b>Rate over time</b> shows the rate between consecutive readings (only pairs at least 6 hours apart, so measurement noise doesn't dominate). Point colours run green \u2192 yellow \u2192 orange \u2192 red as the value grows.</p>"+
+      "<h3>Timegrapher sessions</h3>"+
+      "<p>Have a timegrapher at the meet-up? Tap <b>Add session</b> to log the rate, amplitude and beat error per position. Those appear as diamonds on the rate chart, so you can compare the machine's instant reading against how the watch actually performs over days on the wrist.</p>"+
+      "<a class='go' href='/watchrate/'>Open the Rate Meter \u2192</a>"},
+    {id:"powerreserve",ic:"\ud83d\udd0b",h:"Power Reserve",tag:"Measure how long a watch runs on a full wind \u2014 hands-free.",html:
+      "<p>Power reserve is the time between \u201cfully wound\u201d and \u201cstopped\u201d. The clever part: you don't have to watch it stop.</p>"+
+      "<h3>How it works</h3>"+
+      "<ol><li>Wind the watch fully, set it to the clock shown on the page, and tap <b>Wound &amp; set</b>. The moment is timestamped.</li>"+
+      "<li>Now and then, tap <b>Still running</b> while it's ticking \u2014 this records a lower bound.</li>"+
+      "<li>When you find it stopped, tap <b>Stopped</b> and read the time straight off the hands: they froze at the exact moment it ran out.</li></ol>"+
+      "<div class='callout'><b>Why still running matters:</b> the hands show a time like 3:47, but not <i>which</i> 3:47 \u2014 last night's or a day later? Tapping \u201cstill running\u201d now and then removes all doubt, and the day is filled in for you automatically.</div>"+
+      "<p>You can run several watches at once, each on its own card with a live counter. Tapped <b>Stopped</b> by mistake? Use <b>Back</b> to resume. Saved measurements build a history per watch, so you can see if the reserve shrinks as a service nears.</p>"+
+      "<a class='go' href='/powerreserve/'>Open Power Reserve \u2192</a>"},
+    {id:"viewer",ic:"\ud83d\udcca",h:"Backup Viewer",tag:"Browse rates and history from your backup files.",html:
+      "<p>Export a backup from the Rate Meter and load it here to review it \u2014 handy for keeping the live tool tidy while your older measurements stay safe in files. It reads the rate, positions and offset trace per watch, plus any timegrapher and power-reserve data.</p>"+
+      "<p>You can load several files at once to compare watches, and the same session dropdown from the Rate Meter is here too. Loaded files are remembered in this browser, so they're still here when you come back.</p>"+
+      "<a class='go' href='/watchrate/viewer.html'>Open the Backup Viewer \u2192</a>"},
+    {id:"glossary",ic:"\u270e",h:"Glossary",tag:"Watch and timegrapher terms, in plain language.",html:
+      "<p>A searchable list of horology terms \u2014 from movement and escapement to amplitude, beat error and lift angle \u2014 each explained in one line, in English and Dutch. A good place to look up anything in this guide you'd like defined.</p>"+
+      "<a class='go' href='/glossary/'>Open the Glossary \u2192</a>"},
+    {id:"data",ic:"\ud83d\udd12",h:"Your data & backups",tag:"Where everything is stored, and how to move it.",html:
+      "<p>All your watches and measurements are stored by your browser, on your own device \u2014 there is no server or account, and nothing leaves your machine. That also means your data doesn't automatically follow you to another device or browser.</p>"+
+      "<p>To move data or keep it safe, use <b>Export backup</b> in the Rate Meter to save a <kbd>.json</kbd> file, and <b>Import backup</b> to load it elsewhere. Clearing your browser data will erase your measurements, so export now and then.</p>"+
+      "<p>Curious what's actually stored? The <a href='/privacy/'>privacy page</a> shows it live, straight from your browser.</p>"}
+  ],
+  footHtml:"Spotted something, or have an idea to make the tools better? Drop a line to <a href='mailto:info@watchcafe.eu'>info@watchcafe.eu</a> \u2014 always glad to hear from fellow watch geeks.",
+  gears:"This site runs on gears, not cookies. Your watch data never leaves your browser \u2014 ",
+  gearsLink:"see for yourself \u2192"
+ },
+ nl:{
+  title:"Handleiding",
+  sub:"Hoe de Sioux Watch Caf\u00e9-site en de tools werken.",
+  intro:"Alles hier draait in je eigen browser \u2014 er wordt niets verstuurd, en je horlogedata blijft op je apparaat. Deze handleiding loopt elke tool langs, plus de paar begrippen die het waard zijn om te kennen. Nieuw met het meten van horloges? Begin met \u201cDe twee getallen\u201d hieronder.",
+  toc:[["concepts","De twee getallen"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Gangreserve"],["viewer","Backup Viewer"],["glossary","Begrippenlijst"],["data","Je data & back-ups"]],
+  sections:[
+    {id:"concepts",ic:"\u2696\ufe0f",h:"De twee getallen",tag:"Offset en gang \u2014 waar alles om draait.",html:
+      "<p>Twee getallen beschrijven hoe een horloge de tijd bijhoudt, en het helpt ze uit elkaar te houden:</p>"+
+      "<ul><li><b>Offset</b> \u2014 hoe ver het horloge <i>op \u00e9\u00e9n moment</i> van de juiste tijd af zit (bijvoorbeeld \u201c+12 seconden voor\u201d). Een momentopname.</li>"+
+      "<li><b>Gang</b> \u2014 hoeveel seconden per dag het horloge voor- of achterloopt. Dit is het getal waar verzamelaars om geven, en wat je vertelt of een horloge goed loopt.</li></ul>"+
+      "<div class='callout'><b>De kern:</b> uit \u00e9\u00e9n meting kun je geen gang halen. Je hebt minstens <b>twee offset-metingen op verschillende momenten</b> nodig. De verandering in offset, gedeeld door de tijd ertussen, is de gang. Hoe langer je tussen metingen wacht, hoe nauwkeuriger die gang wordt \u2014 een hele dag is beter dan tien minuten.</div>"},
+    {id:"clock",ic:"\u23f2",h:"Live Clock",tag:"Een nauwkeurige referentie om je horloge op te zetten en te controleren.",html:
+      "<p>Een grote LED-klok op de tijdzone van je apparaat. Gebruik 'm als gedeelde referentie tijdens een caf\u00e9-meetup \u2014 iedereen zet zijn horloge op hetzelfde scherm \u2014 of gewoon om te zien hoe ver die van je afwijkt.</p>"+
+      "<p>De zachte-tik-schakelaar laat elke 10e seconde een klikje horen, handig als hoorbare maat terwijl je een horloge gelijkzet.</p>"+
+      "<div class='callout'>De klok leunt op de klok van je apparaat, dus zorg dat die via internet gesynchroniseerd is (meestal is dat zo). Loopt je computerklok fout, dan meet je <i>diens</i> afwijking, niet die van je horloge.</div>"+
+      "<a class='go' href='/clock/'>Open de Live Clock \u2192</a>"},
+    {id:"ratemeter",ic:"\u23f1",h:"Rate Meter",tag:"Meet hoeveel seconden per dag je horloge voor- of achterloopt.",html:
+      "<p>Dit is de hoofdtool. Je legt vast hoe ver je horloge nu afwijkt, komt later terug en legt opnieuw vast, en de gang wordt voor je berekend.</p>"+
+      "<h3>Aan de slag</h3>"+
+      "<ol><li><b>Voeg een horloge toe</b> \u2014 typ de naam en tik op Toevoegen. Je horloges leven in deze browser en zijn gedeeld met de Gangreserve-tool.</li>"+
+      "<li><b>Gelijkzetten</b> \u2014 gebruik de <kbd>\u25b2</kbd>/<kbd>\u25bc</kbd> pijltjes zodat de groene klok tot op de seconde gelijkloopt met je horloge.</li>"+
+      "<li><b>Leg de meting vast</b>. Voeg eventueel de positie toe (wijzerplaat boven, kroon onder\u2026) \u2014 dat maakt de data rijker.</li>"+
+      "<li><b>Kom later terug</b> \u2014 meet na een paar uur of een dag opnieuw. De gang verschijnt vanzelf.</li></ol>"+
+      "<h3>Nieuwe start</h3>"+
+      "<p>Vink <b>Nieuwe start</b> aan als het horloge heeft stilgestaan en is opgewonden en opnieuw gezet, of als je het opnieuw gelijk hebt gezet. De gangberekening begint dan opnieuw vanaf dat punt, in plaats van de sprong als afwijking mee te tellen.</p>"+
+      "<h3>Sessies</h3>"+
+      "<p>Elk stuk tussen de ene \u201cnieuwe start\u201d en de volgende is een <b>sessie</b>. Heeft een horloge er meer dan \u00e9\u00e9n, dan verschijnt een keuzemenu om \u00e9\u00e9n sessie te bekijken \u2014 met eigen grafiek, tabel en gang \u2014 zonder lange lege gaten die over de grafiek lopen. Kies <b>Alle sessies</b> voor het totaaloverzicht.</p>"+
+      "<h3>De grafieken</h3>"+
+      "<p><b>Offset in de tijd</b> toont elke meting; <b>Gang in de tijd</b> toont de gang tussen opeenvolgende metingen (alleen paren die minstens 6 uur uit elkaar liggen, zodat meetruis niet domineert). Puntkleuren lopen van groen \u2192 geel \u2192 oranje \u2192 rood naarmate de waarde groter wordt.</p>"+
+      "<h3>Timegrapher-sessies</h3>"+
+      "<p>Heb je een timegrapher bij de meetup? Tik op <b>Sessie toevoegen</b> om per positie de gang, amplitude en slagfout vast te leggen. Die verschijnen als ruitjes op de gang-grafiek, zodat je de momentmeting van de machine kunt vergelijken met hoe het horloge zich over dagen aan de pols gedraagt.</p>"+
+      "<a class='go' href='/watchrate/'>Open de Rate Meter \u2192</a>"},
+    {id:"powerreserve",ic:"\ud83d\udd0b",h:"Gangreserve",tag:"Meet hoe lang een horloge loopt op een volledige opwinding \u2014 zonder toezicht.",html:
+      "<p>Gangreserve is de tijd tussen \u201cvolledig opgewonden\u201d en \u201cstilgevallen\u201d. Het slimme: je hoeft er niet bij te zijn als het stopt.</p>"+
+      "<h3>Hoe het werkt</h3>"+
+      "<ol><li>Wind het horloge volledig op, zet het gelijk aan de klok op de pagina, en tik op <b>Opgewonden &amp; gelijk</b>. Het moment krijgt een tijdstempel.</li>"+
+      "<li>Tik af en toe op <b>Loopt nog</b> terwijl het tikt \u2014 dat legt een ondergrens vast.</li>"+
+      "<li>Vind je het stilstaand, tik op <b>Gestopt</b> en lees de tijd van de wijzers af: die bevroren op het exacte moment dat het uitliep.</li></ol>"+
+      "<div class='callout'><b>Waarom \u201cloopt nog\u201d belangrijk is:</b> de wijzers tonen een tijd als 3:47, maar niet <i>welke</i> 3:47 \u2014 vannacht of een dag later? Af en toe \u201cloopt nog\u201d tikken haalt alle twijfel weg, en de dag wordt automatisch voor je ingevuld.</div>"+
+      "<p>Je kunt meerdere horloges tegelijk laten lopen, elk op een eigen kaart met live teller. Per ongeluk op <b>Gestopt</b> getikt? Gebruik <b>Terug</b> om verder te gaan. Opgeslagen metingen vormen een historie per horloge, zodat je ziet of de reserve afneemt naarmate een servicebeurt nadert.</p>"+
+      "<a class='go' href='/powerreserve/'>Open Gangreserve \u2192</a>"},
+    {id:"viewer",ic:"\ud83d\udcca",h:"Backup Viewer",tag:"Bekijk gang en historie uit je back-upbestanden.",html:
+      "<p>Exporteer een back-up uit de Rate Meter en laad die hier om terug te kijken \u2014 handig om de live tool overzichtelijk te houden terwijl je oudere metingen veilig in bestanden blijven. De viewer leest per horloge de gang, posities en het offset-verloop, plus eventuele timegrapher- en gangreserve-data.</p>"+
+      "<p>Je kunt meerdere bestanden tegelijk laden om horloges te vergelijken, en hetzelfde sessie-keuzemenu uit de Rate Meter zit ook hier. Geladen bestanden worden in deze browser onthouden, dus ze staan er nog als je terugkomt.</p>"+
+      "<a class='go' href='/watchrate/viewer.html'>Open de Backup Viewer \u2192</a>"},
+    {id:"glossary",ic:"\u270e",h:"Begrippenlijst",tag:"Horloge- en timegrapher-begrippen, in gewone taal.",html:
+      "<p>Een doorzoekbare lijst met horlogebegrippen \u2014 van uurwerk en echappement tot amplitude, slagfout en lifthoek \u2014 elk in \u00e9\u00e9n regel uitgelegd, in het Nederlands en Engels. Een goede plek om alles uit deze handleiding op te zoeken dat je verklaard wilt zien.</p>"+
+      "<a class='go' href='/glossary/'>Open de Begrippenlijst \u2192</a>"},
+    {id:"data",ic:"\ud83d\udd12",h:"Je data & back-ups",tag:"Waar alles wordt bewaard, en hoe je het verplaatst.",html:
+      "<p>Al je horloges en metingen worden door je browser bewaard, op je eigen apparaat \u2014 er is geen server of account, en er verlaat niets je machine. Dat betekent ook dat je data niet automatisch meereist naar een ander apparaat of browser.</p>"+
+      "<p>Om data te verplaatsen of veilig te stellen, gebruik je <b>Exporteer back-up</b> in de Rate Meter om een <kbd>.json</kbd>-bestand op te slaan, en <b>Importeer back-up</b> om het elders te laden. Je browsergegevens wissen verwijdert je metingen, dus exporteer af en toe.</p>"+
+      "<p>Benieuwd wat er precies wordt bewaard? De <a href='/privacy/'>privacypagina</a> laat het live zien, rechtstreeks uit je browser.</p>"}
+  ],
+  footHtml:"Iets gezien, of een idee om de tools beter te maken? Stuur een bericht naar <a href='mailto:info@watchcafe.eu'>info@watchcafe.eu</a> \u2014 altijd leuk om van mede-horlogegeeks te horen.",
+  gears:"Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit \u2014 ",
+  gearsLink:"zie het zelf \u2192"
+ }
+};
+var LKEY="siouxWatchRateMeterLang";
+var lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})();
+
+function render(){
+  var c=C[lang];
+  document.getElementById("title").textContent=c.title;
+  document.getElementById("sub").textContent=c.sub;
+  document.getElementById("intro").textContent=c.intro;
+  document.getElementById("toc").innerHTML=c.toc.map(function(x){return '<a href="#'+x[0]+'">'+x[1]+'</a>';}).join("");
+  document.getElementById("body").innerHTML=c.sections.map(function(s){
+    return '<section id="'+s.id+'"><h2><span class="ic">'+s.ic+'</span>'+s.h+'</h2>'
+      +'<p class="tagline">'+s.tag+'</p>'+s.html+'</section>';
+  }).join("");
+  document.getElementById("foot").innerHTML=c.footHtml;
+  document.getElementById("gears").innerHTML=c.gears+'<a href="/privacy/">'+c.gearsLink+'</a>';
+  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);});
+  document.documentElement.lang=lang;
+}
+[].forEach.call(document.querySelectorAll(".lang button"),function(b){
+  b.onclick=function(){lang=b.getAttribute("data-lang");try{localStorage.setItem(LKEY,lang);}catch(e){}render();};
+});
+render();
+</script>
+</body>
+</html>

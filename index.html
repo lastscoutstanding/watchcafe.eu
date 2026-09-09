@@ -45,6 +45,11 @@
     .cafe-log strong{color:var(--accent)}
 
     footer{margin-top:50px;text-align:center;padding:25px;color:#8f8c96;font-size:14px}
+    .newhere{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:12px 14px;margin-bottom:22px;text-decoration:none;color:var(--ink);font-size:14.5px}
+    .newhere:hover{background:#2a2a31}
+    .newhere b{color:var(--accent)}
+    .nh-x{background:none;border:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 4px;flex:none}
+    .nh-x:hover{color:var(--ink)}
     .gears{margin-top:10px;font-size:13px}
     .gears a{color:var(--accent);text-decoration:none}
     .gears a:hover{text-decoration:underline}
@@ -59,6 +64,10 @@
 
 <main>
   <div class="card">
+    <a class="newhere" id="newhere" href="/guide/">
+      <span><b data-nh-new>New here?</b> <span data-nh-read>Read the guide to the tools &rarr;</span></span>
+      <button class="nh-x" id="nhX" aria-label="dismiss" title="dismiss">&times;</button>
+    </a>
     <h2>Welcome!</h2>
     <p>
       The Sioux Watch Café is an informal meet-up for watch enthusiasts from Sioux.
@@ -75,6 +84,12 @@
 
     <h2>Our Tools</h2>
     <div class="tools">
+      <a class="tool" href="/guide/">
+        <span class="icon">&#128214;</span>
+        <b>Guide</b>
+        <span>New here? A walkthrough of the site and every tool, plus the key concepts.</span>
+        <span class="go">Read the guide &rarr;</span>
+      </a>
       <a class="tool" href="/clock/">
         <span class="icon">&#9202;</span>
         <b>Live Clock</b>
@@ -153,6 +168,24 @@
     }).join('');
     document.getElementById('cafeLogSec').style.display = '';
   }).catch(function(){ /* geen logbestand: sectie blijft verborgen */ });
+})();
+</script>
+<script>
+(function(){
+  var LKEY="siouxWatchRateMeterLang";
+  var lang; try{lang=localStorage.getItem(LKEY)||"en";}catch(e){lang="en";}
+  var T={en:{n:"New here?",r:"Read the guide to the tools \u2192"},
+         nl:{n:"Nieuw hier?",r:"Lees de handleiding bij de tools \u2192"}};
+  var nh=document.getElementById("newhere");
+  if(nh){
+    var t=T[lang]||T.en;
+    var nEl=nh.querySelector("[data-nh-new]"), rEl=nh.querySelector("[data-nh-read]");
+    if(nEl)nEl.textContent=t.n; if(rEl)rEl.textContent=t.r;
+    var dismissed; try{dismissed=localStorage.getItem("swcGuideSeen")==="1";}catch(e){dismissed=false;}
+    if(dismissed)nh.style.display="none";
+    var x=document.getElementById("nhX");
+    if(x)x.onclick=function(ev){ev.preventDefault();ev.stopPropagation();nh.style.display="none";try{localStorage.setItem("swcGuideSeen","1");}catch(e){}};
+  }
 })();
 </script>
 </body>
