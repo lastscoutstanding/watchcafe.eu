@@ -78,11 +78,12 @@
     .clock-panel {
       background: linear-gradient(180deg, #1d1d1d 0%, #111 100%);
       border-radius: 18px;
-      padding: 28px 20px 22px;
+      padding: 28px 16px 22px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      overflow-x: auto;
+      overflow-x: hidden;
+      max-width: 100%;
       box-shadow:
         inset 0 2px 4px rgba(255,255,255,0.04),
         inset 0 -4px 10px rgba(0,0,0,0.45),
@@ -90,19 +91,22 @@
     }
 
     .clock {
+      /* --u: schaal-eenheid, loopt mee met schermbreedte.
+         1px per eenheid op ruime schermen, kleiner op smalle telefoons. */
+      --u: clamp(0.40px, calc(0.190vw - 0.20px), 1px);
       display: flex;
       align-items: center;
-      gap: 10px;
-      min-width: max-content;
+      gap: calc(10 * var(--u));
     }
 
     /* ===== Main time digits ===== */
     .digit {
       position: relative;
-      width: 64px;
-      height: 116px;
+      width: calc(64 * var(--u));
+      height: calc(116 * var(--u));
       background: rgba(255,255,255,0.02);
-      border-radius: 10px;
+      border-radius: calc(10 * var(--u));
+      flex: none;
     }
 
     .segment {
@@ -123,32 +127,33 @@
     }
 
     .a, .d, .g {
-      width: 38px;
-      height: 10px;
-      left: 13px;
+      width: calc(38 * var(--u));
+      height: calc(10 * var(--u));
+      left: calc(13 * var(--u));
       clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
     }
 
-    .a { top: 6px; }
-    .g { top: 53px; }
-    .d { bottom: 6px; }
+    .a { top: calc(6 * var(--u)); }
+    .g { top: calc(53 * var(--u)); }
+    .d { bottom: calc(6 * var(--u)); }
 
     .b, .c, .e, .f {
-      width: 10px;
-      height: 42px;
+      width: calc(10 * var(--u));
+      height: calc(42 * var(--u));
       clip-path: polygon(0 10%, 50% 0, 100% 10%, 100% 90%, 50% 100%, 0 90%);
     }
 
-    .f { left: 6px; top: 12px; }
-    .b { right: 6px; top: 12px; }
-    .e { left: 6px; bottom: 12px; }
-    .c { right: 6px; bottom: 12px; }
+    .f { left: calc(6 * var(--u)); top: calc(12 * var(--u)); }
+    .b { right: calc(6 * var(--u)); top: calc(12 * var(--u)); }
+    .e { left: calc(6 * var(--u)); bottom: calc(12 * var(--u)); }
+    .c { right: calc(6 * var(--u)); bottom: calc(12 * var(--u)); }
 
     .colon {
-      width: 18px;
-      height: 116px;
+      width: calc(18 * var(--u));
+      height: calc(116 * var(--u));
       position: relative;
-      margin: 0 2px;
+      margin: 0 calc(2 * var(--u));
+      flex: none;
     }
 
     .colon::before,
@@ -157,8 +162,8 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      width: 10px;
-      height: 10px;
+      width: calc(10 * var(--u));
+      height: calc(10 * var(--u));
       border-radius: 50%;
       background: var(--led-on);
       box-shadow:
@@ -168,18 +173,19 @@
     }
 
     .colon::before {
-      top: 34px;
+      top: calc(34 * var(--u));
     }
 
     .colon::after {
-      bottom: 34px;
+      bottom: calc(34 * var(--u));
     }
 
     /* ===== Smaller date display ===== */
     .date-led {
       margin-top: 16px;
       padding: 10px 18px;
-      min-width: 320px;
+      min-width: min(320px, 100%);
+      max-width: 100%;
       text-align: center;
       background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
       border: 1px solid rgba(255,255,255,0.06);
@@ -312,57 +318,11 @@
       }
 
       .card {
-        padding: 24px;
-      }
-
-      .digit {
-        width: 48px;
-        height: 88px;
-      }
-
-      .a, .d, .g {
-        width: 28px;
-        height: 8px;
-        left: 10px;
-      }
-
-      .a { top: 5px; }
-      .g { top: 40px; }
-      .d { bottom: 5px; }
-
-      .b, .c, .e, .f {
-        width: 8px;
-        height: 30px;
-      }
-
-      .f { left: 5px; top: 10px; }
-      .b { right: 5px; top: 10px; }
-      .e { left: 5px; bottom: 10px; }
-      .c { right: 5px; bottom: 10px; }
-
-      .colon {
-        height: 88px;
-      }
-
-      .colon::before {
-        top: 24px;
-      }
-
-      .colon::after {
-        bottom: 24px;
-      }
-
-      .colon::before,
-      .colon::after {
-        width: 8px;
-        height: 8px;
+        padding: 24px 16px;
       }
 
       .date-led {
-        min-width: 240px;
-        font-size: 0.85rem;
         letter-spacing: 0.08em;
-        padding: 8px 12px;
       }
     }
   </style>
