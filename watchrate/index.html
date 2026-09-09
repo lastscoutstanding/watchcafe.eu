@@ -610,14 +610,15 @@ function colOff(v){v=Math.abs(v);return v<5?"#3be35b":v<15?"#e8d44d":v<30?"#ff8a
 function colRate(v){v=Math.abs(v);return v<5?"#3be35b":v<10?"#e8d44d":v<20?"#ff8a3c":"#ff3b30";}
 var MIN_RATE_GAP=6*3600000; // 6 hours
 
-function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions){
+function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain){
   // seriesSegs: array of segments; each segment: array of {t,v}
   var all=[];seriesSegs.forEach(function(s){all=all.concat(s);});
   (tgSessions||[]).forEach(function(sess){sess.readings.forEach(function(r){all.push({t:sess.t,v:r.rate});});});
   if(all.length<2){return false;}
   var W=600,H=160,L=52,R=10,T=10,B=26;
-  var t0=all[0].t,t1=all[all.length-1].t;
-  all.forEach(function(p){if(p.t<t0)t0=p.t;if(p.t>t1)t1=p.t;});
+  var t0,t1;
+  if(tDomain){t0=tDomain[0];t1=tDomain[1];}
+  else{t0=all[0].t;t1=all[all.length-1].t;all.forEach(function(p){if(p.t<t0)t0=p.t;if(p.t>t1)t1=p.t;});}
   var vs=all.map(function(p){return p.v;});
   var mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs);
   if(mn===mx){mn-=1;mx+=1;}
@@ -667,9 +668,12 @@ function drawCharts(w){
   var allSegs=segments(w);
   var idx=resolvedSegIndex(w);
   var segs=(idx==="all")?allSegs:[allSegs[idx]||allSegs[allSegs.length-1]];
+  // gedeelde tijd-as: min/max van alle getoonde offset-metingen
+  var tAll=[];segs.forEach(function(s){s.forEach(function(p){tAll.push(p.t);});});
+  var tDomain=tAll.length?[Math.min.apply(null,tAll),Math.max.apply(null,tAll)]:null;
   // offset chart
   var offSegs=segs.map(function(s){return s.map(function(p){return {t:p.t,v:p.offset};});});
-  var okOff=chartSVG(document.getElementById("chartOff"),offSegs,colOff,"s");
+  var okOff=chartSVG(document.getElementById("chartOff"),offSegs,colOff,"s",null,tDomain);
   ow.style.display=okOff?"block":"none";
   // rate chart: per segment, consecutive pairs >= 6h apart
   var rateSegs=segs.map(function(s){
@@ -684,7 +688,7 @@ function drawCharts(w){
     return pts;
   }).filter(function(s){return s.length;});
   var tgSessions=tgOf(w);
-  var okRate=chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions);
+  var okRate=chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain);
   rw.style.display=okRate?"block":"none";
   rh.style.display=(okOff||okRate)?"block":"none";
   document.getElementById("tgLegend").style.display=(okRate&&tgSessions.length)?"block":"none";
