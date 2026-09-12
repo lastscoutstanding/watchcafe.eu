@@ -3,53 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Sioux Watch Café</title>
+  <title>Watch Tools — The Sioux Watch Café</title>
   <script src="/nav.js" defer></script>
-  <script src="/meetings.js" defer></script>
   <style>
     :root{
       --bg:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
-      --accent:#d96a41; --accent-d:#c25a36; --banner:#b06a4a;
+      --accent:#d96a41; --accent-d:#c25a36;
       --ink:#e9e7e2; --muted:#a09da6;
+      --led-on:#ff1b1b; --led-off:#3a0b0b; --led-glow:rgba(255,59,59,0.85);
+      --amber-on:#ff9e3d; --amber-glow:rgba(255,138,60,0.7);
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-
-    header{text-align:center;padding:44px 20px 36px}
-    h1{color:var(--accent);margin:22px 0 8px;font-size:clamp(26px,4.5vw,38px);letter-spacing:.3px}
-    header p{color:var(--muted);font-size:16px;margin:0}
-
+    header{text-align:center;padding:34px 20px 8px}
+    h1{color:var(--accent);margin:0 0 6px;font-size:clamp(24px,4vw,34px);letter-spacing:.3px}
+    header p{color:var(--muted);font-size:15.5px;margin:0}
     main{max-width:900px;margin:0 auto 60px;padding:0 16px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px 32px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
-    @media(max-width:560px){.card{padding:22px 18px}}
-    h2{color:var(--accent);margin:34px 0 14px;font-size:20px}
-    h2:first-child{margin-top:0}
-    p{line-height:1.65}
 
-    .date-box{background:var(--banner);border-left:6px solid var(--accent);padding:18px;font-size:1.1rem;border-radius:8px;color:#fff;margin:6px 0 8px}
-    .date-box .nm{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.25);font-size:1rem}
-    .date-box .nm b{font-variant-numeric:tabular-nums;font-family:Consolas,"Courier New",monospace;font-size:1.05rem}
+    .clock-hero{display:block;text-decoration:none;margin:24px auto 8px;max-width:560px}
+    .clock-panel{background:linear-gradient(180deg,#1c1c1c,#0b0b0b);border:1px solid var(--border);border-radius:18px;padding:26px 18px 22px;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;max-width:100%;box-shadow:inset 0 2px 4px rgba(255,255,255,0.04),inset 0 -4px 10px rgba(0,0,0,0.45),0 8px 18px rgba(0,0,0,0.18);transition:border-color .15s}
+    .clock-hero:hover .clock-panel{border-color:var(--accent)}
+    .clock{--u:clamp(0.42px,calc(0.60vw - 0.10px),0.92px);display:flex;align-items:center;gap:calc(10 * var(--u))}
+    .digit{position:relative;width:calc(64 * var(--u));height:calc(116 * var(--u));background:rgba(255,255,255,0.02);border-radius:calc(10 * var(--u));flex:none}
+    .segment{position:absolute;background:var(--led-off);opacity:.28}
+    .segment.on{background:var(--led-on);opacity:1;box-shadow:0 0 8px var(--led-glow),0 0 16px var(--led-glow),0 0 28px rgba(255,60,60,.35)}
+    .a,.d,.g{width:calc(38 * var(--u));height:calc(10 * var(--u));left:calc(13 * var(--u));clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%)}
+    .a{top:calc(6 * var(--u))}.g{top:calc(53 * var(--u))}.d{bottom:calc(6 * var(--u))}
+    .b,.c,.e,.f{width:calc(10 * var(--u));height:calc(42 * var(--u));clip-path:polygon(0 10%,50% 0,100% 10%,100% 90%,50% 100%,0 90%)}
+    .f{left:calc(6 * var(--u));top:calc(12 * var(--u))}.b{right:calc(6 * var(--u));top:calc(12 * var(--u))}
+    .e{left:calc(6 * var(--u));bottom:calc(12 * var(--u))}.c{right:calc(6 * var(--u));bottom:calc(12 * var(--u))}
+    .colon{width:calc(18 * var(--u));height:calc(116 * var(--u));position:relative;margin:0 calc(2 * var(--u));flex:none}
+    .colon::before,.colon::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:calc(10 * var(--u));height:calc(10 * var(--u));border-radius:50%;background:var(--led-on);box-shadow:0 0 6px var(--led-glow),0 0 12px var(--led-glow),0 0 20px rgba(255,43,43,.3)}
+    .colon::before{top:calc(34 * var(--u))}.colon::after{bottom:calc(34 * var(--u))}
+    .date-led{margin-top:14px;padding:8px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);border-radius:9px;color:var(--amber-on);font-family:"Consolas","Courier New",monospace;font-size:1.05rem;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 0 4px var(--amber-glow),0 0 10px rgba(255,138,60,0.18)}
+    .clock-hint{text-align:center;color:#77747d;font-size:12.5px;margin:8px 0 0}
 
-    /* tools grid */
-    .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:6px}
-    .tool{display:block;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;
-      text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
+    .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:26px 0 0}
+    .tool{display:block;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
     .tool:hover{border-color:var(--accent);transform:translateY(-2px)}
     .tool .icon{font-size:26px;margin-bottom:10px;display:block;color:var(--accent)}
     .tool b{display:block;font-size:16px;margin-bottom:6px}
     .tool span{color:var(--muted);font-size:13.5px;line-height:1.5;display:block}
     .tool .go{color:var(--accent);font-size:13px;font-weight:600;margin-top:12px;display:inline-block}
 
-    ul{line-height:1.8;padding-left:22px}
-    .cafe-log{background:var(--card2);border-left:6px solid var(--accent);padding:18px;font-size:1rem;border-radius:8px;color:var(--ink);margin-bottom:18px;line-height:1.6}
-    .cafe-log strong{color:var(--accent)}
+    .cafe-ref{margin:24px 0 0;text-align:center;color:var(--muted);font-size:14.5px}
+    .cafe-ref a{color:var(--accent);text-decoration:none;font-weight:600}
+    .cafe-ref a:hover{text-decoration:underline}
 
-    footer{margin-top:50px;text-align:center;padding:25px;color:#8f8c96;font-size:14px}
-    .newhere{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:12px 14px;margin-bottom:22px;text-decoration:none;color:var(--ink);font-size:14.5px}
-    .newhere:hover{background:#2a2a31}
-    .newhere b{color:var(--accent)}
-    .nh-x{background:none;border:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 4px;flex:none}
-    .nh-x:hover{color:var(--ink)}
+    footer{margin-top:44px;text-align:center;padding:25px;color:#8f8c96;font-size:14px}
     .gears{margin-top:10px;font-size:13px}
     .gears a{color:var(--accent);text-decoration:none}
     .gears a:hover{text-decoration:underline}
@@ -58,135 +59,104 @@
 <body>
 
 <header>
-  <h1>The Sioux Watch Café</h1>
-  <p>A relaxed gathering for Sioux colleagues who like watches.</p>
+  <h1>Watch Tools</h1>
+  <p>Free browser tools to measure and track your mechanical watches.</p>
 </header>
 
 <main>
-  <div class="card">
-    <a class="newhere" id="newhere" href="/guide/">
-      <span><b data-nh-new>New here?</b> <span data-nh-read>Read the guide to the tools &rarr;</span></span>
-      <button class="nh-x" id="nhX" aria-label="dismiss" title="dismiss">&times;</button>
+  <a class="clock-hero" href="/clock/" title="Open the full-screen clock">
+    <div class="clock-panel">
+      <div class="clock" id="clock">
+        <div class="digit" id="digit0"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
+        <div class="digit" id="digit1"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
+        <div class="colon"></div>
+        <div class="digit" id="digit2"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
+        <div class="digit" id="digit3"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
+        <div class="colon"></div>
+        <div class="digit" id="digit4"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
+        <div class="digit" id="digit5"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
+      </div>
+      <div class="date-led" id="dateDisplay">MON 01 JAN 2026</div>
+    </div>
+    <p class="clock-hint" id="clockHint">Tap the clock for the full-screen version &rarr;</p>
+  </a>
+
+  <div class="tools">
+    <a class="tool" href="/watchrate/">
+      <span class="icon">&#9201;</span>
+      <b>Rate Meter</b>
+      <span>Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.</span>
+      <span class="go">Start measuring &rarr;</span>
     </a>
-    <h2>Welcome!</h2>
-    <p>
-      The Sioux Watch Café is an informal meet-up for watch enthusiasts from Sioux.
-      Join us for relaxed conversations about all aspects of horology—from mechanical
-      movements and complications to design, materials, diving watches, chronographs,
-      and the stories behind unique timepieces.
-    </p>
-
-    <h2>Next Café Date</h2>
-    <div class="date-box">
-      The Sioux Watch Café is every last Friday of the month at <strong>Labs</strong> during the Vrijmibo.
-      <div class="nm">Only <b data-countdown-nights>&hellip;</b> of sleep till <b data-countdown-date>&hellip;</b></div>
-    </div>
-
-    <h2>Our Tools</h2>
-    <div class="tools">
-      <a class="tool" href="/guide/">
-        <span class="icon">&#128214;</span>
-        <b>Guide</b>
-        <span>New here? A walkthrough of the site and every tool, plus the key concepts.</span>
-        <span class="go">Read the guide &rarr;</span>
-      </a>
-      <a class="tool" href="/clock/">
-        <span class="icon">&#9202;</span>
-        <b>Live Clock</b>
-        <span>A big LED reference clock on Amsterdam time — with an optional soft tick every 10 seconds.</span>
-        <span class="go">Open the clock &rarr;</span>
-      </a>
-      <a class="tool" href="/watchrate/">
-        <span class="icon">&#9201;</span>
-        <b>Watch Rate Meter</b>
-        <span>Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.</span>
-        <span class="go">Start measuring &rarr;</span>
-      </a>
-      <a class="tool" href="/powerreserve/">
-        <span class="icon">&#9203;</span>
-        <b>Power Reserve</b>
-        <span>Measure how long your watch runs on a full wind, reading the stop time straight off the hands.</span>
-        <span class="go">Measure reserve &rarr;</span>
-      </a>
-      <a class="tool" href="/watchrate/viewer.html">
-        <span class="icon">&#9201;</span>
-        <b>Backup Viewer</b>
-        <span>Load your Rate Meter backup files and browse rates, positions and offset traces per watch.</span>
-        <span class="go">Open the viewer &rarr;</span>
-      </a>
-      <a class="tool" href="/glossary/">
-        <span class="icon">&#9998;</span>
-        <b>Glossary</b>
-        <span>Watch and timegrapher terms explained in plain language, in English and Dutch.</span>
-        <span class="go">Browse the terms &rarr;</span>
-      </a>
-    </div>
-
-    <h2>Topics We Explore</h2>
-    <ul>
-      <li>Movement technology &amp; craftsmanship</li>
-      <li>Dive watches and underwater engineering</li>
-      <li>Chronographs and other complications</li>
-      <li>Watch design, materials, and aesthetics</li>
-      <li>Maintenance, straps, and daily-use tips</li>
-      <li>Collecting stories and iconic models</li>
-    </ul>
-
-    <p>
-      Everyone is welcome — whether you're a seasoned collector or simply curious.
-      Grab a drink, enjoy the atmosphere, and talk time with fellow Sioux watch fans!
-    </p>
-
-    <div id="cafeLogSec" style="display:none">
-      <h2>Previous Café Dates</h2>
-      <div id="cafeLog"></div>
-    </div>
+    <a class="tool" href="/powerreserve/">
+      <span class="icon">&#9203;</span>
+      <b>Power Reserve</b>
+      <span>Measure how long your watch runs on a full wind, reading the stop time straight off the hands.</span>
+      <span class="go">Measure reserve &rarr;</span>
+    </a>
+    <a class="tool" href="/glossary/">
+      <span class="icon">&#9998;</span>
+      <b>Glossary</b>
+      <span>Watch and timegrapher terms explained in plain language, in English and Dutch.</span>
+      <span class="go">Browse the terms &rarr;</span>
+    </a>
+    <a class="tool" href="/guide/">
+      <span class="icon">&#128214;</span>
+      <b>Guide</b>
+      <span>New here? A walkthrough of the site and every tool, plus the key concepts.</span>
+      <span class="go">Read the guide &rarr;</span>
+    </a>
   </div>
+
+  <p class="cafe-ref" id="cafeRef">Made by and for <a href="/cafe/">The Sioux Watch Café</a> &rarr;</p>
 </main>
 
 <footer>
-  © 2026 The Sioux Watch Café — Created by and for Sioux colleagues - info@watchcafe.eu
-  <div class="gears">This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a></div>
+  © 2026 The Sioux Watch Café — info@watchcafe.eu
+  <div class="gears" id="gears">This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a></div>
 </footer>
 
 <script>
-(function(){
-  fetch('/cafe-log.txt',{cache:'no-store'}).then(function(r){
-    if(!r.ok) throw 0; return r.text();
-  }).then(function(txt){
-    var lines = txt.split(/\r?\n/).filter(function(l){ return l.trim().charAt(0) !== '#'; });
-    var blocks = lines.join('\n').split(/\n\s*---+\s*\n/).map(function(b){ return b.trim(); }).filter(Boolean);
-    if(!blocks.length) return;
-    function esc(t){ return t.replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-    var box = document.getElementById('cafeLog');
-    box.innerHTML = blocks.map(function(b){
-      var i = b.indexOf('\n');
-      var title = i < 0 ? b : b.slice(0, i);
-      var body  = i < 0 ? '' : b.slice(i + 1).trim();
-      return '<div class="cafe-log"><strong>' + esc(title) + '</strong>' +
-             (body ? '<br>' + esc(body).replace(/\n/g, '<br>') : '') + '</div>';
-    }).join('');
-    document.getElementById('cafeLogSec').style.display = '';
-  }).catch(function(){ /* geen logbestand: sectie blijft verborgen */ });
-})();
-</script>
-<script>
-(function(){
-  var LKEY="siouxWatchRateMeterLang";
-  var lang; try{lang=localStorage.getItem(LKEY)||"en";}catch(e){lang="en";}
-  var T={en:{n:"New here?",r:"Read the guide to the tools \u2192"},
-         nl:{n:"Nieuw hier?",r:"Lees de handleiding bij de tools \u2192"}};
-  var nh=document.getElementById("newhere");
-  if(nh){
-    var t=T[lang]||T.en;
-    var nEl=nh.querySelector("[data-nh-new]"), rEl=nh.querySelector("[data-nh-read]");
-    if(nEl)nEl.textContent=t.n; if(rEl)rEl.textContent=t.r;
-    var dismissed; try{dismissed=localStorage.getItem("swcGuideSeen")==="1";}catch(e){dismissed=false;}
-    if(dismissed)nh.style.display="none";
-    var x=document.getElementById("nhX");
-    if(x)x.onclick=function(ev){ev.preventDefault();ev.stopPropagation();nh.style.display="none";try{localStorage.setItem("swcGuideSeen","1");}catch(e){}};
+  var digitMap={"0":["a","b","c","d","e","f"],"1":["b","c"],"2":["a","b","d","e","g"],"3":["a","b","c","d","g"],"4":["b","c","f","g"],"5":["a","c","d","f","g"],"6":["a","c","d","e","f","g"],"7":["a","b","c"],"8":["a","b","c","d","e","f","g"],"9":["a","b","c","d","f","g"]};
+  function setDigit(id,ch){
+    var digit=document.getElementById(id); if(!digit) return;
+    var active=digitMap[ch]||[];
+    digit.querySelectorAll(".segment").forEach(function(seg){
+      var cls=["a","b","c","d","e","f","g"].filter(function(c){return seg.classList.contains(c);})[0];
+      seg.classList.toggle("on",active.indexOf(cls)>-1);
+    });
   }
-})();
+  function tick(){
+    var now=new Date();
+    var s=(String(now.getHours()).padStart(2,"0")+String(now.getMinutes()).padStart(2,"0")+String(now.getSeconds()).padStart(2,"0")).split("");
+    for(var i=0;i<6;i++) setDigit("digit"+i,s[i]);
+    var d=now.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).replace(/,/g,"").toUpperCase();
+    document.getElementById("dateDisplay").textContent=d;
+  }
+  tick(); setInterval(tick,1000);
+
+  var T={
+    en:{h1:"Watch Tools",sub:"Free browser tools to measure and track your mechanical watches.",
+        hint:"Tap the clock for the full-screen version \u2192",
+        cafe:'Made by and for <a href="/cafe/">The Sioux Watch Café</a> \u2192',
+        gears:'This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a>'},
+    nl:{h1:"Horloge-tools",sub:"Gratis browsertools om je mechanische horloges te meten en te volgen.",
+        hint:"Tik op de klok voor de schermvullende versie \u2192",
+        cafe:'Gemaakt door en voor <a href="/cafe/">The Sioux Watch Café</a> \u2192',
+        gears:'Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — <a href="/privacy/">zie het zelf →</a>'}
+  };
+  function applyLang(l){
+    var t=T[l]||T.en;
+    document.querySelector("header h1").textContent=t.h1;
+    document.querySelector("header p").textContent=t.sub;
+    document.getElementById("clockHint").textContent=t.hint;
+    document.getElementById("cafeRef").innerHTML=t.cafe;
+    document.getElementById("gears").innerHTML=t.gears;
+    document.documentElement.lang=l;
+  }
+  var lang; try{lang=localStorage.getItem("siouxWatchRateMeterLang")||"en";}catch(e){lang="en";}
+  applyLang(lang);
+  window.addEventListener("swclang",function(e){applyLang(e.detail);});
 </script>
 </body>
 </html>

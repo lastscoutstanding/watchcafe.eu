@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch Café — The Sioux Watch Café</title>
+  <script src="/nav.js" defer></script>
+  <script src="/meetings.js" defer></script>
+  <style>
+    :root{
+      --bg:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
+      --accent:#d96a41; --accent-d:#c25a36; --banner:#b06a4a;
+      --ink:#e9e7e2; --muted:#a09da6;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+    header{text-align:center;padding:40px 20px 30px}
+    h1{color:var(--accent);margin:0 0 8px;font-size:clamp(26px,4.5vw,38px);letter-spacing:.3px}
+    header p{color:var(--muted);font-size:16px;margin:0}
+    main{max-width:900px;margin:0 auto 60px;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px 32px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+    @media(max-width:560px){.card{padding:22px 18px}}
+    h2{color:var(--accent);margin:34px 0 14px;font-size:20px}
+    h2:first-child{margin-top:0}
+    p{line-height:1.65}
+    .date-box{background:var(--banner);border-left:6px solid var(--accent);padding:18px;font-size:1.1rem;border-radius:8px;color:#fff;margin:6px 0 8px}
+    .date-box .nm{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.25);font-size:1rem}
+    .date-box .nm b{font-variant-numeric:tabular-nums;font-family:Consolas,"Courier New",monospace;font-size:1.05rem}
+    ul{line-height:1.8;padding-left:22px}
+    .cafe-log{background:var(--card2);border-left:6px solid var(--accent);padding:18px;font-size:1rem;border-radius:8px;color:var(--ink);margin-bottom:18px;line-height:1.6}
+    .cafe-log strong{color:var(--accent)}
+    .backlink{display:inline-block;margin-top:6px;color:var(--accent);text-decoration:none;font-size:14px;font-weight:600}
+    .backlink:hover{text-decoration:underline}
+    footer{margin-top:50px;text-align:center;padding:25px;color:#8f8c96;font-size:14px}
+    .gears{margin-top:10px;font-size:13px}
+    .gears a{color:var(--accent);text-decoration:none}
+    .gears a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>The Sioux Watch Café</h1>
+  <p>A relaxed gathering for Sioux colleagues who like watches.</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Welcome!</h2>
+    <p>
+      The Sioux Watch Café is an informal meet-up for watch enthusiasts from Sioux.
+      Join us for relaxed conversations about all aspects of horology—from mechanical
+      movements and complications to design, materials, diving watches, chronographs,
+      and the stories behind unique timepieces.
+    </p>
+
+    <h2>Next Café Date</h2>
+    <div class="date-box">
+      The Sioux Watch Café is every last Friday of the month at <strong>Labs</strong> during the Vrijmibo.
+      <div class="nm">Only <b data-countdown-nights>&hellip;</b> of sleep till <b data-countdown-date>&hellip;</b></div>
+    </div>
+
+    <h2>Topics We Explore</h2>
+    <ul>
+      <li>Movement technology &amp; craftsmanship</li>
+      <li>Dive watches and underwater engineering</li>
+      <li>Chronographs and other complications</li>
+      <li>Watch design, materials, and aesthetics</li>
+      <li>Maintenance, straps, and daily-use tips</li>
+      <li>Collecting stories and iconic models</li>
+    </ul>
+
+    <p>
+      Everyone is welcome — whether you're a seasoned collector or simply curious.
+      Grab a drink, enjoy the atmosphere, and talk time with fellow Sioux watch fans!
+    </p>
+
+    <div id="cafeLogSec" style="display:none">
+      <h2>Previous Café Dates</h2>
+      <div id="cafeLog"></div>
+    </div>
+
+    <p><a class="backlink" href="/">&larr; Back to the tools</a></p>
+  </div>
+</main>
+
+<footer>
+  © 2026 The Sioux Watch Café — Created by and for Sioux colleagues - info@watchcafe.eu
+  <div class="gears">This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a></div>
+</footer>
+
+<script>
+(function(){
+  fetch('/cafe-log.txt',{cache:'no-store'}).then(function(r){
+    if(!r.ok) throw 0; return r.text();
+  }).then(function(txt){
+    var lines = txt.split(/\r?\n/).filter(function(l){ return l.trim().charAt(0) !== '#'; });
+    var blocks = lines.join('\n').split(/\n\s*---+\s*\n/).map(function(b){ return b.trim(); }).filter(Boolean);
+    if(!blocks.length) return;
+    function esc(t){ return t.replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    var box = document.getElementById('cafeLog');
+    box.innerHTML = blocks.map(function(b){
+      var i = b.indexOf('\n');
+      var title = i < 0 ? b : b.slice(0, i);
+      var body  = i < 0 ? '' : b.slice(i + 1).trim();
+      return '<div class="cafe-log"><strong>' + esc(title) + '</strong>' +
+             (body ? '<br>' + esc(body).replace(/\n/g, '<br>') : '') + '</div>';
+    }).join('');
+    document.getElementById('cafeLogSec').style.display = '';
+  }).catch(function(){ /* geen logbestand: sectie blijft verborgen */ });
+})();
+</script>
+</body>
+</html>

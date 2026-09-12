@@ -63,10 +63,6 @@
       <div>
         <h1 id="title">Guide</h1>
       </div>
-      <div class="lang">
-        <button data-lang="en">EN</button>
-        <button data-lang="nl">NL</button>
-      </div>
     </div>
     <p class="sub" id="sub"></p>
 
@@ -213,12 +209,9 @@ function render(){
   }).join("");
   document.getElementById("foot").innerHTML=c.footHtml;
   document.getElementById("gears").innerHTML=c.gears+'<a href="/privacy/">'+c.gearsLink+'</a>';
-  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);});
   document.documentElement.lang=lang;
 }
-[].forEach.call(document.querySelectorAll(".lang button"),function(b){
-  b.onclick=function(){lang=b.getAttribute("data-lang");try{localStorage.setItem(LKEY,lang);}catch(e){}render();};
-});
+window.addEventListener("swclang",function(e){lang=e.detail;render();});
 render();
 </script>
 </body>

@@ -100,10 +100,6 @@
         <h1 id="title">Power Reserve</h1>
         <p class="sub" id="sub"></p>
       </div>
-      <div class="lang">
-        <button data-lang="en">EN</button>
-        <button data-lang="nl">NL</button>
-      </div>
     </div>
 
     <div class="notice" id="notice"></div>
@@ -464,7 +460,6 @@ function applyStatic(){
   setTxt("linkHome",tr("linkHome"));
   setTxt("linkMeter",tr("linkMeter"));
   var g=document.getElementById("gears");if(g)g.innerHTML=tr("gears")+'<a href="/privacy/">'+tr("gearsLink")+'</a>';
-  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);});
   document.documentElement.lang=lang;
 }
 
@@ -476,9 +471,7 @@ document.getElementById("woundBtn").onclick=function(){
   w.prCurrent={start:Date.now(),offset:0,lastRunning:null,stopped:false,handsInput:"",dayIdx:null};
   save();renderAll();tickClock();
 };
-[].forEach.call(document.querySelectorAll(".lang button"),function(b){
-  b.onclick=function(){lang=b.getAttribute("data-lang");try{localStorage.setItem(LKEY,lang);}catch(e){}renderAll();tickClock();};
-});
+window.addEventListener("swclang",function(e){lang=e.detail;renderAll();tickClock();});
 
 /* ===== init ===== */
 if(memOnly)showNotice();

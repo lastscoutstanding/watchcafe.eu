@@ -160,10 +160,6 @@
       </div>
       <div class="head-tools">
         <button class="qbtn" id="qbtn" title="">?</button>
-        <div class="lang">
-          <button id="lang-en" data-l="en">EN</button>
-          <button id="lang-nl" data-l="nl">NL</button>
-        </div>
       </div>
     </div>
 
@@ -505,8 +501,6 @@ function applyChrome(){
   const so=document.getElementById("sort").options;
   so[0].textContent=t().sName; so[1].textContent=t().sRate; so[2].textContent=t().sCount; so[3].textContent=t().sRecent;
   document.getElementById("t-foot").textContent=t().foot;
-  document.getElementById("lang-en").classList.toggle("on",lang==="en");
-  document.getElementById("lang-nl").classList.toggle("on",lang==="nl");
 }
 
 function render(){
@@ -569,7 +563,7 @@ document.getElementById("sort").onchange=e=>{sortBy=e.target.value;render();};
 document.getElementById("sampleBtn").onclick=e=>{e.stopPropagation();loadJSON("voorbeeld-backup.json",SAMPLE);};
 document.getElementById("qbtn").onclick=()=>{guideOpen=true;render();};
 document.getElementById("gx").onclick=()=>{guideOpen=false;render();};
-document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem(LKEY,lang);}catch(e){}render();});
+window.addEventListener("swclang",e=>{lang=e.detail;render();});
 
 /* ---------- sample ---------- */
 const DAY=MS_PER_DAY,T0=Date.parse("2026-06-01T08:00:00");

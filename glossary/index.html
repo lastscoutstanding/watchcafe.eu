@@ -45,10 +45,6 @@
         <h1 id="title">Watch glossary</h1>
         <p class="sub" id="sub"></p>
       </div>
-      <div class="lang">
-        <button data-lang="en">EN</button>
-        <button data-lang="nl">NL</button>
-      </div>
     </div>
     <input type="text" id="search" autocomplete="off">
     <p class="count" id="count"></p>
@@ -109,14 +105,11 @@ function applyLang(){
   document.getElementById("title").textContent=u.title;
   document.getElementById("sub").textContent=u.sub;
   document.getElementById("search").placeholder=u.search;
-  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);});
   document.documentElement.lang=lang;
   render();
 }
 
-[].forEach.call(document.querySelectorAll(".lang button"),function(b){
-  b.onclick=function(){lang=b.getAttribute("data-lang");try{localStorage.setItem(LKEY,lang);}catch(e){}applyLang();};
-});
+window.addEventListener("swclang",function(e){lang=e.detail;applyLang();});
 document.getElementById("search").addEventListener("input",function(e){query=e.target.value.trim();render();});
 
 fetch("/glossary.txt",{cache:"no-store"}).then(function(r){
