@@ -84,27 +84,27 @@
   <div class="tools">
     <a class="tool" href="/watchrate/">
       <span class="icon">&#9201;</span>
-      <b>Rate Meter</b>
-      <span>Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.</span>
-      <span class="go">Start measuring &rarr;</span>
+      <b id="t_rate_h">Rate Meter</b>
+      <span id="t_rate_d">Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.</span>
+      <span class="go" id="t_rate_c">Start measuring &rarr;</span>
     </a>
     <a class="tool" href="/powerreserve/">
       <span class="icon">&#9203;</span>
-      <b>Power Reserve</b>
-      <span>Measure how long your watch runs on a full wind, reading the stop time straight off the hands.</span>
-      <span class="go">Measure reserve &rarr;</span>
+      <b id="t_pr_h">Power Reserve</b>
+      <span id="t_pr_d">Measure how long your watch runs on a full wind, reading the stop time straight off the hands.</span>
+      <span class="go" id="t_pr_c">Measure reserve &rarr;</span>
     </a>
     <a class="tool" href="/glossary/">
       <span class="icon">&#9998;</span>
-      <b>Glossary</b>
-      <span>Watch and timegrapher terms explained in plain language, in English and Dutch.</span>
-      <span class="go">Browse the terms &rarr;</span>
+      <b id="t_gl_h">Glossary</b>
+      <span id="t_gl_d">Watch and timegrapher terms explained in plain language, in English and Dutch.</span>
+      <span class="go" id="t_gl_c">Browse the terms &rarr;</span>
     </a>
     <a class="tool" href="/guide/">
       <span class="icon">&#128214;</span>
-      <b>Guide</b>
-      <span>New here? A walkthrough of the site and every tool, plus the key concepts.</span>
-      <span class="go">Read the guide &rarr;</span>
+      <b id="t_gu_h">Guide</b>
+      <span id="t_gu_d">New here? A walkthrough of the site and every tool, plus the key concepts.</span>
+      <span class="go" id="t_gu_c">Read the guide &rarr;</span>
     </a>
   </div>
 
@@ -139,11 +139,19 @@
     en:{h1:"Watch Tools",sub:"Free browser tools to measure and track your mechanical watches.",
         hint:"Tap the clock for the full-screen version \u2192",
         cafe:'Made by and for <a href="/cafe/">The Sioux Watch Café</a> \u2192',
-        gears:'This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a>'},
+        gears:'This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a>',
+        rate_h:"Rate Meter",rate_d:"Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.",rate_c:"Start measuring \u2192",
+        pr_h:"Power Reserve",pr_d:"Measure how long your watch runs on a full wind, reading the stop time straight off the hands.",pr_c:"Measure reserve \u2192",
+        gl_h:"Glossary",gl_d:"Watch and timegrapher terms explained in plain language, in English and Dutch.",gl_c:"Browse the terms \u2192",
+        gu_h:"Guide",gu_d:"New here? A walkthrough of the site and every tool, plus the key concepts.",gu_c:"Read the guide \u2192"},
     nl:{h1:"Horloge-tools",sub:"Gratis browsertools om je mechanische horloges te meten en te volgen.",
         hint:"Tik op de klok voor de schermvullende versie \u2192",
         cafe:'Gemaakt door en voor <a href="/cafe/">The Sioux Watch Café</a> \u2192',
-        gears:'Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — <a href="/privacy/">zie het zelf →</a>'}
+        gears:'Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — <a href="/privacy/">zie het zelf →</a>',
+        rate_h:"Rate Meter",rate_d:"Meet hoeveel seconden per dag je horloge voor- of achterloopt, met grafieken en een meethistorie.",rate_c:"Begin met meten \u2192",
+        pr_h:"Gangreserve",pr_d:"Meet hoe lang je horloge loopt op een volledige opwinding, door de stoptijd rechtstreeks van de wijzers af te lezen.",pr_c:"Meet de gangreserve \u2192",
+        gl_h:"Begrippenlijst",gl_d:"Horloge- en timegrapher-begrippen in gewone taal uitgelegd, in het Nederlands en Engels.",gl_c:"Bekijk de begrippen \u2192",
+        gu_h:"Handleiding",gu_d:"Nieuw hier? Een rondleiding door de site en elke tool, plus de kernbegrippen.",gu_c:"Lees de handleiding \u2192"}
   };
   function applyLang(l){
     var t=T[l]||T.en;
@@ -152,6 +160,11 @@
     document.getElementById("clockHint").textContent=t.hint;
     document.getElementById("cafeRef").innerHTML=t.cafe;
     document.getElementById("gears").innerHTML=t.gears;
+    var tiles=[["rate",t.rate_h,t.rate_d,t.rate_c],["pr",t.pr_h,t.pr_d,t.pr_c],["gl",t.gl_h,t.gl_d,t.gl_c],["gu",t.gu_h,t.gu_d,t.gu_c]];
+    tiles.forEach(function(x){
+      var h=document.getElementById("t_"+x[0]+"_h"),d=document.getElementById("t_"+x[0]+"_d"),c=document.getElementById("t_"+x[0]+"_c");
+      if(h)h.textContent=x[1]; if(d)d.textContent=x[2]; if(c)c.innerHTML=x[3];
+    });
     document.documentElement.lang=l;
   }
   var lang; try{lang=localStorage.getItem("siouxWatchRateMeterLang")||"en";}catch(e){lang="en";}

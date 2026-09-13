@@ -40,55 +40,86 @@
 <body>
 
 <header>
-  <h1>The Sioux Watch Café</h1>
-  <p>A relaxed gathering for Sioux colleagues who like watches.</p>
+  <h1 id="c_h1">The Sioux Watch Café</h1>
+  <p id="c_sub">A relaxed gathering for Sioux colleagues who like watches.</p>
 </header>
 
 <main>
   <div class="card">
-    <h2>Welcome!</h2>
-    <p>
-      The Sioux Watch Café is an informal meet-up for watch enthusiasts from Sioux.
-      Join us for relaxed conversations about all aspects of horology—from mechanical
-      movements and complications to design, materials, diving watches, chronographs,
-      and the stories behind unique timepieces.
-    </p>
+    <h2 id="c_welcome_h">Welcome!</h2>
+    <p id="c_welcome_p"></p>
 
-    <h2>Next Café Date</h2>
+    <h2 id="c_next_h">Next Café Date</h2>
     <div class="date-box">
-      The Sioux Watch Café is every last Friday of the month at <strong>Labs</strong> during the Vrijmibo.
-      <div class="nm">Only <b data-countdown-nights>&hellip;</b> of sleep till <b data-countdown-date>&hellip;</b></div>
+      <span id="c_next_txt"></span>
+      <div class="nm"><span id="c_nm_only">Only</span> <b data-countdown-nights>&hellip;</b> <span id="c_nm_till">of sleep till</span> <b data-countdown-date>&hellip;</b></div>
     </div>
 
-    <h2>Topics We Explore</h2>
-    <ul>
-      <li>Movement technology &amp; craftsmanship</li>
-      <li>Dive watches and underwater engineering</li>
-      <li>Chronographs and other complications</li>
-      <li>Watch design, materials, and aesthetics</li>
-      <li>Maintenance, straps, and daily-use tips</li>
-      <li>Collecting stories and iconic models</li>
-    </ul>
+    <h2 id="c_topics_h">Topics We Explore</h2>
+    <ul id="c_topics"></ul>
 
-    <p>
-      Everyone is welcome — whether you're a seasoned collector or simply curious.
-      Grab a drink, enjoy the atmosphere, and talk time with fellow Sioux watch fans!
-    </p>
+    <p id="c_everyone"></p>
 
     <div id="cafeLogSec" style="display:none">
-      <h2>Previous Café Dates</h2>
+      <h2 id="c_prev_h">Previous Café Dates</h2>
       <div id="cafeLog"></div>
     </div>
 
-    <p><a class="backlink" href="/">&larr; Back to the tools</a></p>
+    <p><a class="backlink" href="/" id="c_back">&larr; Back to the tools</a></p>
   </div>
 </main>
 
 <footer>
-  © 2026 The Sioux Watch Café — Created by and for Sioux colleagues - info@watchcafe.eu
-  <div class="gears">This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a></div>
+  <span id="c_copy">© 2026 The Sioux Watch Café — Created by and for Sioux colleagues - info@watchcafe.eu</span>
+  <div class="gears" id="c_gears">This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a></div>
 </footer>
 
+<script>
+(function(){
+  var T={
+    en:{sub:"A relaxed gathering for Sioux colleagues who like watches.",
+      welcome_h:"Welcome!",
+      welcome_p:"The Sioux Watch Caf\u00e9 is an informal meet-up for watch enthusiasts from Sioux. Join us for relaxed conversations about all aspects of horology\u2014from mechanical movements and complications to design, materials, diving watches, chronographs, and the stories behind unique timepieces.",
+      next_h:"Next Café Date",
+      next_txt:'The Sioux Watch Café is every last Friday of the month at <strong>Labs</strong> during the Vrijmibo.',
+      nm_only:"Only",nm_till:"of sleep till",
+      topics_h:"Topics We Explore",
+      topics:["Movement technology & craftsmanship","Dive watches and underwater engineering","Chronographs and other complications","Watch design, materials, and aesthetics","Maintenance, straps, and daily-use tips","Collecting stories and iconic models"],
+      everyone:"Everyone is welcome \u2014 whether you're a seasoned collector or simply curious. Grab a drink, enjoy the atmosphere, and talk time with fellow Sioux watch fans!",
+      prev_h:"Previous Café Dates",
+      back:"\u2190 Back to the tools",
+      gears:'This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a>'},
+    nl:{sub:"Een ontspannen samenkomst voor Sioux-collega's met een zwak voor horloges.",
+      welcome_h:"Welkom!",
+      welcome_p:"The Sioux Watch Caf\u00e9 is een informele meetup voor horlogeliefhebbers van Sioux. Sluit aan voor ontspannen gesprekken over alle facetten van horlogerie\u2014van mechanische uurwerken en complicaties tot ontwerp, materialen, duikhorloges, chronografen en de verhalen achter bijzondere tijdmeters.",
+      next_h:"Volgende caféavond",
+      next_txt:'The Sioux Watch Café is elke laatste vrijdag van de maand bij <strong>Labs</strong> tijdens de Vrijmibo.',
+      nm_only:"Nog",nm_till:"nachtjes slapen tot",
+      topics_h:"Onderwerpen die we verkennen",
+      topics:["Uurwerktechniek & vakmanschap","Duikhorloges en onderwatertechniek","Chronografen en andere complicaties","Horloge-ontwerp, materialen en esthetiek","Onderhoud, bandjes en dagelijkse tips","Verzamelverhalen en iconische modellen"],
+      everyone:"Iedereen is welkom \u2014 of je nu een doorgewinterde verzamelaar bent of gewoon nieuwsgierig. Pak een drankje, geniet van de sfeer en praat over tijd met mede-horlogefans van Sioux!",
+      prev_h:"Vorige caféavonden",
+      back:"\u2190 Terug naar de tools",
+      gears:'Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — <a href="/privacy/">zie het zelf →</a>'}
+  };
+  function applyLang(l){
+    var t=T[l]||T.en;
+    function set(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+    function html(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
+    set("c_sub",t.sub); set("c_welcome_h",t.welcome_h); set("c_welcome_p",t.welcome_p);
+    set("c_next_h",t.next_h); html("c_next_txt",t.next_txt);
+    set("c_nm_only",t.nm_only); set("c_nm_till",t.nm_till);
+    set("c_topics_h",t.topics_h); set("c_everyone",t.everyone);
+    set("c_prev_h",t.prev_h); set("c_back",t.back); html("c_gears",t.gears);
+    var ul=document.getElementById("c_topics");
+    if(ul)ul.innerHTML=t.topics.map(function(x){return "<li>"+x+"</li>";}).join("");
+    document.documentElement.lang=l;
+  }
+  var lang; try{lang=localStorage.getItem("siouxWatchRateMeterLang")||"en";}catch(e){lang="en";}
+  applyLang(lang);
+  window.addEventListener("swclang",function(e){applyLang(e.detail);});
+})();
+</script>
 <script>
 (function(){
   fetch('/cafe-log.txt',{cache:'no-store'}).then(function(r){
