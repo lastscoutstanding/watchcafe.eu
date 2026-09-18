@@ -41,6 +41,11 @@
     .colon::before{top:calc(34 * var(--u))}.colon::after{bottom:calc(34 * var(--u))}
     .date-led{margin-top:14px;padding:8px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);border-radius:9px;color:var(--amber-on);font-family:"Consolas","Courier New",monospace;font-size:1.05rem;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 0 4px var(--amber-glow),0 0 10px rgba(255,138,60,0.18)}
     .clock-hint{text-align:center;color:#77747d;font-size:12.5px;margin:8px 0 0}
+    .world{width:100%;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    @media(max-width:520px){.world{grid-template-columns:repeat(3,1fr);row-gap:14px}}
+    .wz{text-align:center;min-width:0}
+    .wz .wt{font-family:"Consolas","Courier New",monospace;color:#ff5a4d;font-size:clamp(15px,4vw,19px);letter-spacing:1px;text-shadow:0 0 4px rgba(255,59,48,0.3)}
+    .wz .wc{color:#a09da6;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;margin-top:3px;line-height:1.25}
 
     .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:26px 0 0}
     .tool{display:block;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
@@ -81,6 +86,13 @@
         <div class="digit" id="digit5"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
       </div>
       <div class="date-led" id="dateDisplay">MON 01 JAN 2026</div>
+      <div class="world" id="world">
+        <div class="wz"><div class="wt" data-tz="America/Los_Angeles">--:--</div><div class="wc">San Francisco</div></div>
+        <div class="wz"><div class="wt" data-tz="America/New_York">--:--</div><div class="wc">New York</div></div>
+        <div class="wz"><div class="wt" data-tz="Europe/London">--:--</div><div class="wc">London</div></div>
+        <div class="wz"><div class="wt" data-tz="Asia/Singapore">--:--</div><div class="wc">Singapore</div></div>
+        <div class="wz"><div class="wt" data-tz="Australia/Sydney">--:--</div><div class="wc">Sydney</div></div>
+      </div>
     </div>
     <p class="clock-hint" id="clockHint">Tap the clock for the full-screen version &rarr;</p>
   </a>
@@ -136,6 +148,11 @@
     for(var i=0;i<6;i++) setDigit("digit"+i,s[i]);
     var d=now.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).replace(/,/g,"").toUpperCase();
     document.getElementById("dateDisplay").textContent=d;
+    document.querySelectorAll("#world .wt").forEach(function(el){
+      try{
+        el.textContent=new Intl.DateTimeFormat("en-GB",{timeZone:el.getAttribute("data-tz"),hour:"2-digit",minute:"2-digit",hour12:false}).format(now);
+      }catch(e){el.textContent="--:--";}
+    });
   }
   tick(); setInterval(tick,1000);
 
