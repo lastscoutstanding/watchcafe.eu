@@ -45,6 +45,7 @@
     @media(max-width:520px){.world{grid-template-columns:repeat(3,1fr);row-gap:14px}}
     .wz{text-align:center;min-width:0}
     .wz .wt{font-family:"Consolas","Courier New",monospace;color:#ff5a4d;font-size:clamp(15px,4vw,19px);letter-spacing:1px;text-shadow:0 0 4px rgba(255,59,48,0.3)}
+    .wz .wo{font-family:"Consolas","Courier New",monospace;color:#8a8890;font-size:11px;margin-top:1px}
     .wz .wc{color:#a09da6;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;margin-top:3px;line-height:1.25}
 
     .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:26px 0 0}
@@ -86,13 +87,7 @@
         <div class="digit" id="digit5"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
       </div>
       <div class="date-led" id="dateDisplay">MON 01 JAN 2026</div>
-      <div class="world" id="world">
-        <div class="wz"><div class="wt" data-tz="America/Los_Angeles">--:--</div><div class="wc">San Francisco</div></div>
-        <div class="wz"><div class="wt" data-tz="America/New_York">--:--</div><div class="wc">New York</div></div>
-        <div class="wz"><div class="wt" data-tz="Europe/London">--:--</div><div class="wc">London</div></div>
-        <div class="wz"><div class="wt" data-tz="Asia/Singapore">--:--</div><div class="wc">Singapore</div></div>
-        <div class="wz"><div class="wt" data-tz="Australia/Sydney">--:--</div><div class="wc">Sydney</div></div>
-      </div>
+      <div class="world" id="world"></div>
     </div>
     <p class="clock-hint" id="clockHint">Tap the clock for the full-screen version &rarr;</p>
   </a>
@@ -148,12 +143,50 @@
     for(var i=0;i<6;i++) setDigit("digit"+i,s[i]);
     var d=now.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).replace(/,/g,"").toUpperCase();
     document.getElementById("dateDisplay").textContent=d;
+    updateWorld(now);
+  }
+
+  var CITIES=[
+    {city:"San Francisco",tz:"America/Los_Angeles"},
+    {city:"New York",tz:"America/New_York"},
+    {city:"London",tz:"Europe/London"},
+    {city:"Cluj",tz:"Europe/Bucharest"},
+    {city:"Pune",tz:"Asia/Kolkata"},
+    {city:"Suzhou",tz:"Asia/Shanghai"},
+    {city:"Singapore",tz:"Asia/Singapore"},
+    {city:"Da Nang",tz:"Asia/Ho_Chi_Minh"},
+    {city:"Sydney",tz:"Australia/Sydney"}
+  ];
+  // uurverschil van een tijdzone t.o.v. de systeemtijdzone, op moment 'now'
+  function tzOffsetHours(tz,now){
+    try{
+      var s=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(now);
+      var o={}; s.forEach(function(p){o[p.type]=p.value;});
+      var asUTC=Date.UTC(+o.year,+o.month-1,+o.day,(+o.hour)%24,+o.minute);
+      var localAsUTC=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate(),now.getHours(),now.getMinutes());
+      return Math.round((asUTC-localAsUTC)/1800000)/2;
+    }catch(e){return null;}
+  }
+  function fmtOffset(h){ if(h===null)return ""; if(h===0)return "\u00b10"; var a=Math.abs(h); var n=(a%1===0)?String(a):a.toFixed(1); return (h>0?"+":"\u2212")+n; }
+  function buildWorld(now){
+    var sorted=CITIES.map(function(c){return {c:c,off:tzOffsetHours(c.tz,now)};})
+      .sort(function(a,b){return (a.off===null?1e9:a.off)-(b.off===null?1e9:b.off);});
+    document.getElementById("world").innerHTML=sorted.map(function(x){
+      return '<div class="wz"><div class="wt" data-tz="'+x.c.tz+'">--:--</div>'
+        +'<div class="wo" data-tzoff="'+x.c.tz+'"></div>'
+        +'<div class="wc">'+x.c.city+'</div></div>';
+    }).join("");
+  }
+  function updateWorld(now){
     document.querySelectorAll("#world .wt").forEach(function(el){
-      try{
-        el.textContent=new Intl.DateTimeFormat("en-GB",{timeZone:el.getAttribute("data-tz"),hour:"2-digit",minute:"2-digit",hour12:false}).format(now);
-      }catch(e){el.textContent="--:--";}
+      try{el.textContent=new Intl.DateTimeFormat("en-GB",{timeZone:el.getAttribute("data-tz"),hour:"2-digit",minute:"2-digit",hour12:false}).format(now);}
+      catch(e){el.textContent="--:--";}
+    });
+    document.querySelectorAll("#world .wo").forEach(function(el){
+      el.textContent=fmtOffset(tzOffsetHours(el.getAttribute("data-tzoff"),now))+" h";
     });
   }
+  buildWorld(new Date());
   tick(); setInterval(tick,1000);
 
   var T={
