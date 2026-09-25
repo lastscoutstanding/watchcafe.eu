@@ -20,6 +20,23 @@
     try{ window.dispatchEvent(new CustomEvent("swclang", {detail:l})); }catch(e){}
   }
 
+  var THEMES = [
+    ["cafe","Watch Caf\u00e9"], ["pepsi","Pepsi"], ["snowflake","Snowflake"],
+    ["speedy","Speedy"], ["monster","Monster"], ["kermit","Kermit"]
+  ];
+  var TKEY = "siouxWatchTheme";
+  function getTheme(){ try{ return localStorage.getItem(TKEY) || "cafe"; }catch(e){ return "cafe"; } }
+  function applyTheme(t){
+    if(t==="cafe"){ document.documentElement.removeAttribute("data-theme"); }
+    else{ document.documentElement.setAttribute("data-theme", t); }
+  }
+  function setTheme(t){
+    try{ localStorage.setItem(TKEY, t); }catch(e){}
+    applyTheme(t);
+    try{ window.dispatchEvent(new CustomEvent("swctheme", {detail:t})); }catch(e){}
+  }
+  applyTheme(getTheme());
+
   var css = ''
   + '.swc-nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:#17171b;border-bottom:1px solid #2a2a31;'
   +   'font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}'
@@ -46,6 +63,7 @@
   + '.swc-menu button:hover{background:#26262c;color:#fff}'
   + '.swc-menu button .ck{color:#d96a41;font-weight:700;opacity:0}'
   + '.swc-menu button.sel .ck{opacity:1}'
+  + '.swc-menu .mdiv{height:1px;background:#33333c;margin:6px 4px}'
   + '.swc-burger{display:none;background:none;border:1px solid #33333c;border-radius:8px;color:#e9e7e2;'
   +   'width:38px;height:34px;font-size:17px;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}'
   + '@media(max-width:680px){'
@@ -72,13 +90,17 @@
   var langBtns = LANGS.map(function(l){
     return '<button data-lang="' + l[0] + '"><span>' + l[1] + '</span><span class="ck">\u2713</span></button>';
   }).join('');
+  var themeBtns = THEMES.map(function(t){
+    return '<button data-theme-opt="' + t[0] + '"><span>' + t[1] + '</span><span class="ck">\u2713</span></button>';
+  }).join('');
   nav.innerHTML = '<div class="swc-in">'
     + '<a class="swc-brand" href="/"><span class="dot"></span>Sioux Watch Caf\u00e9</a>'
     + '<button class="swc-burger" aria-label="Menu" aria-expanded="false">\u2630</button>'
     + '<div class="swc-links">' + links + '</div>'
     + '<div class="swc-tools"><div class="swc-gear">'
     +   '<button class="swc-gearbtn" aria-label="Settings" aria-expanded="false">\u2699</button>'
-    +   '<div class="swc-menu"><div class="lbl">Language</div>' + langBtns + '</div>'
+    +   '<div class="swc-menu"><div class="lbl">Language</div>' + langBtns
+    +     '<div class="mdiv"></div><div class="lbl">Theme</div>' + themeBtns + '</div>'
     + '</div></div>'
     + '</div>';
   var spacer = document.createElement('div');
@@ -97,20 +119,34 @@
   var gearmenu = nav.querySelector('.swc-menu');
   function markLang(){
     var cur = getLang();
-    nav.querySelectorAll('.swc-menu button').forEach(function(b){
+    nav.querySelectorAll('.swc-menu button[data-lang]').forEach(function(b){
       b.classList.toggle('sel', b.getAttribute('data-lang') === cur);
     });
   }
-  markLang();
+  function markTheme(){
+    var cur = getTheme();
+    nav.querySelectorAll('.swc-menu button[data-theme-opt]').forEach(function(b){
+      b.classList.toggle('sel', b.getAttribute('data-theme-opt') === cur);
+    });
+  }
+  markLang(); markTheme();
   gearbtn.addEventListener('click', function(e){
     e.stopPropagation();
     var open = gearmenu.classList.toggle('open');
     gearbtn.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
-  nav.querySelectorAll('.swc-menu button').forEach(function(b){
+  nav.querySelectorAll('.swc-menu button[data-lang]').forEach(function(b){
     b.addEventListener('click', function(){
       setLang(b.getAttribute('data-lang'));
       markLang();
+      gearmenu.classList.remove('open');
+      gearbtn.setAttribute('aria-expanded','false');
+    });
+  });
+  nav.querySelectorAll('.swc-menu button[data-theme-opt]').forEach(function(b){
+    b.addEventListener('click', function(){
+      setTheme(b.getAttribute('data-theme-opt'));
+      markTheme();
       gearmenu.classList.remove('open');
       gearbtn.setAttribute('aria-expanded','false');
     });

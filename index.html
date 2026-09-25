@@ -11,11 +11,66 @@
   <script src="/nav.js" defer></script>
   <style>
     :root{
+      /* ===== Watch Café (default dark theme) ===== */
       --bg:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
       --accent:#d96a41; --accent-d:#c25a36;
       --ink:#e9e7e2; --muted:#a09da6;
       --led-on:#ff1b1b; --led-off:#3a0b0b; --led-glow:rgba(255,59,59,0.85);
       --amber-on:#ff9e3d; --amber-glow:rgba(255,138,60,0.7);
+      --panel-1:#1c1c1c; --panel-2:#0b0b0b;       /* clock panel gradient */
+      --panel-border:var(--border);
+      --wt:#ff5a4d; --wo:#8a8890; --hint:#77747d; /* world strip: time / offset / hint */
+    }
+
+    /* ===== Pepsi — Rolex GMT red/blue on light ===== */
+    :root[data-theme="pepsi"]{
+      --bg:#f5f6f9; --card:#ffffff; --card2:#ffffff; --border:#dfe3ea;
+      --accent:#0a3d91; --accent-d:#c8102e;
+      --ink:#1b2430; --muted:#5b6472;
+      --led-on:#ff2b25; --led-off:#3a0b0b; --led-glow:rgba(255,43,37,0.8);
+      --amber-on:#5b9bff; --amber-glow:rgba(91,155,255,0.6);
+      --panel-1:#141821; --panel-2:#0a0d13; --panel-border:#26303f;
+      --wt:#ff5a4d; --wo:#8b93a1; --hint:#8b93a1;
+    }
+    /* ===== Snowflake — Tudor blue with gold ===== */
+    :root[data-theme="snowflake"]{
+      --bg:#eef1f6; --card:#ffffff; --card2:#ffffff; --border:#d8dfea;
+      --accent:#0f2f6b; --accent-d:#123c88;
+      --ink:#152238; --muted:#54607a;
+      --led-on:#4d8bff; --led-off:#0b1a33; --led-glow:rgba(77,139,255,0.75);
+      --amber-on:#d9a441; --amber-glow:rgba(217,164,65,0.6);
+      --panel-1:#111b2e; --panel-2:#080f1c; --panel-border:#243657;
+      --wt:#4d8bff; --wo:#8492ad; --hint:#8492ad;
+    }
+    /* ===== Speedy — Omega Speedmaster black/white + tachy red ===== */
+    :root[data-theme="speedy"]{
+      --bg:#f4f4f5; --card:#ffffff; --card2:#ffffff; --border:#dcdce0;
+      --accent:#111114; --accent-d:#e2483d;
+      --ink:#141417; --muted:#5c5c63;
+      --led-on:#f2f2f2; --led-off:#2a2a2e; --led-glow:rgba(255,255,255,0.7);
+      --amber-on:#e2483d; --amber-glow:rgba(226,72,61,0.6);
+      --panel-1:#131316; --panel-2:#060608; --panel-border:#2a2a30;
+      --wt:#e2483d; --wo:#8a8a90; --hint:#8a8a90;
+    }
+    /* ===== Monster — Seiko orange diver ===== */
+    :root[data-theme="monster"]{
+      --bg:#f6f5f3; --card:#ffffff; --card2:#ffffff; --border:#e2ddd6;
+      --accent:#e8641c; --accent-d:#b84a10;
+      --ink:#20242b; --muted:#5e6570;
+      --led-on:#ff7a1a; --led-off:#3a1c05; --led-glow:rgba(255,122,26,0.75);
+      --amber-on:#ffb066; --amber-glow:rgba(255,138,60,0.6);
+      --panel-1:#16130f; --panel-2:#0a0806; --panel-border:#3a2c1c;
+      --wt:#ff7a1a; --wo:#8c8880; --hint:#8c8880;
+    }
+    /* ===== Kermit — Rolex green bezel on cream ===== */
+    :root[data-theme="kermit"]{
+      --bg:#f7f4ea; --card:#fffdf7; --card2:#fffdf7; --border:#e6ddc7;
+      --accent:#1f7a44; --accent-d:#155c32;
+      --ink:#2b2a22; --muted:#6a6656;
+      --led-on:#2fd06a; --led-off:#0c2a17; --led-glow:rgba(47,208,106,0.7);
+      --amber-on:#c7a24a; --amber-glow:rgba(199,162,74,0.55);
+      --panel-1:#101a12; --panel-2:#070f09; --panel-border:#20402b;
+      --wt:#2fd06a; --wo:#8f8b78; --hint:#8f8b78;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
@@ -25,7 +80,7 @@
     main{max-width:900px;margin:0 auto 60px;padding:0 16px}
 
     .clock-hero{display:block;text-decoration:none;margin:24px auto 8px;max-width:560px}
-    .clock-panel{background:linear-gradient(180deg,#1c1c1c,#0b0b0b);border:1px solid var(--border);border-radius:18px;padding:26px 18px 22px;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;max-width:100%;box-shadow:inset 0 2px 4px rgba(255,255,255,0.04),inset 0 -4px 10px rgba(0,0,0,0.45),0 8px 18px rgba(0,0,0,0.18);transition:border-color .15s}
+    .clock-panel{background:linear-gradient(180deg,var(--panel-1),var(--panel-2));border:1px solid var(--panel-border);border-radius:18px;padding:26px 18px 22px;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;max-width:100%;box-shadow:inset 0 2px 4px rgba(255,255,255,0.04),inset 0 -4px 10px rgba(0,0,0,0.45),0 8px 18px rgba(0,0,0,0.18);transition:border-color .15s}
     .clock-hero:hover .clock-panel{border-color:var(--accent)}
     .clock{--u:clamp(0.40px,calc(0.196vw - 0.16px),0.92px);display:flex;align-items:center;gap:calc(10 * var(--u))}
     .digit{position:relative;width:calc(64 * var(--u));height:calc(116 * var(--u));background:rgba(255,255,255,0.02);border-radius:calc(10 * var(--u));flex:none}
@@ -40,12 +95,12 @@
     .colon::before,.colon::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:calc(10 * var(--u));height:calc(10 * var(--u));border-radius:50%;background:var(--led-on);box-shadow:0 0 6px var(--led-glow),0 0 12px var(--led-glow),0 0 20px rgba(255,43,43,.3)}
     .colon::before{top:calc(34 * var(--u))}.colon::after{bottom:calc(34 * var(--u))}
     .date-led{margin-top:14px;padding:8px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);border-radius:9px;color:var(--amber-on);font-family:"Consolas","Courier New",monospace;font-size:1.05rem;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 0 4px var(--amber-glow),0 0 10px rgba(255,138,60,0.18)}
-    .clock-hint{text-align:center;color:#77747d;font-size:12.5px;margin:8px 0 0}
+    .clock-hint{text-align:center;color:var(--hint);font-size:12.5px;margin:8px 0 0}
     .world{width:100%;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
     @media(max-width:520px){.world{grid-template-columns:repeat(3,1fr);row-gap:14px}}
     .wz{text-align:center;min-width:0}
-    .wz .wt{font-family:"Consolas","Courier New",monospace;color:#ff5a4d;font-size:clamp(15px,4vw,19px);letter-spacing:1px;text-shadow:0 0 4px rgba(255,59,48,0.3)}
-    .wz .wo{font-family:"Consolas","Courier New",monospace;color:#8a8890;font-size:11px;margin-top:1px}
+    .wz .wt{font-family:"Consolas","Courier New",monospace;color:var(--wt);font-size:clamp(15px,4vw,19px);letter-spacing:1px;text-shadow:0 0 4px rgba(255,59,48,0.3)}
+    .wz .wo{font-family:"Consolas","Courier New",monospace;color:var(--wo);font-size:11px;margin-top:1px}
     .wz .wc{color:#a09da6;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;margin-top:3px;line-height:1.25}
 
     .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:26px 0 0}
