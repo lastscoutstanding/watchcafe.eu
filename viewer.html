@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch Rate Meter — Viewer · Sioux Watch Café</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<style>
+  @font-face{
+    font-family:'DSEG7';
+    src:url(data:font/woff2;base64,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) format('woff2');
+    font-weight:700;font-style:normal;font-display:swap;
+  }
+  :root{
+    --page:#121215; --card:#1c1c21; --accent:#d96a41; --accent-d:#c25a36;
+    --banner:#b06a4a; --muted:#a09da6; --border:#33333c; --ink:#e9e7e2;
+    --panel-top:#2c2c2c; --panel-bot:#0a0a0a; --panel-line:#1c1c1c;
+    --led-amber:#ff9e3d; --led-amber-off:#3a230a;
+    --sans:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Roboto Mono",Menlo,Consolas,monospace;
+    /* positiekleuren op lichte achtergrond */
+    --p-dialup:#f0a03a; --p-dialdown:#cf7f35; --p-crownup:#35c2b1; --p-crowndown:#5b93cf;
+    --p-crownleft:#a98bd4; --p-crownright:#e0678a; --p-worn:#63c063; --p-flat:#8a8a8a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:var(--sans);min-height:100vh;padding:28px 16px 64px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto}
+  .card{background:var(--card);border-radius:16px;padding:30px 34px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  @media (max-width:560px){.card{padding:22px 18px 26px}}
+
+  /* header */
+  .head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{color:var(--accent);font-size:clamp(20px,3.2vw,30px);font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .head-tools{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+  .qbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:#26262c;color:var(--muted);
+    font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .qbtn:hover{color:var(--accent);border-color:var(--accent)}
+  .lang{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:#26262c}
+  .lang button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;
+    padding:7px 13px;cursor:pointer}
+  .lang button.on{background:var(--accent);color:#fff}
+
+  /* guide */
+  .guide{margin-top:20px;border:1px solid #45332a;background:#241d1a;border-radius:12px;padding:18px 20px;position:relative}
+  .guide h2{margin:0 0 10px;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-d)}
+  .guide ol{margin:0;padding-left:0;list-style:none;counter-reset:g}
+  .guide li{counter-increment:g;position:relative;padding:5px 0 5px 34px;font-size:14px;color:var(--ink)}
+  .guide li::before{content:counter(g);position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .guide .note{margin:12px 0 0;font-size:13px;color:#eda57f;background:#2e221c;
+    border-left:3px solid var(--accent);padding:9px 12px;border-radius:0 8px 8px 0}
+  .guide .gx{position:absolute;top:12px;right:14px;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;border:0;background:none}
+  .guide .gx:hover{color:var(--accent)}
+
+  /* dropzone */
+  .drop{margin-top:20px;border:1.5px dashed var(--border);border-radius:12px;background:#1f1f25;padding:26px 22px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+  .drop:hover,.drop.hot{border-color:var(--accent);background:rgba(217,106,65,.08)}
+  .drop .big{font-size:15px;color:var(--ink)}
+  .drop .small{font-size:13px;color:var(--muted);margin-top:5px}
+  .drop .pills{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .pillbtn{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:7px 16px;font-size:13px;color:var(--ink);cursor:pointer}
+  .pillbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .pillbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+  .pillbtn.solid:hover{background:var(--accent-d);color:#fff}
+
+  /* controls */
+  .bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:22px;padding:12px 16px;background:#1f1f25;border:1px solid var(--border);border-radius:12px}
+  .grp{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)}
+  select{font:inherit;font-size:13px;background:var(--card);color:var(--ink);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
+  .switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;color:var(--ink)}
+  .switch input{display:none}
+  .track{width:38px;height:22px;border-radius:999px;background:#34343c;border:1px solid var(--border);position:relative;transition:background .15s}
+  .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#8f8c96;transition:transform .15s,background .15s}
+  .switch input:checked + .track{background:var(--banner);border-color:var(--accent)}
+  .switch input:checked + .track::after{transform:translateX(16px);background:#fff}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .fchip{font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:999px;padding:4px 10px;display:inline-flex;align-items:center;gap:8px}
+  .fchip b{color:var(--ink);font-weight:600}
+  .fchip .x{cursor:pointer;color:#777}
+  .fchip .x:hover{color:var(--accent)}
+
+  .summary{font-size:12.5px;color:var(--muted);margin:16px 2px 4px}
+
+  /* watch cards (stacked) */
+  .list{margin-top:14px;display:flex;flex-direction:column;gap:16px}
+  .wcard{border:1px solid var(--border);border-radius:14px;padding:18px 20px 16px;background:#202026}
+  .wcard.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(217,106,65,.3)}
+  .tgsec{margin-top:14px;border-top:1px dashed var(--border);padding-top:10px}
+  .tghead{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:6px}
+  .pos.tg th,.pos.tg td{padding-right:18px}
+  .pos.tg th:last-child,.pos.tg td:last-child{padding-right:0}
+  .pos.tg td:first-child{white-space:nowrap;color:var(--muted)}
+  .pos.tg .tgreads{font-size:12.5px;line-height:1.9}
+  .pos.tg .tgreads i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
+  .tgnote{color:var(--muted);font-style:italic}
+  .tgdelta b{color:var(--accent)}
+  .wtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .wname{font-size:17px;font-weight:700;color:var(--ink)}
+  .wmeta{font-size:12px;color:var(--muted);margin-top:3px}
+  .sessionrow{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
+  .sessionrow label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  .sessionrow select{flex:1;font:inherit;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink)}
+  .actchip{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:var(--accent);color:#fff;white-space:nowrap}
+
+  .ledrow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin:14px 0 4px}
+  .ledwrap{background:linear-gradient(180deg,var(--panel-top),var(--panel-bot));border:1px solid var(--panel-line);border-radius:12px;padding:11px 18px;flex:1 1 200px;min-width:190px}
+  .led-label{font-size:10.5px;letter-spacing:2px;color:#8a8a8a;text-transform:uppercase;margin-bottom:7px}
+  .led{display:flex;align-items:center;gap:.45ch}
+  .led-sign{font-family:var(--mono);font-weight:800;font-size:24px;color:var(--led-amber);text-shadow:0 0 7px rgba(255,158,61,.55)}
+  .led-seg{position:relative;display:inline-block}
+  .led-ghost,.led-lit{font-family:'DSEG7',var(--mono);font-size:28px;font-weight:700;letter-spacing:2px;line-height:1}
+  .led-ghost{color:var(--led-amber-off)}
+  .led-lit{position:absolute;left:0;top:0;color:var(--led-amber);text-shadow:0 0 8px rgba(255,158,61,.6)}
+  .led-unit{font-family:var(--mono);font-size:13px;color:#caa37a;margin-left:.4ch;align-self:flex-end;padding-bottom:4px}
+  .led-none{font-family:var(--mono);font-size:14px;color:#7a6f63;padding:6px 0}
+
+  .chart{width:100%;height:auto;display:block;margin:8px 0 2px}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 2px;font-size:11px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+  table.pos{width:100%;border-collapse:collapse;margin-top:12px;font-size:12.5px}
+  table.pos th{text-align:left;color:var(--muted);font-weight:600;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:0 0 6px;border-bottom:1px solid var(--border)}
+  table.pos th.num,table.pos td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  table.pos td{padding:6px 0;border-bottom:1px solid var(--border);color:var(--ink)}
+  table.pos td.dot{width:16px}
+  table.pos td.dot i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  table.pos tr:last-child td{border-bottom:none}
+  .delta{margin-top:11px;font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px}
+  .delta b{color:var(--accent);font-weight:700;font-family:var(--mono)}
+
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px 0}
+  footer{margin-top:26px;text-align:center;color:var(--muted);font-size:11.5px}
+  .gears{margin-top:10px;text-align:center;font-size:12.5px;color:#8f8c96}
+  .gears a{color:var(--accent);text-decoration:none}
+  .gears a:hover{text-decoration:underline}
+  .hide{display:none !important}
+</style>
+  <script src="/nav.js" defer>
+/* ---------- eerder geladen bestanden herstellen ---------- */
+(function(){
+  try{
+    const raw=localStorage.getItem(LSKEY); if(!raw) return;
+    const arr=JSON.parse(raw); if(!Array.isArray(arr)) return;
+    const items=arr.filter(f=>f&&f.text);
+    FILES.length=0;
+    items.forEach(f=>loadJSON(f.name,f.text));
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="head">
+      <div>
+        <h1 id="t-title">Watch Rate Meter — Viewer</h1>
+        <p class="sub" id="t-sub"></p>
+      </div>
+      <div class="head-tools">
+        <button class="qbtn" id="qbtn" title="">?</button>
+      </div>
+    </div>
+
+    <div class="guide" id="guide">
+      <button class="gx hide" id="gx" title="">✕</button>
+      <h2 id="g-title"></h2>
+      <ol id="g-steps"></ol>
+      <p class="note" id="g-note"></p>
+    </div>
+
+    <div class="drop" id="drop">
+      <div class="big" id="d-big"></div>
+      <div class="small" id="d-small"></div>
+      <div class="pills">
+        <span class="pillbtn solid" id="pickBtn"></span>
+        <span class="pillbtn" id="sampleBtn"></span>
+      </div>
+      <input id="file" type="file" accept=".json,application/json" multiple class="hide">
+    </div>
+
+    <div class="bar hide" id="bar">
+      <label class="switch grp" id="mergeLbl">
+        <input type="checkbox" id="merge"><span class="track"></span><span id="t-merge"></span>
+      </label>
+      <div class="grp"><span id="t-sort"></span>
+        <select id="sort">
+          <option value="name"></option><option value="rate"></option>
+          <option value="count"></option><option value="recent"></option>
+        </select>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="summary hide" id="summary"></div>
+    <div class="list" id="list"></div>
+
+    <footer id="t-foot"></footer>
+    <div class="gears">This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const MS_PER_DAY=86400000, SPEC_BAND=5;
+
+/* ---------- i18n ---------- */
+const T={
+  en:{
+    sub:"Read your JSON backups and review the rate per watch — The Sioux Watch Café",
+    qtitle:"How it works", gxtitle:"Close",
+    dBig:"Drop one or more .json backups here",
+    dSmall:"or click to choose — everything stays local in your browser, nothing is uploaded",
+    pick:"Choose file", sample:"Show example",
+    merge:"Merge watches", mergeTip:"Combine watches with the same id/name across different files",
+    sort:"Sort", sName:"by name", sRate:"largest deviation first", sCount:"most measurements", sRecent:"most recent",
+    rate:"Rate", sday:"s/day", noRate:"too few measurements for a rate",
+    posHead:"Position", n:"n", spread:"Spread between positions",
+    active:"active", unnamed:"Unnamed watch", noValid:"no valid measurements", remove:"Remove",
+    files:f=>f+(f===1?" file":" files"),
+    watches:w=>w+(w===1?" watch":" watches"),
+    meas:m=>m+(m===1?" measurement":" measurements"),
+    empty:"No watches found in the loaded backup(s).",
+    foot:"Watch Rate Meter · viewer · rate via linear regression (s/day)",
+    gTitle:"How it works",
+    gSteps:[
+      "Open a backup — drag your .json backup file(s) onto the page, or click to choose.",
+      "Load several files at once to compare a watch across different points in time.",
+      "Turn on \u201CMerge watches\u201D to combine the same watch from different files into one.",
+      "Read the rate in s/day, the offset trace over time, and the breakdown per position."
+    ],
+    gNote:"A watch needs at least two measurements at different times before a rate (s/day) can be calculated."
+  },
+  nl:{
+    sub:"Lees je JSON-backups en bekijk de gang per horloge — The Sioux Watch Café",
+    qtitle:"Zo werkt het", gxtitle:"Sluiten",
+    dBig:"Sleep een of meer .json-backups hierheen",
+    dSmall:"of klik om te kiezen — alles blijft lokaal in je browser, er wordt niets verstuurd",
+    pick:"Bestand kiezen", sample:"Toon voorbeeld",
+    merge:"Horloges samenvoegen", mergeTip:"Voeg horloges met hetzelfde id/naam uit verschillende bestanden samen",
+    sort:"Sorteer", sName:"op naam", sRate:"grootste afwijking eerst", sCount:"meeste metingen", sRecent:"recentst gemeten",
+    rate:"Gang", sday:"s/dag", noRate:"te weinig metingen voor een gang",
+    posHead:"Positie", n:"n", spread:"Spreiding tussen posities",
+    active:"actief", unnamed:"Naamloos horloge", noValid:"geen geldige metingen", remove:"Verwijderen",
+    files:f=>f+(f===1?" bestand":" bestanden"),
+    watches:w=>w+(w===1?" horloge":" horloges"),
+    meas:m=>m+(m===1?" meting":" metingen"),
+    empty:"Geen horloges gevonden in de geladen backup(s).",
+    foot:"Watch Rate Meter · viewer · gang via lineaire regressie (s/dag)",
+    gTitle:"Zo werkt het",
+    gSteps:[
+      "Open een backup — sleep je .json-backup(s) op de pagina, of klik om te kiezen.",
+      "Laad meerdere bestanden tegelijk om een horloge over verschillende momenten te vergelijken.",
+      "Zet \u201CHorloges samenvoegen\u201D aan om hetzelfde horloge uit verschillende bestanden samen te voegen.",
+      "Lees de gang in s/dag, de offset-trace over tijd, en de uitsplitsing per positie."
+    ],
+    gNote:"Een horloge heeft minstens twee metingen op verschillende momenten nodig voordat een gang (s/dag) berekend kan worden."
+  }
+};
+const POS={
+  dial_up:{en:"Dial up",nl:"Wijzerplaat boven",color:"var(--p-dialup)"},
+  dial_down:{en:"Dial down",nl:"Wijzerplaat onder",color:"var(--p-dialdown)"},
+  crown_up:{en:"Crown up",nl:"Kroon boven",color:"var(--p-crownup)"},
+  crown_down:{en:"Crown down",nl:"Kroon onder",color:"var(--p-crowndown)"},
+  crown_left:{en:"Crown left",nl:"Kroon links",color:"var(--p-crownleft)"},
+  crown_right:{en:"Crown right",nl:"Kroon rechts",color:"var(--p-crownright)"},
+  worn:{en:"Worn",nl:"Gedragen",color:"var(--p-worn)"},
+  flat:{en:"Flat",nl:"Plat / liggend",color:"var(--p-flat)"}
+};
+const FALLBACK=["#f0a03a","#35c2b1","#5b93cf","#a98bd4","#e0678a","#63c063","#cf7f35","#8a8a8a"];
+function posInfo(code,idx){
+  if(POS[code]) return {label:POS[code][lang],abbr:abbrOf(code),color:POS[code].color};
+  const pretty=String(code||"?").replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+  return {label:pretty,abbr:(code||"?").slice(0,2).toUpperCase(),color:FALLBACK[idx%FALLBACK.length]};
+}
+function abbrOf(code){return ({dial_up:"DU",dial_down:"DD",crown_up:"CU",crown_down:"CD",crown_left:"CL",crown_right:"CR",worn:"WR",flat:"FL"})[code]||(code||"?").slice(0,2).toUpperCase();}
+
+/* ---------- state ---------- */
+var LKEY="siouxWatchRateMeterLang";
+let FILES=[], merge=false, sortBy="name", sessionSel={},
+    lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})(),
+    guideOpen=false;
+
+/* ---------- math ---------- */
+function linreg(pts){
+  const n=pts.length; if(n<2) return null;
+  const x0=pts[0].x; let sx=0,sy=0,sxx=0,sxy=0,syy=0;
+  for(const p of pts){const x=p.x-x0,y=p.y;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;syy+=y*y;}
+  const denom=n*sxx-sx*sx; if(denom===0) return null;
+  const slope=(n*sxy-sx*sy)/denom, intercept=(sy-slope*sx)/n;
+  const ssTot=syy-sy*sy/n; let ssRes=0;
+  for(const p of pts){const fit=intercept+slope*(p.x-x0);ssRes+=(p.y-fit)**2;}
+  const r2=ssTot>0?1-ssRes/ssTot:null;
+  return {ratePerDay:slope*MS_PER_DAY,slope,intercept,x0,r2,n};
+}
+function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||"",newStart:!!m.newStart};}
+function normTG(sess){
+  const readings=(sess.readings||[]).map(r=>({position:r.position||"unknown",rate:Number(r.rate),
+    amplitude:(r.amplitude!=null&&isFinite(r.amplitude))?Number(r.amplitude):null,
+    beatError:(r.beatError!=null&&isFinite(r.beatError))?Number(r.beatError):null}))
+    .filter(r=>Number.isFinite(r.rate));
+  return {id:sess.id,t:Number(sess.t),note:sess.note||"",readings};
+}
+
+function collectWatches(){
+  const out=[];
+  if(merge){
+    const byKey=new Map();
+    for(const f of FILES) for(const w of f.watches){
+      const key=(w.id!=null?"id:"+w.id:"name:"+(w.name||"")).toLowerCase();
+      if(!byKey.has(key)) byKey.set(key,{id:w.id,name:w.name,sources:new Set(),measById:new Map(),tgById:new Map(),active:false});
+      const agg=byKey.get(key); agg.sources.add(f.name);
+      if(f.activeWatch!=null && String(f.activeWatch)===String(w.id)) agg.active=true;
+      (w.measurements||[]).forEach((m,i)=>{
+        const nm=normMeas(m);
+        const mk=nm.id!=null?"id:"+nm.id:("t:"+nm.t+"|o:"+nm.offset+"|i:"+i+"|"+f.name);
+        if(!agg.measById.has(mk)) agg.measById.set(mk,nm);
+      });
+      (w.timegrapher||[]).forEach((sess,i)=>{
+        const ns=normTG(sess);
+        const tk=ns.id!=null?"id:"+ns.id:("t:"+ns.t+"|i:"+i+"|"+f.name);
+        if(!agg.tgById.has(tk)) agg.tgById.set(tk,ns);
+      });
+    }
+    for(const a of byKey.values()) out.push({id:a.id,name:a.name,sources:[...a.sources],active:a.active,measurements:[...a.measById.values()],timegrapher:[...a.tgById.values()]});
+  } else {
+    for(const f of FILES) for(const w of f.watches) out.push({
+      id:w.id,name:w.name,sources:[f.name],
+      active:f.activeWatch!=null && String(f.activeWatch)===String(w.id),
+      measurements:(w.measurements||[]).map(normMeas),
+      timegrapher:(w.timegrapher||[]).map(normTG)
+    });
+  }
+  for(const w of out){
+    w.measurements.sort((a,b)=>a.t-b.t);
+    const valid=w.measurements.filter(m=>Number.isFinite(m.t)&&Number.isFinite(m.offset));
+    w.valid=valid;
+    // sessies: splitsen op newStart-vlag
+    const sessions=[]; let cur=[];
+    valid.forEach(m=>{if(m.newStart&&cur.length){sessions.push(cur);cur=[];}cur.push(m);});
+    if(cur.length)sessions.push(cur);
+    w.sessions=sessions;
+    // gekozen sessie: "all" of index; default = laatste
+    let selKey=sessionSel[w.id];
+    if(selKey==null)selKey=(sessions.length-1);
+    if(selKey!=="all"&&selKey>=sessions.length)selKey=sessions.length-1;
+    w.selKey=selKey;
+    const shown=(selKey==="all")?valid:(sessions[selKey]||valid);
+    w.shown=shown;
+    // fit/positie-metrics op de getoonde selectie (bij "all": laatste sessie, zuiverst)
+    const metricPts=(selKey==="all")?(sessions[sessions.length-1]||valid):shown;
+    w.fit=linreg(metricPts.map(m=>({x:m.t,y:m.offset})));
+    w.fitStart=metricPts.length?metricPts[0].t:null;
+    w.hasReset=sessions.length>1;
+    w.tMin=shown.length?shown[0].t:null; w.tMax=shown.length?shown[shown.length-1].t:null;
+    const groups=new Map();
+    metricPts.forEach(m=>{if(!groups.has(m.position))groups.set(m.position,[]);groups.get(m.position).push(m);});
+    let pi=0; const positions=[];
+    for(const [code,arr] of groups){
+      const info=posInfo(code,pi++); const f=linreg(arr.map(m=>({x:m.t,y:m.offset})));
+      positions.push({code,info,n:arr.length,ratePerDay:f?f.ratePerDay:null});
+    }
+    positions.sort((a,b)=>(b.ratePerDay??-1e9)-(a.ratePerDay??-1e9));
+    w.positions=positions;
+    const rated=positions.filter(p=>p.ratePerDay!=null).map(p=>p.ratePerDay);
+    w.delta=rated.length>=2?Math.max(...rated)-Math.min(...rated):null;
+    w.timegrapher=(w.timegrapher||[]).filter(sess=>Number.isFinite(sess.t)&&sess.readings.length).sort((a,b)=>a.t-b.t);
+    w.timegrapher.forEach(sess=>{sess.avg=sess.readings.reduce((a,r)=>a+r.rate,0)/sess.readings.length;});
+  }
+  return out;
+}
+
+/* ---------- format ---------- */
+function fmtMag(r){return Math.abs(r).toFixed(1);}
+function signOf(r){return r>=0?"+":"\u2212";}
+function fmtDate(t){return new Date(t).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",{day:"2-digit",month:"short",year:"2-digit"});}
+function fmtDateTime(t){return new Date(t).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+/* ---------- chart ---------- */
+function chartSVG(w){
+  const W=560,H=200,padL=44,padR=14,padT=12,padB=26;
+  const pts=w.shown||w.valid; if(!pts.length) return "";
+  let tMin=w.tMin,tMax=w.tMax; if(tMin===tMax){tMin-=MS_PER_DAY/2;tMax+=MS_PER_DAY/2;}
+  let oMin=Math.min(...pts.map(p=>p.offset)),oMax=Math.max(...pts.map(p=>p.offset));
+  if(oMin===oMax){oMin-=1;oMax+=1;} const op=(oMax-oMin)*0.12; oMin-=op; oMax+=op;
+  const X=t=>padL+(t-tMin)/(tMax-tMin)*(W-padL-padR), Y=o=>H-padB-(o-oMin)/(oMax-oMin)*(H-padT-padB);
+  const uniq=[...new Set(pts.map(q=>q.position))];
+  let g="";
+  for(let i=0;i<=4;i++){const o=oMin+(oMax-oMin)*i/4,y=Y(o);
+    g+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#2e2e36" stroke-width="1"/>`;
+    g+=`<text x="${padL-7}" y="${(y+3).toFixed(1)}" fill="#8f8c96" font-size="10" text-anchor="end" font-family="${'ui-monospace,monospace'}">${o.toFixed(0)}</text>`;}
+  for(let i=0;i<=3;i++){const t=tMin+(tMax-tMin)*i/3,x=X(t);
+    g+=`<text x="${x.toFixed(1)}" y="${H-8}" fill="#8f8c96" font-size="10" text-anchor="${i===0?'start':i===3?'end':'middle'}" font-family="${'ui-monospace,monospace'}">${fmtDate(t)}</text>`;}
+  if(w.fit){const yAt=t=>w.fit.intercept+w.fit.slope*(t-w.fit.x0);
+    const fs=(w.selKey==="all")?Math.max(tMin, w.fitStart??tMin):tMin;
+    g+=`<line x1="${X(fs).toFixed(1)}" y1="${Y(yAt(fs)).toFixed(1)}" x2="${X(tMax).toFixed(1)}" y2="${Y(yAt(tMax)).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`;}
+  pts.forEach(p=>{const info=posInfo(p.position,uniq.indexOf(p.position));
+    const title=`${fmtDateTime(p.t)} \u00B7 ${p.offset.toFixed(1)}s \u00B7 ${info.label}${p.note?` \u00B7 ${p.note}`:""}`;
+    g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.offset).toFixed(1)}" r="${p.newStart?4:3.4}" fill="${info.color}" stroke="${p.newStart?'var(--accent)':'#202026'}" stroke-width="${p.newStart?1.6:1}"><title>${esc(title)}</title></circle>`;});
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="offset / time">${g}</svg>`;
+}
+
+/* ---------- render ---------- */
+function ledHTML(r){
+  if(r==null) return `<div class="ledwrap"><div class="led-label">${t().rate}</div><div class="led-none">${t().noRate}</div></div>`;
+  const moon=(r>0&&Math.abs(r-1.969)<0.02);
+  const mag=moon?"1.969":fmtMag(r), ghost=mag.replace(/\d/g,"8");
+  return `<div class="ledwrap"><div class="led-label">${t().rate}</div>
+    <div class="led"><span class="led-sign">${signOf(r)}</span>
+      <span class="led-seg"><span class="led-ghost">${ghost}</span><span class="led-lit">${mag}</span></span>
+      <span class="led-unit">${t().sday}</span></div></div>`;
+}
+function sessionPickerHTML(w){
+  const segs=w.sessions||[];
+  if(segs.length<2) return "";
+  const loc=lang==="nl"?"nl-NL":"en-GB";
+  const f=d=>new Date(d).toLocaleDateString(loc,{day:"numeric",month:"short"});
+  let opts="";
+  for(let i=segs.length-1;i>=0;i--){
+    const seg=segs[i], lbl=(lang==="nl"?"Sessie ":"Session ")+(i+1)+" \u00b7 "+f(seg[0].t)+"\u2013"+f(seg[seg.length-1].t)+" ("+seg.length+")";
+    opts+=`<option value="${i}"${String(w.selKey)===String(i)?" selected":""}>${lbl}</option>`;
+  }
+  opts+=`<option value="all"${w.selKey==="all"?" selected":""}>${t().allSessions}</option>`;
+  return `<div class="sessionrow"><label>${t().sessionLbl}</label><select class="sessionsel" data-wid="${esc(String(w.id))}">${opts}</select></div>`;
+}
+function cardHTML(w){
+  const r=w.fit?.ratePerDay ?? null;
+  const range=w.tMin!=null?`${fmtDate(w.tMin)} – ${fmtDate(w.tMax)}`:t().noValid;
+  const src=w.sources.length>1?` · ${t().files(w.sources.length)}`:"";
+  const legend=w.positions.map(p=>`<span><i style="background:${p.info.color}"></i>${p.info.abbr}</span>`).join("");
+  const rows=w.positions.map(p=>`<tr><td class="dot"><i style="background:${p.info.color}"></i></td>
+    <td>${esc(p.info.label)}</td><td class="num">${p.n}</td>
+    <td class="num">${p.ratePerDay==null?"—":signOf(p.ratePerDay)+fmtMag(p.ratePerDay)}</td></tr>`).join("");
+  return `<div class="wcard ${w.active?'active':''}">
+    <div class="wtop">
+      <div><div class="wname">${esc(w.name||t().unnamed)}</div>
+        <div class="wmeta">${esc(String(w.id??"—"))} · ${t().meas(w.valid.length)}${src}</div></div>
+      ${w.active?`<span class="actchip">${t().active}</span>`:""}
+    </div>
+    <div class="ledrow">${ledHTML(r)}</div>
+    ${sessionPickerHTML(w)}
+    ${chartSVG(w)}
+    <div class="legend">${legend}</div>
+    ${w.positions.length?`<table class="pos"><thead><tr><th class="dot"></th><th>${t().posHead}</th><th class="num">${t().n}</th><th class="num">${t().sday}</th></tr></thead><tbody>${rows}</tbody></table>`:""}
+    ${w.delta!=null?`<div class="delta"><span>${t().spread}</span><b>${w.delta.toFixed(1)} ${t().sday}</b></div>`:""}
+    ${tgHTML(w)}
+  </div>`;
+}
+
+function tgHTML(w){
+  const tg=w.timegrapher||[];
+  if(!tg.length) return "";
+  const last=tg[tg.length-1];
+  const wr=w.fit?.ratePerDay ?? null;
+  let cmp="";
+  if(wr!=null){
+    const d=wr-last.avg;
+    cmp=`<div class="delta tgdelta"><span>${t().tgVs}</span><b>TG ${signOf(last.avg)}${fmtMag(last.avg)} \u00b7 ${t().tgWorn} ${signOf(wr)}${fmtMag(wr)} \u00b7 \u0394 ${signOf(d)}${fmtMag(d)} ${t().sday}</b></div>`;
+  }
+  const rows=tg.slice().reverse().map(sess=>{
+    const reads=sess.readings.map((r,i)=>{
+      const info=posInfo(r.position,i);
+      const extra=[r.amplitude!=null?r.amplitude+"\u00b0":null,r.beatError!=null?r.beatError+" ms":null].filter(Boolean).join(" \u00b7 ");
+      return `<span title="${esc(info.label+(extra?" \u00b7 "+extra:""))}" style="white-space:nowrap"><i style="background:${info.color}"></i>${info.abbr} ${signOf(r.rate)}${Math.abs(r.rate)}</span>`;
+    }).join(" \u00b7 ");
+    return `<tr><td>${fmtDate(sess.t)}</td><td class="num">${signOf(sess.avg)}${fmtMag(sess.avg)}</td><td class="tgreads">${reads}${sess.note?` <span class="tgnote">\u2014 ${esc(sess.note)}</span>`:""}</td></tr>`;
+  }).join("");
+  return `<div class="tgsec"><div class="tghead">${t().tgHead}</div>
+    <table class="pos tg"><thead><tr><th>${t().tgDate}</th><th class="num">${t().tgAvg}</th><th>${t().tgReadings}</th></tr></thead><tbody>${rows}</tbody></table>
+    ${cmp}</div>`;
+}
+
+T.en.tgHead="Timegrapher"; T.nl.tgHead="Timegrapher";
+T.en.sessionLbl="Session"; T.nl.sessionLbl="Sessie";
+T.en.allSessions="All sessions"; T.nl.allSessions="Alle sessies";
+T.en.tgDate="date"; T.nl.tgDate="datum";
+T.en.tgAvg="avg"; T.nl.tgAvg="gem.";
+T.en.tgReadings="readings"; T.nl.tgReadings="metingen";
+T.en.tgVs="machine vs worn"; T.nl.tgVs="machine vs gedragen";
+T.en.tgWorn="worn"; T.nl.tgWorn="pols";
+
+function t(){return T[lang];}
+
+function applyChrome(){
+  document.documentElement.lang=lang;
+  document.getElementById("t-sub").textContent=t().sub;
+  document.getElementById("qbtn").title=t().qtitle;
+  document.getElementById("gx").title=t().gxtitle;
+  document.getElementById("g-title").textContent=t().gTitle;
+  document.getElementById("g-steps").innerHTML=t().gSteps.map(s=>`<li>${esc(s)}</li>`).join("");
+  document.getElementById("g-note").textContent=t().gNote;
+  document.getElementById("d-big").textContent=t().dBig;
+  document.getElementById("d-small").textContent=t().dSmall;
+  document.getElementById("pickBtn").textContent=t().pick;
+  document.getElementById("sampleBtn").textContent=t().sample;
+  document.getElementById("t-merge").textContent=t().merge;
+  document.getElementById("mergeLbl").title=t().mergeTip;
+  document.getElementById("t-sort").textContent=t().sort;
+  const so=document.getElementById("sort").options;
+  so[0].textContent=t().sName; so[1].textContent=t().sRate; so[2].textContent=t().sCount; so[3].textContent=t().sRecent;
+  document.getElementById("t-foot").textContent=t().foot;
+}
+
+function render(){
+  applyChrome();
+  const has=FILES.length>0;
+  // guide visibility: altijd in lege toestand, anders alleen als geopend
+  const showGuide=!has||guideOpen;
+  document.getElementById("guide").classList.toggle("hide",!showGuide);
+  document.getElementById("gx").classList.toggle("hide",!has); // × alleen als er bestanden zijn
+  document.getElementById("bar").classList.toggle("hide",!has);
+  document.getElementById("summary").classList.toggle("hide",!has);
+
+  const list=document.getElementById("list");
+  if(!has){ list.innerHTML=""; return; }
+
+  const watches=collectWatches();
+  const sorters={
+    name:(a,b)=>String(a.name||"").localeCompare(String(b.name||""),lang),
+    rate:(a,b)=>(Math.abs(b.fit?.ratePerDay??-1e9))-(Math.abs(a.fit?.ratePerDay??-1e9)),
+    count:(a,b)=>b.valid.length-a.valid.length,
+    recent:(a,b)=>(b.tMax??0)-(a.tMax??0)
+  };
+  watches.sort(sorters[sortBy]);
+  list.innerHTML = watches.length?watches.map(cardHTML).join(""):`<div class="empty">${t().empty}</div>`;
+
+  const totMeas=watches.reduce((s,w)=>s+w.valid.length,0);
+  document.getElementById("summary").textContent=`${t().watches(watches.length)} · ${t().meas(totMeas)} · ${t().files(FILES.length)}`;
+
+  document.getElementById("chips").innerHTML=FILES.map((f,i)=>
+    `<span class="fchip"><b>${esc(f.name)}</b> ${f.watches.length}♦ <span class="x" data-i="${i}" title="${t().remove}">✕</span></span>`).join("");
+  document.querySelectorAll(".fchip .x").forEach(el=>el.onclick=()=>{FILES.splice(+el.dataset.i,1);saveLS();render();});
+  document.querySelectorAll(".sessionsel").forEach(sel=>sel.onchange=()=>{
+    const v=sel.value; sessionSel[sel.dataset.wid]=(v==="all")?"all":+v; render();
+  });
+}
+
+/* ---------- loading ---------- */
+function loadJSON(name,text){
+  let data; try{data=JSON.parse(text);}catch(e){alert(`"${name}": geen geldige JSON / invalid JSON.`);return;}
+  const watches=Array.isArray(data.watches)?data.watches:Array.isArray(data)?data:data.watch?[data.watch]:null;
+  if(!watches){alert(`"${name}": geen "watches"-lijst gevonden / no "watches" list.`);return;}
+  FILES.push({name,watches,activeWatch:data.activeWatch,rawText:text});
+  saveLS();
+  guideOpen=false; render();
+}
+const LSKEY="swcViewerFiles";
+function saveLS(){try{localStorage.setItem(LSKEY,JSON.stringify(FILES.map(f=>({name:f.name,text:f.rawText||""}))));}catch(e){}}
+function readFiles(list){[...list].forEach(file=>{const r=new FileReader();r.onload=()=>loadJSON(file.name,r.result);r.readAsText(file);});}
+
+/* ---------- events ---------- */
+const drop=document.getElementById("drop"),fileInput=document.getElementById("file");
+drop.onclick=e=>{if(e.target.id!=="sampleBtn"&&e.target.id!=="pickBtn")fileInput.click();};
+document.getElementById("pickBtn").onclick=e=>{e.stopPropagation();fileInput.click();};
+fileInput.onchange=()=>{readFiles(fileInput.files);fileInput.value="";};
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("hot");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("hot");}));
+drop.addEventListener("drop",e=>{if(e.dataTransfer?.files?.length)readFiles(e.dataTransfer.files);});
+document.getElementById("merge").onchange=e=>{merge=e.target.checked;render();};
+document.getElementById("sort").onchange=e=>{sortBy=e.target.value;render();};
+document.getElementById("sampleBtn").onclick=e=>{e.stopPropagation();loadJSON("voorbeeld-backup.json",SAMPLE);};
+document.getElementById("qbtn").onclick=()=>{guideOpen=true;render();};
+document.getElementById("gx").onclick=()=>{guideOpen=false;render();};
+window.addEventListener("swclang",e=>{lang=e.detail;render();});
+
+/* ---------- sample ---------- */
+const DAY=MS_PER_DAY,T0=Date.parse("2026-06-01T08:00:00");
+function mk(arr){return arr.map((m,i)=>({id:"m"+i,t:T0+m[0]*DAY,offset:m[1],position:m[2],note:m[3]||""}));}
+const SAMPLE=JSON.stringify({version:1,activeWatch:"w1",watches:[
+  {id:"w1",name:"Seiko SKX007",measurements:mk([[0,0,"dial_up","net geregeld"],[0.4,5.1,"crown_down"],[1.0,12.3,"dial_up"],[1.6,17.0,"crown_down"],[2.2,26.4,"dial_up"],[3.1,38.0,"dial_up"],[3.6,40.9,"crown_down"],[4.4,54.2,"dial_up"],[5.0,61.1,"crown_down"]])},
+  {id:"w2",name:"Omega Speedmaster",measurements:mk([[0,0,"dial_up"],[0.8,-1.4,"worn"],[1.7,-3.0,"dial_up"],[2.5,-5.1,"worn"],[3.4,-6.2,"dial_up"],[4.3,-8.0,"worn"],[5.2,-9.4,"dial_up"]])},
+  {id:"w3",name:"Vostok Amphibia",measurements:mk([[0,0,"dial_up"],[0.5,9.0,"crown_up"],[1.1,11.8,"dial_up"],[1.9,30.5,"crown_up"],[2.6,33.0,"dial_up"],[3.5,55.0,"crown_up"],[4.2,58.4,"dial_up"]])}
+]},null,0);
+
+render();
+
+/* ---------- eerder geladen bestanden herstellen ---------- */
+(function(){
+  try{
+    const raw=localStorage.getItem(LSKEY); if(!raw) return;
+    const arr=JSON.parse(raw); if(!Array.isArray(arr)) return;
+    const items=arr.filter(f=>f&&f.text);
+    FILES.length=0;
+    items.forEach(f=>loadJSON(f.name,f.text));
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
