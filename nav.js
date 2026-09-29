@@ -21,7 +21,7 @@
   }
 
   var THEMES = [
-    ["cafe","Watch Caf\u00e9"], ["pepsi","Pepsi"], ["snowflake","Snowflake"],
+    ["cafe","Watch Caf\u00e9"], ["daydate","Day-Date"], ["snowflake","Snowflake"],
     ["speedy","Speedy"], ["monster","Monster"], ["kermit","Kermit"]
   ];
   var TKEY = "siouxWatchTheme";

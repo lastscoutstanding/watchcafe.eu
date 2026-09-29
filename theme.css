@@ -9,16 +9,16 @@
    or the other). Functional colours (LED clock red, green watch clock,
    graph scale, position colours) are NOT themed and stay in the pages. */
 
-:root[data-theme="pepsi"]{
-  --bg:#0d1526; --page:#0d1526; --card:#152238; --card2:#1a2a45; --border:#31456b;
-  --accent:#6a9be0; --accent-d:#c8102e; --ink:#e9ecf1; --muted:#93a2ba;
-  --banner:#2f5a99;
-  --nav-bg:#0b1220; --nav-border:#243a5e; --nav-hover:#1c2c47; --accent-glow:rgba(106,155,224,.6);
-  --led-on:#ff2b25; --led-off:#3a0b0b; --led-glow:rgba(255,43,37,0.85);
-  --amber-on:#5b9bff; --amber-glow:rgba(106,155,224,.75);
-  --panel-1:#141821; --panel-2:#0a0d13; --panel-border:#26303f;
-  --amber:#6a9be0; --amber-off:#12233d; --green:#3be35b; --green-off:#0c2a17; --green-glow:rgba(59,227,91,.7);
-  --led-amber:#6a9be0; --led-amber-off:#12233d;
+:root[data-theme="daydate"]{
+  --bg:#171208; --page:#171208; --card:#241c0d; --card2:#2b2210; --border:#4a3a1c;
+  --accent:#d4af52; --accent-d:#b8923a; --ink:#f0e9d8; --muted:#b3a582;
+  --banner:#9a7c33;
+  --nav-bg:#120e05; --nav-border:#3e3117; --nav-hover:#281f0d; --accent-glow:rgba(212,175,82,.6);
+  --led-on:#ffcf5a; --led-off:#3a2a08; --led-glow:rgba(255,207,90,0.8);
+  --amber-on:#e0c060; --amber-glow:rgba(212,175,82,.75);
+  --panel-1:#181206; --panel-2:#0b0803; --panel-border:#3a2c14;
+  --amber:#d4af52; --amber-off:#3a2a08; --green:#3be35b; --green-off:#0c2a17; --green-glow:rgba(59,227,91,.7);
+  --led-amber:#d4af52; --led-amber-off:#3a2a08;
 }
 :root[data-theme="snowflake"]{
   --bg:#0a1830; --page:#0a1830; --card:#112448; --card2:#152c56; --border:#294a80;
