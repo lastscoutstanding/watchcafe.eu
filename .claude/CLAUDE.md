@@ -60,7 +60,8 @@ Backup-JSON: `{ version, activeWatch, watches: [...] }`; horloge `{ id, name, me
 
 - Laadt één of meer JSON-backups; geladen bestanden blijven in localStorage.
 - LED-gangweergave in DSEG7 Bold (base64 ingebed uit npm `dseg`).
-- Dezelfde sessie-pulldown als de Rate Meter; geen pulldown bij één sessie.
+- Dezelfde sessie-pulldown als de Rate Meter; geen pulldown bij één sessie. Extra optie "Alle sessies, zonder tussenpozen" (`allc`): elke sessie een eigen blok op de tijd-as, dode tijd ertussen weggesneden (gestippelde scheidingslijn), regressielijn per sessie.
+- Grafieken: offset in de tijd en gang in de tijd. Gangpunten zoals op de Rate Meter: opeenvolgende metingen ≥ 6 uur uit elkaar, stip op het eindpunt van het interval (dus meestal bij de tweede meting), lijn breekt bij een nieuwe start, timegrapher-ruitjes erbij.
 - Per-positie-gang met spreiding, offsetgrafiek met regressielijn, timegrapher-data, merge-toggle, sorteren, demo-modus.
 - "Zo werkt het"-gids alleen in de lege toestand, terug te halen via `?`.
 

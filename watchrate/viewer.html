@@ -106,7 +106,7 @@
   .wmeta{font-size:12px;color:var(--muted);margin-top:3px}
   .sessionrow{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
   .sessionrow label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
-  .sessionrow select{flex:1;font:inherit;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink)}
+  .sessionrow select{flex:1;min-width:0;font:inherit;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink)}
   .actchip{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:var(--accent);color:#fff;white-space:nowrap}
 
   .ledrow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin:14px 0 4px}
@@ -122,6 +122,7 @@
   .led-none{font-family:var(--mono);font-size:14px;color:#7a6f63;padding:6px 0}
 
   .chart{width:100%;height:auto;display:block;margin:8px 0 2px}
+  .ctitle{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:12px 0 -2px}
   .legend{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 2px;font-size:11px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
@@ -352,10 +353,10 @@ function collectWatches(){
     if(selKey==null)selKey=(sessions.length-1);
     if(selKey!=="all"&&selKey>=sessions.length)selKey=sessions.length-1;
     w.selKey=selKey;
-    const shown=(selKey==="all")?valid:(sessions[selKey]||valid);
+    const shown=isAllSel(selKey)?valid:(sessions[selKey]||valid);
     w.shown=shown;
     // fit/positie-metrics op de getoonde selectie (bij "all": laatste sessie, zuiverst)
-    const metricPts=(selKey==="all")?(sessions[sessions.length-1]||valid):shown;
+    const metricPts=isAllSel(selKey)?(sessions[sessions.length-1]||valid):shown;
     w.fit=linreg(metricPts.map(m=>({x:m.t,y:m.offset})));
     w.fitStart=metricPts.length?metricPts[0].t:null;
     w.hasReset=sessions.length>1;
@@ -385,27 +386,115 @@ function fmtDateTime(t){return new Date(t).toLocaleString(lang==="nl"?"nl-NL":"e
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
 /* ---------- chart ---------- */
-function chartSVG(w){
-  const W=560,H=200,padL=44,padR=14,padT=12,padB=26;
-  const pts=w.shown||w.valid; if(!pts.length) return "";
-  let tMin=w.tMin,tMax=w.tMax; if(tMin===tMax){tMin-=MS_PER_DAY/2;tMax+=MS_PER_DAY/2;}
-  let oMin=Math.min(...pts.map(p=>p.offset)),oMax=Math.max(...pts.map(p=>p.offset));
-  if(oMin===oMax){oMin-=1;oMax+=1;} const op=(oMax-oMin)*0.12; oMin-=op; oMax+=op;
-  const X=t=>padL+(t-tMin)/(tMax-tMin)*(W-padL-padR), Y=o=>H-padB-(o-oMin)/(oMax-oMin)*(H-padT-padB);
-  const uniq=[...new Set(pts.map(q=>q.position))];
+const CW=560,CH=200,padL=44,padR=14,padT=12,padB=26,MONO="ui-monospace,monospace";
+const MIN_RATE_GAP=6*3600000; // same rule as the Rate Meter: rate points need >= 6h between measurements
+function colRate(v){v=Math.abs(v);return v<5?"#3be35b":v<10?"#e8d44d":v<20?"#ff8a3c":"#ff3b30";}
+function isAllSel(k){return k==="all"||k==="allc";}
+
+// Shared time axis. In "allc" mode each session gets its own block and the dead time between sessions is cut out.
+function timeAxis(w){
+  const comp=w.selKey==="allc"&&w.sessions.length>1;
+  let blocks=comp?w.sessions.map(s=>[s[0].t,s[s.length-1].t]):[[w.tMin,w.tMax]];
+  if(!comp&&w.tMin===w.tMax) blocks=[[w.tMin-MS_PER_DAY/2,w.tMax+MS_PER_DAY/2]];
+  const GAP=comp?16:0, plot=CW-padL-padR-GAP*(blocks.length-1);
+  const total=blocks.reduce((s,b)=>s+(b[1]-b[0]),0)||1;
+  const wts=blocks.map(b=>Math.max(b[1]-b[0],total*0.04)), sw=wts.reduce((a,b)=>a+b,0);
+  let x=padL;
+  const lay=blocks.map((b,i)=>{const px=plot*wts[i]/sw,o={t0:b[0],t1:b[1],x0:x,x1:x+px};x+=px+GAP;return o;});
+  const lin=(t,b)=>b.t1===b.t0?(b.x0+b.x1)/2:b.x0+(t-b.t0)/(b.t1-b.t0)*(b.x1-b.x0);
+  const X=t=>{
+    for(let i=0;i<lay.length;i++){const b=lay[i];
+      if(t<=b.t1||i===lay.length-1){
+        if(t>=b.t0||i===0) return lin(t,b);
+        const p=lay[i-1]; return b.t0===p.t1?b.x0:p.x1+(t-p.t1)/(b.t0-p.t1)*(b.x0-p.x1); // inside a cut gap
+      }}
+  };
+  return {X,lay,comp};
+}
+function axisSVG(ax){
+  let g="",lbl=(x,t,anchor)=>`<text x="${x.toFixed(1)}" y="${CH-8}" fill="#8f8c96" font-size="10" text-anchor="${anchor}" font-family="${MONO}">${fmtDate(t)}</text>`;
+  if(!ax.comp){
+    const b=ax.lay[0];
+    for(let i=0;i<=3;i++){const t=b.t0+(b.t1-b.t0)*i/3;g+=lbl(ax.X(t),t,i===0?'start':i===3?'end':'middle');}
+    return g;
+  }
+  // block start dates (skip when they would overlap) + end date of the last block
+  // LW = approx. label width ("03 Sept 26" at 10px mono); a start label must also clear the right-anchored end label
+  const LW=66,last=ax.lay[ax.lay.length-1]; let prev=-1e9;
+  ax.lay.forEach(b=>{if(b.x0-prev>=LW&&last.x1-b.x0>=2*LW){g+=lbl(b.x0,b.t0,'start');prev=b.x0;}});
+  g+=lbl(last.x1,last.t1,'end');
+  for(let i=1;i<ax.lay.length;i++){const xm=((ax.lay[i-1].x1+ax.lay[i].x0)/2).toFixed(1);
+    g+=`<line x1="${xm}" y1="${padT}" x2="${xm}" y2="${CH-padB}" stroke="#55535c" stroke-width="1" stroke-dasharray="3 3"/>`;}
+  return g;
+}
+function yGrid(Y,vMin,vMax,signed){
+  // gridlines on round steps (1/2/5 x 10^k), three to five of them
+  const raw=(vMax-vMin)/5, mag=Math.pow(10,Math.floor(Math.log10(raw))), step=[1,2,5,10].map(k=>k*mag).find(k=>k>=raw);
+  const dec=step<1?Math.min(2,-Math.floor(Math.log10(step))):0;
   let g="";
-  for(let i=0;i<=4;i++){const o=oMin+(oMax-oMin)*i/4,y=Y(o);
-    g+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#2e2e36" stroke-width="1"/>`;
-    g+=`<text x="${padL-7}" y="${(y+3).toFixed(1)}" fill="#8f8c96" font-size="10" text-anchor="end" font-family="${'ui-monospace,monospace'}">${o.toFixed(0)}</text>`;}
-  for(let i=0;i<=3;i++){const t=tMin+(tMax-tMin)*i/3,x=X(t);
-    g+=`<text x="${x.toFixed(1)}" y="${H-8}" fill="#8f8c96" font-size="10" text-anchor="${i===0?'start':i===3?'end':'middle'}" font-family="${'ui-monospace,monospace'}">${fmtDate(t)}</text>`;}
-  if(w.fit){const yAt=t=>w.fit.intercept+w.fit.slope*(t-w.fit.x0);
-    const fs=(w.selKey==="all")?Math.max(tMin, w.fitStart??tMin):tMin;
-    g+=`<line x1="${X(fs).toFixed(1)}" y1="${Y(yAt(fs)).toFixed(1)}" x2="${X(tMax).toFixed(1)}" y2="${Y(yAt(tMax)).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`;}
+  for(let i=Math.ceil(vMin/step);i*step<=vMax+1e-9;i++){const v=i*step,y=Y(v),s=Math.abs(v)<step/2?"0":v.toFixed(dec);
+    g+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${CW-padR}" y2="${y.toFixed(1)}" stroke="#2e2e36" stroke-width="1"/>`;
+    g+=`<text x="${padL-7}" y="${(y+3).toFixed(1)}" fill="#8f8c96" font-size="10" text-anchor="end" font-family="${MONO}">${signed&&v>step/2?"+"+s:s}</text>`;}
+  return g;
+}
+function shownSessions(w){return isAllSel(w.selKey)?w.sessions:[w.shown];}
+
+function chartSVG(w){
+  const pts=w.shown||w.valid; if(!pts.length) return "";
+  const ax=timeAxis(w),X=ax.X;
+  let oMin=Math.min(...pts.map(p=>p.offset)),oMax=Math.max(...pts.map(p=>p.offset));
+  if(oMax-oMin<0.5){const c=(oMin+oMax)/2;oMin=c-1;oMax=c+1;} const op=(oMax-oMin)*0.12; oMin-=op; oMax+=op;
+  const Y=o=>CH-padB-(o-oMin)/(oMax-oMin)*(CH-padT-padB);
+  const uniq=[...new Set(pts.map(q=>q.position))];
+  let g=yGrid(Y,oMin,oMax,false)+axisSVG(ax);
+  const fitLine=(f,a,b)=>{const yAt=t=>f.intercept+f.slope*(t-f.x0);
+    return `<line x1="${X(a).toFixed(1)}" y1="${Y(yAt(a)).toFixed(1)}" x2="${X(b).toFixed(1)}" y2="${Y(yAt(b)).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`;};
+  if(ax.comp){
+    // one regression line per session, each within its own block
+    w.sessions.forEach(s=>{const f=linreg(s.map(m=>({x:m.t,y:m.offset})));if(f)g+=fitLine(f,s[0].t,s[s.length-1].t);});
+  } else if(w.fit){
+    const b=ax.lay[0], fs=(w.selKey==="all")?Math.max(b.t0, w.fitStart??b.t0):b.t0;
+    g+=fitLine(w.fit,fs,b.t1);
+  }
   pts.forEach(p=>{const info=posInfo(p.position,uniq.indexOf(p.position));
-    const title=`${fmtDateTime(p.t)} \u00B7 ${p.offset.toFixed(1)}s \u00B7 ${info.label}${p.note?` \u00B7 ${p.note}`:""}`;
+    const title=`${fmtDateTime(p.t)} · ${p.offset.toFixed(1)}s · ${info.label}${p.note?` · ${p.note}`:""}`;
     g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.offset).toFixed(1)}" r="${p.newStart?4:3.4}" fill="${info.color}" stroke="${p.newStart?'var(--accent)':'#202026'}" stroke-width="${p.newStart?1.6:1}"><title>${esc(title)}</title></circle>`;});
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="offset / time">${g}</svg>`;
+  return `<div class="ctitle">${t().chartOff}</div><svg class="chart" viewBox="0 0 ${CW} ${CH}" role="img" aria-label="offset / time">${g}</svg>`;
+}
+
+// Rate over time: one point per interval of >= 6h, placed at the interval's end (as on the Rate Meter page).
+function rateSegments(w){
+  return shownSessions(w).map(s=>{
+    const out=[]; let lastUsed=s[0];
+    for(let i=1;i<s.length;i++){const dt=s[i].t-lastUsed.t;
+      if(dt>=MIN_RATE_GAP){out.push({t:s[i].t,v:(s[i].offset-lastUsed.offset)/dt*MS_PER_DAY,from:lastUsed.t});lastUsed=s[i];}}
+    return out;
+  }).filter(s=>s.length);
+}
+function rateChartSVG(w){
+  const segs=rateSegments(w);
+  const tg=(w.timegrapher||[]).filter(s=>s.t>=w.tMin&&s.t<=w.tMax);
+  const vals=[...segs.flat().map(p=>p.v),...tg.flatMap(s=>s.readings.map(r=>r.rate))];
+  if(vals.length<2) return "";
+  const ax=timeAxis(w),X=ax.X;
+  let vMin=Math.min(...vals),vMax=Math.max(...vals);
+  if(vMax-vMin<0.5){const c=(vMin+vMax)/2;vMin=c-1;vMax=c+1;} const vp=(vMax-vMin)*0.12; vMin-=vp; vMax+=vp;
+  const Y=v=>CH-padB-(v-vMin)/(vMax-vMin)*(CH-padT-padB);
+  let g=yGrid(Y,vMin,vMax,true)+axisSVG(ax);
+  if(vMin<0&&vMax>0){const zy=Y(0).toFixed(1);g+=`<line x1="${padL}" y1="${zy}" x2="${CW-padR}" y2="${zy}" stroke="#66646c" stroke-dasharray="4 4"/>`;}
+  segs.forEach(s=>{
+    if(s.length>1) g+=`<path d="${s.map((p,i)=>(i?"L":"M")+X(p.t).toFixed(1)+" "+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".7"/>`;
+    s.forEach(p=>{const title=`${fmtDateTime(p.from)} → ${fmtDateTime(p.t)} · ${signOf(p.v)}${fmtMag(p.v)} ${t().sday}`;
+      g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="3.8" fill="${colRate(p.v)}"><title>${esc(title)}</title></circle>`;});
+  });
+  tg.forEach(sess=>{const cx=X(sess.t);
+    g+=`<line x1="${cx.toFixed(1)}" y1="${padT}" x2="${cx.toFixed(1)}" y2="${CH-padB}" stroke="var(--accent)" stroke-width="1" opacity=".3"/>`;
+    if(sess.readings.length>1){const ya=Y(sess.avg).toFixed(1);
+      g+=`<line x1="${(cx-22).toFixed(1)}" y1="${ya}" x2="${(cx+22).toFixed(1)}" y2="${ya}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 3"/>`;}
+    sess.readings.forEach((r,i)=>{const info=posInfo(r.position,i),cy=Y(r.rate);
+      g+=`<rect x="${(cx-4.5).toFixed(1)}" y="${(cy-4.5).toFixed(1)}" width="9" height="9" transform="rotate(45 ${cx.toFixed(1)} ${cy.toFixed(1)})" fill="#202026" stroke="${info.color}" stroke-width="2"><title>${esc(`TG ${fmtDate(sess.t)} · ${info.abbr} ${signOf(r.rate)}${Math.abs(r.rate)} ${t().sday}`)}</title></rect>`;});
+  });
+  return `<div class="ctitle" title="${esc(t().rateHint)}">${t().chartRate}</div><svg class="chart" viewBox="0 0 ${CW} ${CH}" role="img" aria-label="rate / time">${g}</svg>`;
 }
 
 /* ---------- render ---------- */
@@ -429,6 +518,7 @@ function sessionPickerHTML(w){
     opts+=`<option value="${i}"${String(w.selKey)===String(i)?" selected":""}>${lbl}</option>`;
   }
   opts+=`<option value="all"${w.selKey==="all"?" selected":""}>${t().allSessions}</option>`;
+  opts+=`<option value="allc"${w.selKey==="allc"?" selected":""}>${t().allSessionsC}</option>`;
   return `<div class="sessionrow"><label>${t().sessionLbl}</label><select class="sessionsel" data-wid="${esc(String(w.id))}">${opts}</select></div>`;
 }
 function cardHTML(w){
@@ -449,6 +539,7 @@ function cardHTML(w){
     ${sessionPickerHTML(w)}
     ${chartSVG(w)}
     <div class="legend">${legend}</div>
+    ${rateChartSVG(w)}
     ${w.positions.length?`<table class="pos"><thead><tr><th class="dot"></th><th>${t().posHead}</th><th class="num">${t().n}</th><th class="num">${t().sday}</th></tr></thead><tbody>${rows}</tbody></table>`:""}
     ${w.delta!=null?`<div class="delta"><span>${t().spread}</span><b>${w.delta.toFixed(1)} ${t().sday}</b></div>`:""}
     ${tgHTML(w)}
@@ -481,6 +572,10 @@ function tgHTML(w){
 T.en.tgHead="Timegrapher"; T.nl.tgHead="Timegrapher";
 T.en.sessionLbl="Session"; T.nl.sessionLbl="Sessie";
 T.en.allSessions="All sessions"; T.nl.allSessions="Alle sessies";
+T.en.allSessionsC="All sessions, gaps removed"; T.nl.allSessionsC="Alle sessies, zonder tussenpozen";
+T.en.chartOff="Offset over time"; T.nl.chartOff="Offset in de tijd";
+T.en.chartRate="Rate over time"; T.nl.chartRate="Gang in de tijd";
+T.en.rateHint="Rate points are calculated from consecutive measurements at least 6 hours apart. Lines break at a new start."; T.nl.rateHint="Gangpunten worden berekend uit opeenvolgende metingen die minstens 6 uur uit elkaar liggen. Lijnen breken bij een nieuwe start.";
 T.en.tgDate="date"; T.nl.tgDate="datum";
 T.en.tgAvg="avg"; T.nl.tgAvg="gem.";
 T.en.tgReadings="readings"; T.nl.tgReadings="metingen";
@@ -539,7 +634,7 @@ function render(){
     `<span class="fchip"><b>${esc(f.name)}</b> ${f.watches.length}♦ <span class="x" data-i="${i}" title="${t().remove}">✕</span></span>`).join("");
   document.querySelectorAll(".fchip .x").forEach(el=>el.onclick=()=>{FILES.splice(+el.dataset.i,1);saveLS();render();});
   document.querySelectorAll(".sessionsel").forEach(sel=>sel.onchange=()=>{
-    const v=sel.value; sessionSel[sel.dataset.wid]=(v==="all")?"all":+v; render();
+    const v=sel.value; sessionSel[sel.dataset.wid]=isAllSel(v)?v:+v; render();
   });
 }
 
