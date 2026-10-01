@@ -1,0 +1,96 @@
+# watchcafe.eu
+
+Website en toolset voor de Sioux Watch Café, een maandelijkse horloge-meetup bij Sioux.
+Repo: github.com/lastscoutstanding/watchcafe.eu, gehost op GitHub Pages (watchcafe.eu).
+Stand: 1 oktober 2026, overgenomen uit de claude.ai-chat "Watch Rate Meter".
+
+## Werkwijze in Claude Code
+
+- Werk direct in deze lokale repo. Begin een taak met `git pull`, zodat je op de live stand zit.
+- Eén logische wijziging = één commit met een duidelijke message. Laat zien wat er verandert.
+- Push pas na akkoord van Bas: de site staat live. Na de push deployt GitHub Pages zelf; Bas ververst met Cmd+Shift+R.
+- Testen vóór commit:
+  - Start een lokale server (`python3 -m http.server 8000`). Absolute paden zoals `/theme.css` en `/nav.js` werken niet via `file://`.
+  - jsdom voor runtime-fouten en rekenlogica, Playwright voor screenshots per pagina/thema. Installeer ze als ze ontbreken.
+- Werk dit bestand bij na elke grotere wijziging, vooral de secties per onderdeel en "Open punten".
+
+## Architectuur
+
+Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle data in localStorage van de bezoeker. UI standaard Engels met NL-toggle.
+
+| Pad | Rol |
+| --- | --- |
+| `index.html` | Homepage "Watch Tools": hub met live klok en wereldklok-strip |
+| `clock/index.html` | Losse Live Clock |
+| `watchrate/index.html` | Watch Rate Meter |
+| `watchrate/viewer.html` | Backup Viewer |
+| `powerreserve/index.html` | Power Reserve |
+| `glossary/index.html` + `glossary.txt` | Woordenlijst EN/NL |
+| `guide/index.html` | Handleiding per tool |
+| `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
+| `cafe/index.html` + `meetings.txt`, `meetings.js`, `cafe-log.txt` | Café-pagina |
+| `nav.js` | Gedeelde menubalk, taal-toggle, thema-keuze |
+| `theme.css` | Alle thema-overrides |
+| `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Favicon (klokje op 10:10) |
+
+localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
+- `siouxWatchRateMeter`: alle horlogedata (metingen, timegrapher, gangreserve).
+- `siouxWatchRateMeterLang`: taal (EN standaard, NL).
+- `siouxWatchTheme`: gekozen thema.
+
+Backup-JSON: `{ version, activeWatch, watches: [...] }`; horloge `{ id, name, measurements, timegrapher? }`; meting `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
+
+## Homepage en Live Clock
+
+- Site is tool-gericht; café-inhoud staat onder `/cafe/`.
+- Wereldklok: San Francisco, New York, London, Cluj, Pune, Da Nang, Suzhou, Singapore, Sydney, met UTC-offset op halfuur-precisie.
+- Live Clock: zeven-segment LED, schaalt mee, optioneel tikgeluid, lokale tijdzone met Amsterdam-regel als terugval.
+
+## Watch Rate Meter
+
+- Gang in s/dag via lineaire regressie over offsetmetingen. Horloges worden hier aangemaakt.
+- Meten: groene "jouw horloge"-klok met ▲/▼ gelijkzetten, dan vastleggen. Hele seconden; tik-sync is bewust verwijderd.
+- "Nieuwe start" is een handmatige checkbox. Geen automatische gat-detectie.
+- Sessies worden afgeleid uit nieuwe-start-vlaggen (datastructuur ongewijzigd). Pulldown boven de grafiek bij >1 sessie, standaard de laatste, plus "Alle sessies".
+- Rate- en offsetgrafiek delen dezelfde tijd-as.
+- Timegrapher: "Timegrapher-sessie toevoegen" opent een grid (positie, gang, optioneel amplitude en beat error); posities van de vorige sessie staan klaar. Toont ruitjes in de grafiek, drie vergelijkingskaartjes en een sessielijst.
+- Sample-data: Omega Speedmaster '69 op precies +1,969 s/dag (maanlanding-easter-egg), Tudor Black Bay 58 met reset en twee sessies (+7,2 en −4,5), Casio A300U als kwarts-referentie.
+
+## Backup Viewer
+
+- Laadt één of meer JSON-backups; geladen bestanden blijven in localStorage.
+- LED-gangweergave in DSEG7 Bold (base64 ingebed uit npm `dseg`).
+- Dezelfde sessie-pulldown als de Rate Meter; geen pulldown bij één sessie.
+- Per-positie-gang met spreiding, offsetgrafiek met regressielijn, timegrapher-data, merge-toggle, sorteren, demo-modus.
+- "Zo werkt het"-gids alleen in de lege toestand, terug te halen via `?`.
+
+## Power Reserve
+
+- Opwinden, gelijkzetten op de siteklok (systeemtijd), "Opgewonden & gelijk". "Loopt nog" legt een ondergrens vast en lost de 12-uurs-ambiguïteit op. "Gestopt" + afgelezen wijzertijd. "Terug" herstelt een per ongeluk gestopte meting.
+- Bewust losgekoppeld van de Rate Meter-offset; opgeslagen metingen houden `offset: 0`.
+- Meerdere horloges tegelijk, elk een kaart met live teller en historie.
+
+## Thema's
+
+Zes donkere thema's met iconische accentkleur, merkvrije namen:
+Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowflake (`#5b9bff` + goud), Speedy (`#e2483d`), Monster (`#ff8a2a`), Kermit (`#48c777` + goud).
+
+- Alleen decoratieve "chrome" themet mee. Functionele kleuren (rode referentieklok, groene horlogeklok, positiekleuren, grafiekschaal) nooit.
+- Overrides alleen in `theme.css`; standaardkleuren blijven inline per pagina tegen een kleurflits bij laden.
+- Elk themablok zet alle variabelen (`--bg` en `--page` gelijk).
+- Thema toevoegen/wijzigen = `theme.css` (kleuren) + `nav.js` (menunaam).
+- Nooit Rolex/Omega/Seiko/Tudor als naam gebruiken.
+
+## Ontwerp en lessen
+
+- Modern en donker, niet oud-bollig. Progressive disclosure, minimale UI, hulp impliciet. Zelden gebruikte functies niet prominent.
+- Gestippelde randen voor secundaire acties, genummerde stapgroepen voor meetworkflows.
+- Liever expliciete, door de gebruiker gezette vlaggen dan automatische detectie.
+- Geen volledige DOM-rebuild op input-events (sloot de iOS-tijdkiezer).
+- `applyStatic()` niet laten draaien nadat `renderStart()` elementen heeft vervangen.
+- Eerdere bugs om op te letten: segment-dimming-CSS, viewer die reset-vlaggen negeerde, klok buiten beeld op mobiel.
+
+## Open punten
+
+- [x] Oude `viewer.html` in de root verwijderd (commit b46e201); `watchrate/viewer.html` is de enige viewer.
+- [ ] Beslissen of een lichtere, beter leesbare variant nog gewenst is, nu alle thema's donker zijn.
