@@ -353,7 +353,7 @@ var I18N={
   addToggle:"+ Add watch", addCancel:"Cancel", viewerBtn:"Browse backups",
   grpAlign:"Align to your watch", grpRecord:"Record",
   alignHint:"Use the \u25b2/\u25bc arrows so the green clock matches your watch to the second, then record.",
-  sessionLbl:"Session", allSessions:"All sessions",
+  sessionLbl:"Session", allSessions:"All sessions", allSessionsC:"All sessions, gaps removed",
   nsHint:"Tick this if the watch was stopped and restarted, or reset to the correct time. The rate calculation then starts fresh from this measurement instead of counting the jump as drift.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Load sample data", clearSample:"Remove samples",
@@ -399,7 +399,7 @@ var I18N={
   addToggle:"+ Horloge toevoegen", addCancel:"Annuleren", viewerBtn:"Back-ups bekijken",
   grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
   alignHint:"Zet met de \u25b2/\u25bc pijltjes de groene klok gelijk aan je horloge tot op de seconde, en leg dan vast.",
-  sessionLbl:"Sessie", allSessions:"Alle sessies",
+  sessionLbl:"Sessie", allSessions:"Alle sessies", allSessionsC:"Alle sessies, zonder tussenpozen",
   nsHint:"Vink dit aan als het horloge heeft stilgestaan en opnieuw is gestart, of opnieuw gelijk is gezet. De gangberekening begint dan opnieuw vanaf deze meting in plaats van de sprong als afwijking mee te tellen.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Voorbeelddata laden", clearSample:"Voorbeelden verwijderen",
@@ -464,7 +464,7 @@ state=load()||seed();
 /* ===== helpers ===== */
 function activeWatch(){return state.watches.find(function(w){return w.id===state.activeWatch;})||state.watches[0]||null;}
 function sortedPts(w){return w.measurements.slice().sort(function(a,b){return a.t-b.t;});}
-var selectedSession="last"; // "last" | "all" | index
+var selectedSession="last"; // "last" | "all" | "allc" (all, gaps removed) | index
 function sessionLabel(seg,i,total){
   var a=new Date(seg[0].t),b=new Date(seg[seg.length-1].t);
   var loc=lang==="nl"?"nl-NL":"en-GB";
@@ -474,7 +474,7 @@ function sessionLabel(seg,i,total){
 }
 function resolvedSegIndex(w){
   var segs=segments(w);
-  if(selectedSession==="all")return "all";
+  if(selectedSession==="all"||selectedSession==="allc")return "all";
   if(selectedSession==="last"||selectedSession>=segs.length)return segs.length-1;
   return +selectedSession;
 }
@@ -560,6 +560,7 @@ function renderSessionPicker(w){
   var opts='';
   for(var i=segs.length-1;i>=0;i--)opts+='<option value="'+i+'">'+sessionLabel(segs[i],i,segs.length)+'</option>';
   opts+='<option value="all">'+t.allSessions+'</option>';
+  opts+='<option value="allc">'+t.allSessionsC+'</option>';
   sel.innerHTML=opts;
   var val=(selectedSession==="last")?(segs.length-1):selectedSession;
   sel.value=String(val);
@@ -619,7 +620,23 @@ function colOff(v){v=Math.abs(v);return v<5?"#3be35b":v<15?"#e8d44d":v<30?"#ff8a
 function colRate(v){v=Math.abs(v);return v<5?"#3be35b":v<10?"#e8d44d":v<20?"#ff8a3c":"#ff3b30";}
 var MIN_RATE_GAP=6*3600000; // 6 hours
 
-function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain){
+// Lay time blocks side by side; with more than one block the dead time between them is cut out.
+function timeLayout(blocks,x0,x1){
+  var GAP=blocks.length>1?16:0,plot=x1-x0-GAP*(blocks.length-1);
+  var total=blocks.reduce(function(a,b){return a+(b[1]-b[0]);},0)||1;
+  var wts=blocks.map(function(b){return Math.max(b[1]-b[0],total*0.04);}),sw=wts.reduce(function(a,b){return a+b;},0);
+  var x=x0,lay=blocks.map(function(b,i){var px=plot*wts[i]/sw,o={t0:b[0],t1:b[1],x0:x,x1:x+px};x+=px+GAP;return o;});
+  function lin(t,b){return b.t1===b.t0?(b.x0+b.x1)/2:b.x0+(t-b.t0)/(b.t1-b.t0)*(b.x1-b.x0);}
+  function X(t){
+    for(var i=0;i<lay.length;i++){var b=lay[i];
+      if(t<=b.t1||i===lay.length-1){
+        if(t>=b.t0||i===0)return lin(t,b);
+        var p=lay[i-1];return b.t0===p.t1?b.x0:p.x1+(t-p.t1)/(b.t0-p.t1)*(b.x0-p.x1); // inside a cut gap
+      }}
+  }
+  return {X:X,lay:lay};
+}
+function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
   // seriesSegs: array of segments; each segment: array of {t,v}
   var all=[];seriesSegs.forEach(function(s){all=all.concat(s);});
   (tgSessions||[]).forEach(function(sess){sess.readings.forEach(function(r){all.push({t:sess.t,v:r.rate});});});
@@ -632,7 +649,8 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain){
   var mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs);
   if(mn===mx){mn-=1;mx+=1;}
   var padV=(mx-mn)*0.12;mn-=padV;mx+=padV;
-  function X(t){return L+(t1===t0?0:(t-t0)/(t1-t0))*(W-L-R);}
+  var comp=blocks&&blocks.length>1,ax=comp?timeLayout(blocks,L,W-R):null;
+  function X(t){return comp?ax.X(t):L+(t1===t0?0:(t-t0)/(t1-t0))*(W-L-R);}
   function Y(v){return H-B-((v-mn)/(mx-mn))*(H-T-B);}
   function lbl(v){var a=Math.abs(v)>=10?v.toFixed(0):v.toFixed(1);return (v>0?"+":"")+a;}
   var out="";
@@ -649,6 +667,14 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain){
   function dstr(t){return new Date(t).toLocaleDateString(loc,{day:"numeric",month:"short"});}
   out+='<text x="'+L+'" y="'+(H-8)+'" font-size="11" fill="#888">'+dstr(t0)+'</text>';
   out+='<text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end" font-size="11" fill="#888">'+dstr(t1)+'</text>';
+  if(comp){
+    // start date per later block (only where it clears its neighbours) + dashed break between blocks
+    var LW=46,prev=L;
+    for(var bi=1;bi<ax.lay.length;bi++){var b=ax.lay[bi],xm=((ax.lay[bi-1].x1+b.x0)/2).toFixed(1);
+      out+='<line x1="'+xm+'" y1="'+T+'" x2="'+xm+'" y2="'+(H-B)+'" stroke="#555" stroke-dasharray="3 3"/>';
+      if(b.x0-prev>=LW&&(W-R)-b.x0>=2*LW){out+='<text x="'+b.x0.toFixed(1)+'" y="'+(H-8)+'" font-size="11" fill="#888">'+dstr(b.t0)+'</text>';prev=b.x0;}
+    }
+  }
   // segments: line per segment + colored dots
   seriesSegs.forEach(function(s){
     if(s.length>1){
@@ -680,9 +706,10 @@ function drawCharts(w){
   // gedeelde tijd-as: min/max van alle getoonde offset-metingen
   var tAll=[];segs.forEach(function(s){s.forEach(function(p){tAll.push(p.t);});});
   var tDomain=tAll.length?[Math.min.apply(null,tAll),Math.max.apply(null,tAll)]:null;
+  var blocks=(selectedSession==="allc")?segs.map(function(s){return [s[0].t,s[s.length-1].t];}):null;
   // offset chart
   var offSegs=segs.map(function(s){return s.map(function(p){return {t:p.t,v:p.offset};});});
-  var okOff=chartSVG(document.getElementById("chartOff"),offSegs,colOff,"s",null,tDomain);
+  var okOff=chartSVG(document.getElementById("chartOff"),offSegs,colOff,"s",null,tDomain,blocks);
   ow.style.display=okOff?"block":"none";
   // rate chart: per segment, consecutive pairs >= 6h apart
   var rateSegs=segs.map(function(s){
@@ -697,7 +724,7 @@ function drawCharts(w){
     return pts;
   }).filter(function(s){return s.length;});
   var tgSessions=tgOf(w);
-  var okRate=chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain);
+  var okRate=chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain,blocks);
   rw.style.display=okRate?"block":"none";
   rh.style.display=(okOff||okRate)?"block":"none";
   document.getElementById("tgLegend").style.display=(okRate&&tgSessions.length)?"block":"none";
