@@ -20,14 +20,14 @@
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-    header{text-align:center;padding:40px 20px 30px}
-    h1{color:var(--accent);margin:0 0 8px;font-size:clamp(26px,4.5vw,38px);letter-spacing:.3px}
-    header p{color:var(--muted);font-size:16px;margin:0}
-    main{max-width:900px;margin:0 auto 60px;padding:0 16px}
+    .hdr{margin-bottom:20px}
+    h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+    .hdr p{color:var(--muted);font-size:14px;margin:0;line-height:1.4}
+    main{max-width:712px;margin:28px auto 60px;padding:0 16px}
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px 32px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
     @media(max-width:560px){.card{padding:22px 18px}}
     h2{color:var(--accent);margin:34px 0 14px;font-size:20px}
-    h2:first-child{margin-top:0}
+    h2:first-child,.hdr+h2{margin-top:0}
     p{line-height:1.65}
     .date-box{background:var(--banner);border-left:6px solid var(--accent);padding:18px;font-size:1.1rem;border-radius:8px;color:#fff;margin:6px 0 8px}
     .date-box .nm{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.25);font-size:1rem}
@@ -45,13 +45,12 @@
 </head>
 <body>
 
-<header>
-  <h1 id="c_h1">The Sioux Watch Café</h1>
-  <p id="c_sub">A relaxed gathering for Sioux colleagues who like watches.</p>
-</header>
-
 <main>
   <div class="card">
+    <div class="hdr">
+      <h1 id="c_h1">The Sioux Watch Café</h1>
+      <p id="c_sub">A relaxed gathering for Sioux colleagues who like watches.</p>
+    </div>
     <h2 id="c_welcome_h">Welcome!</h2>
     <p id="c_welcome_p"></p>
 
