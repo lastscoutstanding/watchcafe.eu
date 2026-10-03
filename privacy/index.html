@@ -26,10 +26,6 @@
   .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px}
   h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
   .sub{color:var(--muted);font-size:14px;margin:0}
-  .lang{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:none}
-  .lang button{border:none;background:#26262c;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;touch-action:manipulation}
-  .lang button.active{background:var(--accent);color:#fff}
-  .lang button:hover:not(.active){background:#30303a}
 
   h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:28px 0 12px;font-weight:700;border-top:1px solid var(--border);padding-top:22px}
   p{line-height:1.65;font-size:14.5px;margin:10px 0;max-width:720px}
@@ -80,10 +76,6 @@
       <div>
         <h1 id="title"></h1>
         <p class="sub" id="sub"></p>
-      </div>
-      <div class="lang">
-        <button data-lang="en">EN</button>
-        <button data-lang="nl">NL</button>
       </div>
     </div>
 
@@ -222,7 +214,6 @@ function render(){
   document.getElementById("honest1").textContent=u.honest1;
   document.getElementById("checkTip").textContent=u.checkTip;
   document.getElementById("foot").textContent=u.foot;
-  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.classList.toggle("active",b.getAttribute("data-lang")===lang);});
   document.documentElement.lang=lang;
 
   /* cookies: live meten */
@@ -272,9 +263,7 @@ document.getElementById("clearAll").onclick=function(){
   var u=UI[lang];
   if(confirm(u.confirmAll)){try{localStorage.clear();}catch(e){}openKeys={};render();}
 };
-[].forEach.call(document.querySelectorAll(".lang button"),function(b){
-  b.onclick=function(){lang=b.getAttribute("data-lang");try{localStorage.setItem(LKEY,lang);}catch(e){}render();};
-});
+window.addEventListener("swclang",function(e){lang=e.detail;render();});
 render();
 </script>
 </body>
