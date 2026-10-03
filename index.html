@@ -65,7 +65,7 @@
     @media(max-width:520px){.tools{grid-template-columns:1fr}}
     .tool{display:flex;flex-direction:column;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;text-decoration:none;color:var(--ink);transition:border-color .15s, transform .15s}
     .tool:hover{border-color:var(--accent);transform:translateY(-2px)}
-    .tool .icon{font-size:26px;margin-bottom:10px;display:block;color:var(--accent)}
+    .tool .icon{width:28px;height:28px;margin-bottom:10px;display:block;color:var(--accent)}
     .tool b{display:block;font-size:16px;margin-bottom:6px}
     .tool span{color:var(--muted);font-size:13.5px;line-height:1.5;display:block}
     .tool .go{color:var(--accent);font-size:13px;font-weight:600;margin-top:auto;padding-top:12px;display:block}
@@ -108,25 +108,25 @@
 
   <div class="tools">
     <a class="tool" href="/watchrate/">
-      <span class="icon">&#9201;</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M10 2.5h4M12 2.5V6M18.2 6.8l1.3-1.3M12 13.5l3-3"/></svg>
       <b id="t_rate_h">Rate Meter</b>
       <span id="t_rate_d">Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.</span>
       <span class="go" id="t_rate_c">Start measuring &rarr;</span>
     </a>
     <a class="tool" href="/powerreserve/">
-      <span class="icon">&#9203;</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3h11M6.5 21h11M7.5 3v3.5L12 12l4.5-5.5V3M7.5 21v-3.5L12 12l4.5 5.5V21"/><path d="M10 19.2h4"/></svg>
       <b id="t_pr_h">Power Reserve</b>
       <span id="t_pr_d">Measure how long your watch runs on a full wind, reading the stop time straight off the hands.</span>
       <span class="go" id="t_pr_c">Measure reserve &rarr;</span>
     </a>
     <a class="tool" href="/glossary/">
-      <span class="icon">&#9998;</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19M9 7.5h6M9 10.5h4"/></svg>
       <b id="t_gl_h">Glossary</b>
       <span id="t_gl_d">Watch and timegrapher terms explained in plain language, in English and Dutch.</span>
       <span class="go" id="t_gl_c">Browse the terms &rarr;</span>
     </a>
     <a class="tool" href="/guide/">
-      <span class="icon">&#128214;</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>
       <b id="t_gu_h">Guide</b>
       <span id="t_gu_d">New here? A walkthrough of the site and every tool, plus the key concepts.</span>
       <span class="go" id="t_gu_c">Read the guide &rarr;</span>
