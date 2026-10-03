@@ -21,7 +21,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | Pad | Rol |
 | --- | --- |
 | `index.html` | Homepage "Watch Tools": hub met live klok en wereldklok-strip |
-| `clock/index.html` | Losse Live Clock |
+| `clock/index.html` | Alleen doorverwijzing naar `/` (oude bladwijzers); de klok staat op de homepage |
 | `watchrate/index.html` | Watch Rate Meter |
 | `watchrate/viewer.html` | Backup Viewer |
 | `powerreserve/index.html` | Power Reserve |
@@ -46,9 +46,11 @@ Backup-JSON: `{ version, activeWatch, watches: [...] }`; horloge `{ id, name, me
 - Eén kolom op de breedte van de menubalk (980 px): klokpaneel vult de breedte, wereldklok op één rij van negen (3×3 onder 940 px), vier tegels naast elkaar (2×2 onder 860 px, onder elkaar onder 520 px).
 - Tegeliconen zijn inline SVG-lijniconen in `currentColor` (accentkleur), geen emoji.
 - Kopstijl overal gelijk: titel links, 30 px/800 in accentkleur, subtitel 14 px. Tool- en café-pagina's zetten die in een kaart van 680 px; de homepage zet hem op de linkerrand van de 980 px-kolom.
-- LED-klokken (homepage en `/clock/`): geen achtergrondvlakje per cijfer; onverlichte segmenten blijven zwak zichtbaar (`opacity:.28`).
+- LED-klok: geen achtergrondvlakje per cijfer; onverlichte segmenten blijven zwak zichtbaar (`opacity:.28`).
 - Wereldklok: San Francisco, New York, London, Cluj, Pune, Da Nang, Suzhou, Singapore, Sydney, met UTC-offset op halfuur-precisie.
-- Live Clock: zeven-segment LED, schaalt mee, optioneel tikgeluid, lokale tijdzone met Amsterdam-regel als terugval.
+- Live Clock staat op de homepage: zeven-segment LED, schaalt mee, lokale systeemtijd. Het paneel is geen link meer.
+- Naast de datum twee knoppen in datumvak-stijl en accentkleur: links de 10-secondentik (bij elke paginalading uit, want browsers staan geluid pas na een klik toe; daarom niet in localStorage), rechts schermvullend via de Fullscreen-API (verborgen waar dat niet kan, zoals op iPhone).
+- De Amsterdam-regel van de oude klokpagina is bewust niet meegenomen.
 
 ## Watch Rate Meter
 
