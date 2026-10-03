@@ -43,6 +43,8 @@ Backup-JSON: `{ version, activeWatch, watches: [...] }`; horloge `{ id, name, me
 ## Homepage en Live Clock
 
 - Site is tool-gericht; café-inhoud staat onder `/cafe/`.
+- Eén kolom op de breedte van de menubalk (980 px): klokpaneel vult de breedte, wereldklok op één rij van negen (3×3 onder 940 px), vier tegels naast elkaar (2×2 onder 860 px, onder elkaar onder 520 px).
+- Tegeliconen zijn inline SVG-lijniconen in `currentColor` (accentkleur), geen emoji.
 - Wereldklok: San Francisco, New York, London, Cluj, Pune, Da Nang, Suzhou, Singapore, Sydney, met UTC-offset op halfuur-precisie.
 - Live Clock: zeven-segment LED, schaalt mee, optioneel tikgeluid, lokale tijdzone met Amsterdam-regel als terugval.
 
