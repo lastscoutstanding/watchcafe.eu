@@ -23,11 +23,11 @@
     .hdr{margin-bottom:20px}
     h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
     .hdr p{color:var(--muted);font-size:14px;margin:0;line-height:1.4}
-    main{max-width:712px;margin:28px auto 60px;padding:0 16px}
+    main{max-width:980px;margin:28px auto 60px;padding:0 16px}
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px 32px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
     @media(max-width:560px){.card{padding:22px 18px}}
     h2{color:var(--accent);margin:34px 0 14px;font-size:20px}
-    h2:first-child,.hdr+h2{margin-top:0}
+    h2:first-child{margin-top:0}
     p{line-height:1.65}
     .date-box{background:var(--banner);border-left:6px solid var(--accent);padding:18px;font-size:1.1rem;border-radius:8px;color:#fff;margin:6px 0 8px}
     .date-box .nm{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.25);font-size:1rem}
@@ -35,6 +35,22 @@
     ul{line-height:1.8;padding-left:22px}
     .cafe-log{background:var(--card2);border-left:6px solid var(--accent);padding:18px;font-size:1rem;border-radius:8px;color:var(--ink);margin-bottom:18px;line-height:1.6}
     .cafe-log strong{color:var(--accent)}
+    /* wide screens: welcome+topics beside the next date, past reports as a two-column grid below */
+    .grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;column-gap:44px;align-items:start}
+    .grid>div>h2:first-child{margin-top:0}
+    .g-welcome,.g-next{padding-bottom:30px}
+    .g-next .date-box{margin-top:0}
+    .g-log{grid-column:1/-1;border-top:1px solid var(--border);margin-top:30px;padding-top:28px}
+    #cafeLog{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+    #cafeLog .cafe-log{margin:0;font-size:.95rem}
+    @media(max-width:760px){
+      .grid,#cafeLog{display:block}
+      .g-welcome,.g-next{padding-bottom:0}
+      .g-next h2,.g-topics h2{margin-top:34px}
+      .g-log{border-top:none;margin-top:0;padding-top:0}
+      .g-log h2{margin-top:34px}
+      #cafeLog .cafe-log{margin-bottom:18px}
+    }
     .backlink{display:inline-block;margin-top:6px;color:var(--accent);text-decoration:none;font-size:14px;font-weight:600}
     .backlink:hover{text-decoration:underline}
     footer{margin-top:50px;text-align:center;padding:25px;color:#8f8c96;font-size:14px}
@@ -51,23 +67,30 @@
       <h1 id="c_h1">The Sioux Watch Café</h1>
       <p id="c_sub">A relaxed gathering for Sioux colleagues who like watches.</p>
     </div>
-    <h2 id="c_welcome_h">Welcome!</h2>
-    <p id="c_welcome_p"></p>
+    <div class="grid">
+      <div class="g-welcome">
+        <h2 id="c_welcome_h">Welcome!</h2>
+        <p id="c_welcome_p"></p>
+      </div>
 
-    <h2 id="c_next_h">Next Café Date</h2>
-    <div class="date-box">
-      <span id="c_next_txt"></span>
-      <div class="nm"><span id="c_nm_only">Only</span> <b data-countdown-nights>&hellip;</b> <span id="c_nm_till">of sleep till</span> <b data-countdown-date>&hellip;</b></div>
-    </div>
+      <div class="g-next">
+        <h2 id="c_next_h">Next Café Date</h2>
+        <div class="date-box">
+          <span id="c_next_txt"></span>
+          <div class="nm"><span id="c_nm_only">Only</span> <b data-countdown-nights>&hellip;</b> <span id="c_nm_till">of sleep till</span> <b data-countdown-date>&hellip;</b></div>
+        </div>
+      </div>
 
-    <h2 id="c_topics_h">Topics We Explore</h2>
-    <ul id="c_topics"></ul>
+      <div class="g-topics">
+        <h2 id="c_topics_h">Topics We Explore</h2>
+        <ul id="c_topics"></ul>
+        <p id="c_everyone"></p>
+      </div>
 
-    <p id="c_everyone"></p>
-
-    <div id="cafeLogSec" style="display:none">
-      <h2 id="c_prev_h">Previous Café Dates</h2>
-      <div id="cafeLog"></div>
+      <div class="g-log" id="cafeLogSec" style="display:none">
+        <h2 id="c_prev_h">Previous Café Dates</h2>
+        <div id="cafeLog"></div>
+      </div>
     </div>
 
     <p><a class="backlink" href="/" id="c_back">&larr; Back to the tools</a></p>
