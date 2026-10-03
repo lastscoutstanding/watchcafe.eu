@@ -55,7 +55,7 @@
 
   section{border-top:1px solid var(--border);margin-top:30px;padding-top:24px;scroll-margin-top:70px}
   h2{color:var(--accent);font-size:20px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
-  h2 .ic{font-size:20px}
+  h2 .ic{width:22px;height:22px;flex:none}
   .tagline{color:var(--muted);font-size:13.5px;margin:0 0 14px}
   h3{font-size:15px;margin:20px 0 6px;color:var(--ink)}
   p{line-height:1.7;font-size:14.5px;margin:10px 0}
@@ -108,17 +108,17 @@ var C={
   intro:"Everything here runs in your own browser \u2014 nothing is sent anywhere, and your watch data stays on your device. This guide walks through each tool and the few concepts worth knowing. New to measuring watches? Start with \u201cThe two numbers\u201d below.",
   toc:[["concepts","The two numbers"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Power Reserve"],["viewer","Backup Viewer"],["glossary","Glossary"],["data","Your data & backups"]],
   sections:[
-    {id:"concepts",ic:"\u2696\ufe0f",h:"The two numbers",tag:"Offset and rate \u2014 the heart of it all.",html:
+    {id:"concepts",h:"The two numbers",tag:"Offset and rate \u2014 the heart of it all.",html:
       "<p>Two numbers describe how a watch keeps time, and it helps to keep them apart:</p>"+
       "<ul><li><b>Offset</b> \u2014 how far the watch is from the correct time <i>at one moment</i> (for example, \u201c+12 seconds ahead\u201d). It's a single snapshot.</li>"+
       "<li><b>Rate</b> \u2014 how many seconds per day the watch gains or loses. This is the number collectors care about, and it's what tells you whether a watch runs well.</li></ul>"+
       "<div class='callout'><b>The key idea:</b> you can't get a rate from one measurement. You need at least <b>two offset readings taken at different times</b>. The change in offset, divided by the time between the readings, is the rate. The longer you wait between readings, the more accurate that rate becomes \u2014 a full day beats ten minutes.</div>"},
-    {id:"clock",ic:"\u23f2",h:"Live Clock",tag:"An accurate reference to set and check your watch against.",html:
+    {id:"clock",h:"Live Clock",tag:"An accurate reference to set and check your watch against.",html:
       "<p>A big LED clock on the homepage, in your device's time zone, with a world clock strip below it. Use it as a shared reference during a caf\u00e9 meet-up \u2014 everyone sets their watch to the same screen \u2014 or just to check how far off yours is.</p>"+
       "<p>The speaker button left of the date plays a gentle tick on every 10th second, handy as an audible beat while you set a watch. The button right of the date shows the clock full screen (not available on iPhone).</p>"+
       "<div class='callout'>The clock relies on your device's own clock, so make sure that is synced over the internet (it normally is). If your computer's clock is off, you'd be measuring <i>its</i> error, not your watch's.</div>"+
       "<a class='go' href='/'>Open the Live Clock \u2192</a>"},
-    {id:"ratemeter",ic:"\u23f1",h:"Rate Meter",tag:"Track how many seconds per day your watch gains or loses.",html:
+    {id:"ratemeter",h:"Rate Meter",tag:"Track how many seconds per day your watch gains or loses.",html:
       "<p>This is the main tool. You record how far your watch is off now, come back later and record again, and it works out the rate for you.</p>"+
       "<h3>Getting started</h3>"+
       "<ol><li><b>Add a watch</b> \u2014 type its name and tap Add. Your watches live in this browser and are shared with the Power Reserve tool.</li>"+
@@ -134,7 +134,7 @@ var C={
       "<h3>Timegrapher sessions</h3>"+
       "<p>Have a timegrapher at the meet-up? Tap <b>Add session</b> to log the rate, amplitude and beat error per position. Those appear as diamonds on the rate chart, so you can compare the machine's instant reading against how the watch actually performs over days on the wrist.</p>"+
       "<a class='go' href='/watchrate/'>Open the Rate Meter \u2192</a>"},
-    {id:"powerreserve",ic:"\ud83d\udd0b",h:"Power Reserve",tag:"Measure how long a watch runs on a full wind \u2014 hands-free.",html:
+    {id:"powerreserve",h:"Power Reserve",tag:"Measure how long a watch runs on a full wind \u2014 hands-free.",html:
       "<p>Power reserve is the time between \u201cfully wound\u201d and \u201cstopped\u201d. The clever part: you don't have to watch it stop.</p>"+
       "<h3>How it works</h3>"+
       "<ol><li>Wind the watch fully, set it to the clock shown on the page, and tap <b>Wound &amp; set</b>. The moment is timestamped.</li>"+
@@ -143,14 +143,14 @@ var C={
       "<div class='callout'><b>Why still running matters:</b> the hands show a time like 3:47, but not <i>which</i> 3:47 \u2014 last night's or a day later? Tapping \u201cstill running\u201d now and then removes all doubt, and the day is filled in for you automatically.</div>"+
       "<p>You can run several watches at once, each on its own card with a live counter. Tapped <b>Stopped</b> by mistake? Use <b>Back</b> to resume. Saved measurements build a history per watch, so you can see if the reserve shrinks as a service nears.</p>"+
       "<a class='go' href='/powerreserve/'>Open Power Reserve \u2192</a>"},
-    {id:"viewer",ic:"\ud83d\udcca",h:"Backup Viewer",tag:"Browse rates and history from your backup files.",html:
+    {id:"viewer",h:"Backup Viewer",tag:"Browse rates and history from your backup files.",html:
       "<p>Export a backup from the Rate Meter and load it here to review it \u2014 handy for keeping the live tool tidy while your older measurements stay safe in files. It reads the rate, positions and offset trace per watch, plus any timegrapher and power-reserve data.</p>"+
       "<p>You can load several files at once to compare watches, and the same session dropdown from the Rate Meter is here too. Loaded files are remembered in this browser, so they're still here when you come back.</p>"+
       "<a class='go' href='/watchrate/viewer.html'>Open the Backup Viewer \u2192</a>"},
-    {id:"glossary",ic:"\u270e",h:"Glossary",tag:"Watch and timegrapher terms, in plain language.",html:
+    {id:"glossary",h:"Glossary",tag:"Watch and timegrapher terms, in plain language.",html:
       "<p>A searchable list of horology terms \u2014 from movement and escapement to amplitude, beat error and lift angle \u2014 each explained in one line, in English and Dutch. A good place to look up anything in this guide you'd like defined.</p>"+
       "<a class='go' href='/glossary/'>Open the Glossary \u2192</a>"},
-    {id:"data",ic:"\ud83d\udd12",h:"Your data & backups",tag:"Where everything is stored, and how to move it.",html:
+    {id:"data",h:"Your data & backups",tag:"Where everything is stored, and how to move it.",html:
       "<p>All your watches and measurements are stored by your browser, on your own device \u2014 there is no server or account, and nothing leaves your machine. That also means your data doesn't automatically follow you to another device or browser.</p>"+
       "<p>To move data or keep it safe, use <b>Export backup</b> in the Rate Meter to save a <kbd>.json</kbd> file, and <b>Import backup</b> to load it elsewhere. Clearing your browser data will erase your measurements, so export now and then.</p>"+
       "<p>Curious what's actually stored? The <a href='/privacy/'>privacy page</a> shows it live, straight from your browser.</p>"}
@@ -165,17 +165,17 @@ var C={
   intro:"Alles hier draait in je eigen browser \u2014 er wordt niets verstuurd, en je horlogedata blijft op je apparaat. Deze handleiding loopt elke tool langs, plus de paar begrippen die het waard zijn om te kennen. Nieuw met het meten van horloges? Begin met \u201cDe twee getallen\u201d hieronder.",
   toc:[["concepts","De twee getallen"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Gangreserve"],["viewer","Backup Viewer"],["glossary","Begrippenlijst"],["data","Je data & back-ups"]],
   sections:[
-    {id:"concepts",ic:"\u2696\ufe0f",h:"De twee getallen",tag:"Offset en gang \u2014 waar alles om draait.",html:
+    {id:"concepts",h:"De twee getallen",tag:"Offset en gang \u2014 waar alles om draait.",html:
       "<p>Twee getallen beschrijven hoe een horloge de tijd bijhoudt, en het helpt ze uit elkaar te houden:</p>"+
       "<ul><li><b>Offset</b> \u2014 hoe ver het horloge <i>op \u00e9\u00e9n moment</i> van de juiste tijd af zit (bijvoorbeeld \u201c+12 seconden voor\u201d). Een momentopname.</li>"+
       "<li><b>Gang</b> \u2014 hoeveel seconden per dag het horloge voor- of achterloopt. Dit is het getal waar verzamelaars om geven, en wat je vertelt of een horloge goed loopt.</li></ul>"+
       "<div class='callout'><b>De kern:</b> uit \u00e9\u00e9n meting kun je geen gang halen. Je hebt minstens <b>twee offset-metingen op verschillende momenten</b> nodig. De verandering in offset, gedeeld door de tijd ertussen, is de gang. Hoe langer je tussen metingen wacht, hoe nauwkeuriger die gang wordt \u2014 een hele dag is beter dan tien minuten.</div>"},
-    {id:"clock",ic:"\u23f2",h:"Live Clock",tag:"Een nauwkeurige referentie om je horloge op te zetten en te controleren.",html:
+    {id:"clock",h:"Live Clock",tag:"Een nauwkeurige referentie om je horloge op te zetten en te controleren.",html:
       "<p>Een grote LED-klok op de homepage, op de tijdzone van je apparaat, met een wereldklok-strip eronder. Gebruik 'm als gedeelde referentie tijdens een caf\u00e9-meetup \u2014 iedereen zet zijn horloge op hetzelfde scherm \u2014 of gewoon om te zien hoe ver die van je afwijkt.</p>"+
       "<p>De luidsprekerknop links van de datum laat elke 10e seconde een zacht tikje horen, handig als hoorbare maat terwijl je een horloge gelijkzet. De knop rechts van de datum zet de klok schermvullend (niet op iPhone).</p>"+
       "<div class='callout'>De klok leunt op de klok van je apparaat, dus zorg dat die via internet gesynchroniseerd is (meestal is dat zo). Loopt je computerklok fout, dan meet je <i>diens</i> afwijking, niet die van je horloge.</div>"+
       "<a class='go' href='/'>Open de Live Clock \u2192</a>"},
-    {id:"ratemeter",ic:"\u23f1",h:"Rate Meter",tag:"Meet hoeveel seconden per dag je horloge voor- of achterloopt.",html:
+    {id:"ratemeter",h:"Rate Meter",tag:"Meet hoeveel seconden per dag je horloge voor- of achterloopt.",html:
       "<p>Dit is de hoofdtool. Je legt vast hoe ver je horloge nu afwijkt, komt later terug en legt opnieuw vast, en de gang wordt voor je berekend.</p>"+
       "<h3>Aan de slag</h3>"+
       "<ol><li><b>Voeg een horloge toe</b> \u2014 typ de naam en tik op Toevoegen. Je horloges leven in deze browser en zijn gedeeld met de Gangreserve-tool.</li>"+
@@ -191,7 +191,7 @@ var C={
       "<h3>Timegrapher-sessies</h3>"+
       "<p>Heb je een timegrapher bij de meetup? Tik op <b>Sessie toevoegen</b> om per positie de gang, amplitude en slagfout vast te leggen. Die verschijnen als ruitjes op de gang-grafiek, zodat je de momentmeting van de machine kunt vergelijken met hoe het horloge zich over dagen aan de pols gedraagt.</p>"+
       "<a class='go' href='/watchrate/'>Open de Rate Meter \u2192</a>"},
-    {id:"powerreserve",ic:"\ud83d\udd0b",h:"Gangreserve",tag:"Meet hoe lang een horloge loopt op een volledige opwinding \u2014 zonder toezicht.",html:
+    {id:"powerreserve",h:"Gangreserve",tag:"Meet hoe lang een horloge loopt op een volledige opwinding \u2014 zonder toezicht.",html:
       "<p>Gangreserve is de tijd tussen \u201cvolledig opgewonden\u201d en \u201cstilgevallen\u201d. Het slimme: je hoeft er niet bij te zijn als het stopt.</p>"+
       "<h3>Hoe het werkt</h3>"+
       "<ol><li>Wind het horloge volledig op, zet het gelijk aan de klok op de pagina, en tik op <b>Opgewonden &amp; gelijk</b>. Het moment krijgt een tijdstempel.</li>"+
@@ -200,14 +200,14 @@ var C={
       "<div class='callout'><b>Waarom \u201cloopt nog\u201d belangrijk is:</b> de wijzers tonen een tijd als 3:47, maar niet <i>welke</i> 3:47 \u2014 vannacht of een dag later? Af en toe \u201cloopt nog\u201d tikken haalt alle twijfel weg, en de dag wordt automatisch voor je ingevuld.</div>"+
       "<p>Je kunt meerdere horloges tegelijk laten lopen, elk op een eigen kaart met live teller. Per ongeluk op <b>Gestopt</b> getikt? Gebruik <b>Terug</b> om verder te gaan. Opgeslagen metingen vormen een historie per horloge, zodat je ziet of de reserve afneemt naarmate een servicebeurt nadert.</p>"+
       "<a class='go' href='/powerreserve/'>Open Gangreserve \u2192</a>"},
-    {id:"viewer",ic:"\ud83d\udcca",h:"Backup Viewer",tag:"Bekijk gang en historie uit je back-upbestanden.",html:
+    {id:"viewer",h:"Backup Viewer",tag:"Bekijk gang en historie uit je back-upbestanden.",html:
       "<p>Exporteer een back-up uit de Rate Meter en laad die hier om terug te kijken \u2014 handig om de live tool overzichtelijk te houden terwijl je oudere metingen veilig in bestanden blijven. De viewer leest per horloge de gang, posities en het offset-verloop, plus eventuele timegrapher- en gangreserve-data.</p>"+
       "<p>Je kunt meerdere bestanden tegelijk laden om horloges te vergelijken, en hetzelfde sessie-keuzemenu uit de Rate Meter zit ook hier. Geladen bestanden worden in deze browser onthouden, dus ze staan er nog als je terugkomt.</p>"+
       "<a class='go' href='/watchrate/viewer.html'>Open de Backup Viewer \u2192</a>"},
-    {id:"glossary",ic:"\u270e",h:"Begrippenlijst",tag:"Horloge- en timegrapher-begrippen, in gewone taal.",html:
+    {id:"glossary",h:"Begrippenlijst",tag:"Horloge- en timegrapher-begrippen, in gewone taal.",html:
       "<p>Een doorzoekbare lijst met horlogebegrippen \u2014 van uurwerk en echappement tot amplitude, slagfout en lifthoek \u2014 elk in \u00e9\u00e9n regel uitgelegd, in het Nederlands en Engels. Een goede plek om alles uit deze handleiding op te zoeken dat je verklaard wilt zien.</p>"+
       "<a class='go' href='/glossary/'>Open de Begrippenlijst \u2192</a>"},
-    {id:"data",ic:"\ud83d\udd12",h:"Je data & back-ups",tag:"Waar alles wordt bewaard, en hoe je het verplaatst.",html:
+    {id:"data",h:"Je data & back-ups",tag:"Waar alles wordt bewaard, en hoe je het verplaatst.",html:
       "<p>Al je horloges en metingen worden door je browser bewaard, op je eigen apparaat \u2014 er is geen server of account, en er verlaat niets je machine. Dat betekent ook dat je data niet automatisch meereist naar een ander apparaat of browser.</p>"+
       "<p>Om data te verplaatsen of veilig te stellen, gebruik je <b>Exporteer back-up</b> in de Rate Meter om een <kbd>.json</kbd>-bestand op te slaan, en <b>Importeer back-up</b> om het elders te laden. Je browsergegevens wissen verwijdert je metingen, dus exporteer af en toe.</p>"+
       "<p>Benieuwd wat er precies wordt bewaard? De <a href='/privacy/'>privacypagina</a> laat het live zien, rechtstreeks uit je browser.</p>"}
@@ -220,6 +220,20 @@ var C={
 var LKEY="siouxWatchRateMeterLang";
 var lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})();
 
+// line icons per section, same style as the homepage tiles
+var ICONS={
+  concepts:'<path d="M12 4v16M8 20h8M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  ratemeter:'<circle cx="12" cy="13.5" r="7.5"/><path d="M10 2.5h4M12 2.5V6M18.2 6.8l1.3-1.3M12 13.5l3-3"/>',
+  powerreserve:'<path d="M6.5 3h11M6.5 21h11M7.5 3v3.5L12 12l4.5-5.5V3M7.5 21v-3.5L12 12l4.5 5.5V21"/><path d="M10 19.2h4"/>',
+  viewer:'<path d="M4 4v16h16"/><path d="M7.5 15l3.5-4 3 2.5 5-6"/>',
+  glossary:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19M9 7.5h6M9 10.5h4"/>',
+  data:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/>'
+};
+function icon(id){
+  return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[id]+'</svg>';
+}
+
 function render(){
   var c=C[lang];
   document.getElementById("title").textContent=c.title;
@@ -227,7 +241,7 @@ function render(){
   document.getElementById("intro").textContent=c.intro;
   document.getElementById("toc").innerHTML=c.toc.map(function(x){return '<a href="#'+x[0]+'">'+x[1]+'</a>';}).join("");
   document.getElementById("body").innerHTML=c.sections.map(function(s){
-    return '<section id="'+s.id+'"><h2><span class="ic">'+s.ic+'</span>'+s.h+'</h2>'
+    return '<section id="'+s.id+'"><h2>'+icon(s.id)+s.h+'</h2>'
       +'<p class="tagline">'+s.tag+'</p>'+s.html+'</section>';
   }).join("");
   document.getElementById("foot").innerHTML=c.footHtml;
