@@ -20,7 +20,7 @@
   html{color-scheme:dark}
   html,body{margin:0;padding:0}
   body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:720px;margin:0 auto}
+  .wrap{max-width:948px;margin:0 auto}
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:32px 34px 36px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
   @media(max-width:560px){.card{padding:24px 18px 28px}}
 
@@ -37,6 +37,22 @@
   .toc a{font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:20px;padding:6px 13px;background:var(--card2)}
   .toc a:hover{background:#2a2a31}
 
+  /* wide screens: table of contents as a sticky sidebar next to the text */
+  .layout{display:grid;grid-template-columns:190px minmax(0,1fr);gap:44px;margin-top:24px}
+  .layout .toc{position:sticky;top:76px;align-self:start;flex-direction:column;flex-wrap:nowrap;gap:2px;margin:0;padding-top:24px;border-top:1px solid var(--border)}
+  .layout .toc a{border:none;border-left:2px solid var(--border);border-radius:0;background:none;padding:7px 12px;color:var(--muted);font-size:13.5px}
+  .layout .toc a:hover{background:none;color:var(--ink)}
+  .layout .toc a.on{color:var(--accent);border-left-color:var(--accent)}
+  #body{max-width:680px}
+  #body section:first-child{margin-top:0}
+  @media(max-width:760px){
+    .layout{display:block;margin-top:0}
+    .layout .toc{position:static;flex-direction:row;flex-wrap:wrap;gap:8px;margin:20px 0 8px;padding-top:0;border-top:none}
+    .layout .toc a{border:1px solid var(--border);border-radius:20px;background:var(--card2);padding:6px 13px;color:var(--accent);font-size:13px}
+    .layout .toc a.on{border-color:var(--border)}
+    #body section:first-child{margin-top:30px}
+  }
+
   section{border-top:1px solid var(--border);margin-top:30px;padding-top:24px;scroll-margin-top:70px}
   h2{color:var(--accent);font-size:20px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
   h2 .ic{font-size:20px}
@@ -46,7 +62,7 @@
   ul,ol{line-height:1.7;font-size:14.5px;padding-left:22px;margin:10px 0}
   li{margin:5px 0}
   b,strong{color:var(--ink)}
-  .lead{font-size:15.5px;line-height:1.7}
+  .lead{font-size:15.5px;line-height:1.7;max-width:720px}
 
   .callout{background:var(--card2);border-left:3px solid var(--accent);border-radius:8px;padding:13px 16px;margin:16px 0;font-size:14px;line-height:1.65}
   .callout b{color:var(--accent)}
@@ -74,9 +90,10 @@
 
     <p class="lead" id="intro"></p>
 
-    <nav class="toc" id="toc"></nav>
-
-    <div id="body"></div>
+    <div class="layout">
+      <nav class="toc" id="toc"></nav>
+      <div id="body"></div>
+    </div>
 
     <div class="foot" id="foot"></div>
     <div class="gears" id="gears"></div>
@@ -217,8 +234,21 @@ function render(){
   document.getElementById("gears").innerHTML=c.gears+'<a href="/privacy/">'+c.gearsLink+'</a>';
   document.documentElement.lang=lang;
 }
-window.addEventListener("swclang",function(e){lang=e.detail;render();});
+// highlight the section currently in view in the sidebar
+function markToc(){
+  var links=document.querySelectorAll("#toc a"),cur=links[0];
+  links.forEach(function(a){
+    var sec=document.getElementById(a.getAttribute("href").slice(1));
+    if(sec&&sec.getBoundingClientRect().top<160) cur=a;
+  });
+  // short last sections never reach the top: at the bottom, mark the last one
+  if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-2) cur=links[links.length-1];
+  links.forEach(function(a){a.classList.toggle("on",a===cur);});
+}
+window.addEventListener("scroll",markToc,{passive:true});
+window.addEventListener("swclang",function(e){lang=e.detail;render();markToc();});
 render();
+markToc();
 </script>
 </body>
 </html>
