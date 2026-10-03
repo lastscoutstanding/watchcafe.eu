@@ -55,10 +55,14 @@
   table{width:100%;border-collapse:collapse;margin-top:6px;table-layout:fixed}
   th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top}
   th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
-  td.k{width:38%;word-break:break-all;font-family:"Courier New",monospace;font-size:13px}
-  td.sz{width:64px;white-space:nowrap;color:var(--muted);font-size:13px}
-  td.act{width:120px;white-space:nowrap;text-align:right}
-  .desc{color:var(--muted);font-size:13px;display:block;margin-top:3px;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  /* fixed layout takes column widths from the header row: key gets the rest */
+  th:nth-child(2){width:80px}
+  th:nth-child(3){width:120px}
+  td.k{word-break:break-all;font-family:"Courier New",monospace;font-size:13px}
+  td.sz{white-space:nowrap;color:var(--muted);font-size:13px}
+  td.act{white-space:nowrap;text-align:right}
+  @media(max-width:560px){th:nth-child(2){width:56px}th:nth-child(3){width:80px}td.act button{display:block;width:100%;margin:0 0 6px}}
+  .desc{color:var(--muted);font-size:13px;display:block;margin-top:3px;word-break:normal;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   button{font:inherit;cursor:pointer;border-radius:8px;padding:6px 10px;border:1px solid var(--border);background:#26262c;color:var(--ink);font-size:13px;touch-action:manipulation}
   button:hover{background:#30303a}
   button.danger{color:#ff6b5e}
