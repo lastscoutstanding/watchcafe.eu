@@ -36,9 +36,8 @@
     header p{color:var(--muted);font-size:14px;margin:0;line-height:1.4}
     main{max-width:980px;margin:0 auto 60px;padding:0 16px}
 
-    .clock-hero{display:block;text-decoration:none;margin:20px 0 8px}
-    .clock-panel{background:linear-gradient(180deg,var(--panel-1),var(--panel-2));border:1px solid var(--panel-border);border-radius:18px;padding:26px 18px 22px;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;max-width:100%;box-shadow:inset 0 2px 4px rgba(255,255,255,0.04),inset 0 -4px 10px rgba(0,0,0,0.45),0 8px 18px rgba(0,0,0,0.18);transition:border-color .15s}
-    .clock-hero:hover .clock-panel{border-color:var(--accent)}
+    .clock-hero{margin:20px 0 0}
+    .clock-panel{background:linear-gradient(180deg,var(--panel-1),var(--panel-2));border:1px solid var(--panel-border);border-radius:18px;padding:26px 18px 22px;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;max-width:100%;box-shadow:inset 0 2px 4px rgba(255,255,255,0.04),inset 0 -4px 10px rgba(0,0,0,0.45),0 8px 18px rgba(0,0,0,0.18)}
     .clock{--u:clamp(0.40px,calc(0.196vw - 0.16px),1.05px);display:flex;align-items:center;gap:calc(10 * var(--u))}
     .digit{position:relative;width:calc(64 * var(--u));height:calc(116 * var(--u));flex:none}
     .segment{position:absolute;background:var(--led-off);opacity:.28}
@@ -51,8 +50,22 @@
     .colon{width:calc(18 * var(--u));height:calc(116 * var(--u));position:relative;margin:0 calc(2 * var(--u));flex:none}
     .colon::before,.colon::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:calc(10 * var(--u));height:calc(10 * var(--u));border-radius:50%;background:var(--led-on);box-shadow:0 0 6px var(--led-glow),0 0 12px var(--led-glow),0 0 20px rgba(255,43,43,.3)}
     .colon::before{top:calc(34 * var(--u))}.colon::after{bottom:calc(34 * var(--u))}
-    .date-led{margin-top:14px;padding:8px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);border-radius:9px;color:var(--amber-on);font-family:"Consolas","Courier New",monospace;font-size:1.05rem;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 0 4px var(--amber-glow),0 0 10px rgba(255,138,60,0.18)}
-    .clock-hint{text-align:center;color:var(--hint);font-size:12.5px;margin:8px 0 0}
+    .date-led{white-space:nowrap;padding:8px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);border-radius:9px;color:var(--amber-on);font-family:"Consolas","Courier New",monospace;font-size:1.05rem;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 0 4px var(--amber-glow),0 0 10px rgba(255,138,60,0.18)}
+    .date-row{display:flex;align-items:stretch;justify-content:center;gap:12px;margin-top:14px}
+    .cp-btn{flex:none;width:37px;display:grid;place-items:center;padding:0;cursor:pointer;color:var(--accent);opacity:.6;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);border-radius:9px;transition:opacity .15s,border-color .15s;touch-action:manipulation}
+    .cp-btn:hover,.cp-btn:focus-visible{opacity:1;border-color:var(--accent)}
+    .cp-btn.on{opacity:1;filter:drop-shadow(0 0 4px var(--accent-glow,rgba(217,106,65,.6)))}
+    .cp-btn svg{width:22px;height:22px}
+    .cp-btn .w,.cp-btn.on .x{display:none}
+    .cp-btn.on .w{display:inline}
+    .fs-out,.clock-panel:fullscreen .fs-in{display:none}
+    .clock-panel:fullscreen .fs-out{display:inline}
+    .clock-panel:fullscreen{justify-content:center;border:none;border-radius:0;background:#050505}
+    .clock-panel:fullscreen .clock{--u:min(0.17vw,0.39vh)}
+    .clock-panel:fullscreen .date-led{font-size:1.6rem}
+    .clock-panel:fullscreen .date-row{margin-top:28px}
+    .clock-panel:fullscreen .world{max-width:1100px;margin-top:40px}
+    @media(max-width:600px){.date-row{gap:8px}.date-led{font-size:.95rem;letter-spacing:.08em;padding:8px 10px}}
     .world{width:100%;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(9,1fr);gap:10px}
     @media(max-width:940px){.world{grid-template-columns:repeat(3,1fr);row-gap:14px}}
     .wz{text-align:center;min-width:0}
@@ -88,7 +101,7 @@
 </header>
 
 <main>
-  <a class="clock-hero" href="/clock/" title="Open the full-screen clock">
+  <div class="clock-hero">
     <div class="clock-panel">
       <div class="clock" id="clock">
         <div class="digit" id="digit0"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
@@ -100,11 +113,14 @@
         <div class="digit" id="digit4"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
         <div class="digit" id="digit5"><div class="segment a"></div><div class="segment b"></div><div class="segment c"></div><div class="segment d"></div><div class="segment e"></div><div class="segment f"></div><div class="segment g"></div></div>
       </div>
-      <div class="date-led" id="dateDisplay">MON 01 JAN 2026</div>
+      <div class="date-row">
+        <button type="button" class="cp-btn" id="tickBtn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="x" d="M16 10l4 4M20 10l-4 4"/><path class="w" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/></svg></button>
+        <div class="date-led" id="dateDisplay">MON 01 JAN 2026</div>
+        <button type="button" class="cp-btn" id="fsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="fs-in" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="fs-out" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+      </div>
       <div class="world" id="world"></div>
     </div>
-    <p class="clock-hint" id="clockHint">Tap the clock for the full-screen version &rarr;</p>
-  </a>
+  </div>
 
   <div class="tools">
     <a class="tool" href="/watchrate/">
@@ -158,6 +174,7 @@
     var d=now.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).replace(/,/g,"").toUpperCase();
     document.getElementById("dateDisplay").textContent=d;
     updateWorld(now);
+    maybeTick(now.getSeconds());
   }
 
   var CITIES=[
@@ -200,12 +217,46 @@
       el.textContent=fmtOffset(tzOffsetHours(el.getAttribute("data-tzoff"),now))+" h";
     });
   }
+  // 10-second tick: off on every load, since browsers only allow audio after a click
+  var audioCtx=null,tickOn=false,lastTick=null;
+  var tickBtn=document.getElementById("tickBtn");
+  tickBtn.addEventListener("click",function(){
+    tickOn=!tickOn;
+    tickBtn.classList.toggle("on",tickOn);
+    tickBtn.setAttribute("aria-pressed",String(tickOn));
+    if(tickOn&&!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(tickOn&&audioCtx.state==="suspended") audioCtx.resume();
+  });
+  function maybeTick(sec){
+    if(sec%10!==0){lastTick=null;return;}
+    if(!tickOn||!audioCtx||lastTick===sec) return;
+    lastTick=sec;
+    var t0=audioCtx.currentTime,osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+    osc.type="sine"; osc.frequency.setValueAtTime(880,t0);
+    gain.gain.setValueAtTime(0.0001,t0);
+    gain.gain.exponentialRampToValueAtTime(0.035,t0+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001,t0+0.08);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0+0.09);
+  }
+
+  // Full screen for the clock panel; hidden where the browser can't do it (iPhone)
+  var panel=document.querySelector(".clock-panel"),fsBtn=document.getElementById("fsBtn");
+  if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled)) fsBtn.style.display="none";
+  fsBtn.addEventListener("click",function(){
+    if(document.fullscreenElement||document.webkitFullscreenElement){
+      (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+    }else{
+      (panel.requestFullscreen||panel.webkitRequestFullscreen).call(panel);
+    }
+  });
+
   buildWorld(new Date());
   tick(); setInterval(tick,1000);
 
   var T={
     en:{h1:"Watch Tools",sub:"Free browser tools to measure and track your mechanical watches.",
-        hint:"Tap the clock for the full-screen version \u2192",
+        tick:"10-second tick",fs:"Full screen",
         cafe:'Made by and for <a href="/cafe/">The Sioux Watch Café</a> \u2192',
         gears:'This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a>',
         rate_h:"Rate Meter",rate_d:"Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.",rate_c:"Start measuring \u2192",
@@ -213,7 +264,7 @@
         gl_h:"Glossary",gl_d:"Watch and timegrapher terms explained in plain language, in English and Dutch.",gl_c:"Browse the terms \u2192",
         gu_h:"Guide",gu_d:"New here? A walkthrough of the site and every tool, plus the key concepts.",gu_c:"Read the guide \u2192"},
     nl:{h1:"Horloge-tools",sub:"Gratis browsertools om je mechanische horloges te meten en te volgen.",
-        hint:"Tik op de klok voor de schermvullende versie \u2192",
+        tick:"Tik elke 10 seconden",fs:"Schermvullend",
         cafe:'Gemaakt door en voor <a href="/cafe/">The Sioux Watch Café</a> \u2192',
         gears:'Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — <a href="/privacy/">zie het zelf →</a>',
         rate_h:"Rate Meter",rate_d:"Meet hoeveel seconden per dag je horloge voor- of achterloopt, met grafieken en een meethistorie.",rate_c:"Begin met meten \u2192",
@@ -225,7 +276,7 @@
     var t=T[l]||T.en;
     document.querySelector("header h1").textContent=t.h1;
     document.querySelector("header p").textContent=t.sub;
-    document.getElementById("clockHint").textContent=t.hint;
+    [["tickBtn",t.tick],["fsBtn",t.fs]].forEach(function(x){var b=document.getElementById(x[0]);b.title=x[1];b.setAttribute("aria-label",x[1]);});
     document.getElementById("cafeRef").innerHTML=t.cafe;
     document.getElementById("gears").innerHTML=t.gears;
     var tiles=[["rate",t.rate_h,t.rate_d,t.rate_c],["pr",t.pr_h,t.pr_d,t.pr_c],["gl",t.gl_h,t.gl_d,t.gl_c],["gu",t.gu_h,t.gu_d,t.gu_c]];
