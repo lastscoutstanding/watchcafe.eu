@@ -45,7 +45,11 @@ Backup-JSON: `{ version, activeWatch, watches: [...] }`; horloge `{ id, name, me
 - Site is tool-gericht; café-inhoud staat onder `/cafe/`.
 - Eén kolom op de breedte van de menubalk (980 px): klokpaneel vult de breedte, wereldklok op één rij van negen (3×3 onder 940 px), vier tegels naast elkaar (2×2 onder 860 px, onder elkaar onder 520 px).
 - Tegeliconen zijn inline SVG-lijniconen in `currentColor` (accentkleur), geen emoji.
-- Kopstijl overal gelijk: titel links, 30 px/800 in accentkleur, subtitel 14 px. Tool- en café-pagina's zetten die in een kaart van 680 px; de homepage zet hem op de linkerrand van de 980 px-kolom.
+- Kopstijl overal gelijk: titel links, 30 px/800 in accentkleur, subtitel 14 px, 4 px ertussen. Andere pagina's zetten die bovenin hun kaart; de homepage op de linkerrand van de kolom.
+- Alle pagina's gebruiken dezelfde kolom als de menubalk: 948 px inhoud (980 px min 16 px padding), linkerrand gelijk met het logo.
+- Lopende tekst blijft leesbaar smal binnen die kolom: Guide (zijbalk 190 px met meelopende inhoudsopgave + tekst 680 px), Privacy (tekst 720 px, slotsecties in twee kolommen), Glossary (begrippen in twee alfabetische kolommen), Café (welkom/onderwerpen naast een kolom van 320 px met de volgende datum, verslagen als raster van twee kaarten). Onder ~720–760 px valt alles terug op één kolom.
+- Sectie-iconen (homepage-tegels, Guide) zijn SVG-lijniconen in `currentColor`, geen emoji.
+- Taalkeuze alleen via de menubalk; pagina's luisteren naar het `swclang`-event.
 - LED-klok: geen achtergrondvlakje per cijfer; onverlichte segmenten blijven zwak zichtbaar (`opacity:.28`).
 - Wereldklok: San Francisco, New York, London, Cluj, Pune, Da Nang, Suzhou, Singapore, Sydney, met UTC-offset op halfuur-precisie.
 - Live Clock staat op de homepage: zeven-segment LED, schaalt mee, lokale systeemtijd. Het paneel is geen link meer.
