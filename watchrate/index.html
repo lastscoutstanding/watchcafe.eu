@@ -324,6 +324,7 @@
 
     <div class="datatools">
       <button id="exportBtn"></button>
+      <button id="shareBtn" style="display:none"></button>
       <button id="importBtn"></button>
       <a class="btnlink" id="viewerBtn" href="viewer.html"></a>
       <input type="file" id="importFile" accept="application/json" style="display:none">
@@ -367,7 +368,7 @@ var I18N={
   gStep4:"<b>Come back later</b> \u2014 after a few hours or a day, measure again. The rate is calculated automatically.",
   guideNote:"One measurement gives only an offset. You need at least two, taken at different times, to get a rate in s/day.",
   help:"How it works", close:"Close",
-  exportBtn:"Backup", importBtn:"Restore",
+  exportBtn:"Backup", importBtn:"Restore", shareBtn:"Share",
   impTitle:"Restore backup", impFrom:"From", impNoDevice:"backup without device label",
   impNew:function(n){return "new watch, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" new";}, impRemoved:function(n){return n+" removed";},
   impSame:"no changes", impLocalOnly:"only on this device, kept", impWatchRemoved:"deleted on the other device",
@@ -420,7 +421,7 @@ var I18N={
   gStep4:"<b>Kom later terug</b> \u2014 meet na een paar uur of een dag opnieuw. De gang wordt dan automatisch berekend.",
   guideNote:"E\u00e9n meting geeft alleen een offset. Voor een gang in s/dag heb je minstens twee metingen op verschillende momenten nodig.",
   help:"Zo werkt het", close:"Sluiten",
-  exportBtn:"Back-up", importBtn:"Herstellen",
+  exportBtn:"Back-up", importBtn:"Herstellen", shareBtn:"Delen",
   impTitle:"Back-up herstellen", impFrom:"Van", impNoDevice:"back-up zonder apparaatlabel",
   impNew:function(n){return "nieuw horloge, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" nieuw";}, impRemoved:function(n){return n+" verwijderd";},
   impSame:"geen wijzigingen", impLocalOnly:"alleen op dit apparaat, blijft staan", impWatchRemoved:"verwijderd op het andere apparaat",
@@ -814,6 +815,7 @@ function applyLang(){
   document.getElementById("rateChartHint").textContent=t.rateChartHint;
   document.getElementById("exportBtn").textContent=t.exportBtn;
   document.getElementById("importBtn").textContent=t.importBtn;
+  document.getElementById("shareBtn").textContent=t.shareBtn;
   renderDevLine();
   document.getElementById("banner").textContent=t.banner;
   document.getElementById("addToggle").textContent=t.addToggle;
@@ -969,12 +971,26 @@ function renderDevLine(){
     if(n!==null){WatchData.setDevice(n);renderDevLine();}
   };
 }
-document.getElementById("exportBtn").onclick=function(){
+function backupBlob(now){return new Blob([JSON.stringify(WatchData.backupData(state,now),null,2)],{type:"application/json"});}
+function downloadBackup(){
   var now=Date.now();
-  var blob=new Blob([JSON.stringify(WatchData.backupData(state,now),null,2)],{type:"application/json"});
-  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=WatchData.backupName(now);a.click();URL.revokeObjectURL(a.href);
+  var a=document.createElement("a");a.href=URL.createObjectURL(backupBlob(now));a.download=WatchData.backupName(now);a.click();URL.revokeObjectURL(a.href);
   renderDevLine();
-};
+}
+document.getElementById("exportBtn").onclick=downloadBackup;
+// Share sheet (AirDrop, Messages, Drive, ...) where the browser can share files
+(function(){
+  var btn=document.getElementById("shareBtn");
+  try{
+    if(!navigator.canShare||!navigator.canShare({files:[new File(["{}"],"x.json",{type:"application/json"})]}))return;
+  }catch(e){return;}
+  btn.style.display="";
+  btn.onclick=function(){
+    var now=Date.now(),f=new File([backupBlob(now)],WatchData.backupName(now),{type:"application/json"});
+    navigator.share({files:[f],title:f.name}).catch(function(err){if(err&&err.name!=="AbortError")downloadBackup();});
+    renderDevLine();
+  };
+})();
 document.getElementById("importBtn").onclick=function(){document.getElementById("importFile").click();};
 document.getElementById("importFile").onchange=function(e){
   var file=e.target.files[0];if(!file)return;var r=new FileReader();
