@@ -11,6 +11,7 @@
 
   <script src="/nav.js" defer></script>
   <script src="/meetings.js?v=2" defer></script>
+  <script src="/events.js?v=1" defer></script>
   <style>
     :root{
       --bg:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -65,6 +66,28 @@
       .g-log h2{margin-top:34px}
       #cafeLog .cafe-log{margin-bottom:18px}
     }
+    /* other watch events */
+    .ev-sec h2{margin:30px 0 12px;font-size:17px}
+    .ev-list{list-style:none;margin:0;padding:0;line-height:1.35}
+    .ev{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--border)}
+    .ev:first-child{border-top:none;padding-top:2px}
+    .ev-y{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted);padding:14px 0 6px;border-top:1px solid var(--border)}
+    .ev-y+.ev{border-top:none}
+    .ev-d{flex:0 0 52px;text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:5px 0 6px}
+    .ev-d .m{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+    .ev-d .d{display:block;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
+    .ev-d .d.r{font-size:14.5px;padding-top:3px}
+    .ev-b{min-width:0}
+    .ev-n{font-weight:650;font-size:14.5px;color:var(--ink);text-decoration:none}
+    a.ev-n:hover{color:var(--accent)}
+    a.ev-n::after{content:" \2197";color:var(--muted);font-size:12px}
+    .ev-p{color:var(--muted);font-size:12.5px;margin-top:2px}
+    .ev-soon{color:var(--accent);font-weight:600}
+    .ev-more{margin-top:10px;width:100%;background:none;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font:inherit;font-size:13px;padding:7px;cursor:pointer}
+    .ev-more:hover{color:var(--ink);border-color:var(--muted)}
+    .ev-tip{color:var(--muted);font-size:12.5px;margin:12px 0 0;line-height:1.5}
+    .ev-tip a{color:var(--accent);text-decoration:none}
+    .ev-tip a:hover{text-decoration:underline}
     .backlink{display:inline-block;margin-top:6px;color:var(--accent);text-decoration:none;font-size:14px;font-weight:600}
     .backlink:hover{text-decoration:underline}
     footer{margin-top:50px;text-align:center;padding:25px;color:#8f8c96;font-size:14px}
@@ -98,6 +121,12 @@
           </div>
           <div class="nx-theme" id="nxTheme" style="display:none"><div class="nx-tl" id="nxTl"></div><div class="nx-tt" id="nxTt"></div></div>
           <div class="nx-rule" id="c_rule"></div>
+        </div>
+        <div class="ev-sec" id="evSec" style="display:none">
+          <h2 id="c_ev_h">Other watch events</h2>
+          <ul class="ev-list" id="evList"></ul>
+          <button class="ev-more" id="evMore" style="display:none"></button>
+          <p class="ev-tip" id="c_ev_tip"></p>
         </div>
       </div>
 
@@ -134,6 +163,8 @@
       topics_h:"Topics We Explore",
       topics:["Movement technology & craftsmanship","Dive watches and underwater engineering","Chronographs and other complications","Watch design, materials, and aesthetics","Maintenance, straps, and daily-use tips","Collecting stories and iconic models"],
       everyone:"Everyone is welcome \u2014 whether you're a seasoned collector or simply curious. Grab a drink, enjoy the atmosphere, and talk time with fellow Sioux watch fans!",
+      ev_h:"Other watch events",
+      ev_tip:'Know an event we should list? Mail <a href="mailto:info@watchcafe.eu">info@watchcafe.eu</a>.',
       prev_h:"Previous Café Dates",
       back:"\u2190 Back to the tools",
       gears:'This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a>'},
@@ -146,6 +177,8 @@
       topics_h:"Onderwerpen die we verkennen",
       topics:["Uurwerktechniek & vakmanschap","Duikhorloges en onderwatertechniek","Chronografen en andere complicaties","Horloge-ontwerp, materialen en esthetiek","Onderhoud, bandjes en dagelijkse tips","Verzamelverhalen en iconische modellen"],
       everyone:"Iedereen is welkom \u2014 of je nu een doorgewinterde verzamelaar bent of gewoon nieuwsgierig. Pak een drankje, geniet van de sfeer en praat over tijd met mede-horlogefans van Sioux!",
+      ev_h:"Andere horloge-evenementen",
+      ev_tip:'Een evenement dat hier hoort? Mail <a href="mailto:info@watchcafe.eu">info@watchcafe.eu</a>.',
       prev_h:"Vorige caféavonden",
       back:"\u2190 Terug naar de tools",
       gears:'Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — <a href="/privacy/">zie het zelf →</a>'}
@@ -157,6 +190,7 @@
     set("c_sub",t.sub); set("c_welcome_h",t.welcome_h); set("c_welcome_p",t.welcome_p);
     set("c_next_h",t.next_h); set("c_where",t.where); set("c_rule",t.rule);
     set("c_topics_h",t.topics_h); set("c_everyone",t.everyone);
+    set("c_ev_h",t.ev_h); html("c_ev_tip",t.ev_tip);
     set("c_prev_h",t.prev_h); set("c_back",t.back); html("c_gears",t.gears);
     var ul=document.getElementById("c_topics");
     if(ul)ul.innerHTML=t.topics.map(function(x){return "<li>"+x+"</li>";}).join("");

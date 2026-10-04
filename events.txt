@@ -1,0 +1,19 @@
+# Watch events - shown under "Other watch events" on /cafe/
+# One event per line:   date | name | place | link (optional)
+#   date: YYYY-MM-DD, or YYYY-MM-DD..YYYY-MM-DD for more than one day
+# Lines starting with # are ignored. Past events disappear automatically,
+# so you can add a whole year at once. Order does not matter.
+2026-10-04             | Munich Watch Fair          | Unterschleißheim (DE)   | https://www.messen.de/de/22130/muenchen/munich-watch-fair/info
+2026-10-23..2026-10-25 | WatchTime Düsseldorf       | Düsseldorf (DE)         | https://watchtime.net/watchtime-show
+2026-11-01             | Belgian Watch Fair         | Mechelen (BE)           | https://www.belgianwatchfair.be
+2026-11-07             | GPHG award ceremony        | Geneva · livestream     | https://www.gphg.org
+2026-11-08             | Munich Watch Fair          | Unterschleißheim (DE)   | https://www.messen.de/de/22130/muenchen/munich-watch-fair/info
+2026-11-15             | Rikketik                   | Houten (NL)             | https://rikketik.nl
+2026-12-06             | Munich Watch Fair          | Unterschleißheim (DE)   | https://www.messen.de/de/22130/muenchen/munich-watch-fair/info
+2027-01-17             | Rikketik                   | Houten (NL)             | https://rikketik.nl
+2027-02-19..2027-02-22 | Inhorgenta (trade fair)    | Munich (DE)             | https://www.inhorgenta.com
+2027-04-05..2027-04-11 | Watches and Wonders        | Geneva (CH)             | https://www.watchesandwonders.com
+2027-04-08..2027-04-11 | Basilia (trade fair)       | Basel (CH)              | https://www.mch-group.com/en/media/news/2026/basilia-jewellery-watch-fair-dates-confirmed-for-first-edition-in-basel
+2027-04-18             | Rikketik                   | Houten (NL)             | https://rikketik.nl
+2027-06-20             | Rikketik                   | Houten (NL)             | https://rikketik.nl
+2027-11-14             | Rikketik                   | Houten (NL)             | https://rikketik.nl
