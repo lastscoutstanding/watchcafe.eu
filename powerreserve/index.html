@@ -10,6 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
+<script src="/watchdata.js"></script>
 <style>
   :root{
     --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -413,7 +414,7 @@ function wireRunning(){
   document.querySelectorAll("[data-back]").forEach(function(b){b.onclick=function(){
     var w=byId(b.getAttribute("data-back"));w.prCurrent.stopped=false;save();renderRunning();};});
   document.querySelectorAll("[data-discard]").forEach(function(b){b.onclick=function(){
-    if(confirm(tr("confirmDiscard"))){var w=byId(b.getAttribute("data-discard"));delete w.prCurrent;save();renderAll();}};});
+    if(confirm(tr("confirmDiscard"))){var w=byId(b.getAttribute("data-discard"));WatchData.markDeleted(state,"pr:"+w.prCurrent.start);delete w.prCurrent;save();renderAll();}};});
   document.querySelectorAll("[data-hands]").forEach(function(inp){
     inp.oninput=function(){var w=byId(inp.getAttribute("data-hands"));w.prCurrent.handsInput=inp.value;w.prCurrent.dayIdx=null;save();refreshStop(w);};});
   document.querySelectorAll("[data-day]").forEach(function(s){s.onchange=function(){
@@ -424,7 +425,7 @@ function wireRunning(){
     var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx);
     if(!Array.isArray(w.powerReserve))w.powerReserve=[];
     w.powerReserve.push({id:uid(),start:pr.start,stop:stopMs,offset:pr.offset,reserveMs:stopMs-pr.start,note:""});
-    delete w.prCurrent;save();renderAll();};});
+    WatchData.markDeleted(state,"pr:"+pr.start);delete w.prCurrent;save();renderAll();};});
 }
 function byId(id){return state.watches.find(function(w){return w.id===id;});}
 
@@ -449,7 +450,7 @@ function renderHistory(){
   wrap.innerHTML=html;
   wrap.querySelectorAll("[data-delh]").forEach(function(b){b.onclick=function(){
     if(!confirm(tr("confirmDelHist")))return;
-    var ww=byId(b.getAttribute("data-delw"));ww.powerReserve=ww.powerReserve.filter(function(x){return x.id!==b.getAttribute("data-delh");});save();renderAll();};});
+    var ww=byId(b.getAttribute("data-delw"));WatchData.markDeleted(state,b.getAttribute("data-delh"));ww.powerReserve=ww.powerReserve.filter(function(x){return x.id!==b.getAttribute("data-delh");});save();renderAll();};});
 }
 
 function renderAll(){applyStatic();renderStart();renderRunning();renderHistory();tickClock();}

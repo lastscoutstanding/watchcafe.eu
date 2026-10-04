@@ -114,6 +114,18 @@
   .devline button{font:inherit;color:var(--ink);background:none;border:none;border-bottom:1px dashed #5a5a66;padding:0;cursor:pointer}
   .devline button:hover{color:var(--accent);border-color:var(--accent)}
   .devline code{color:var(--ink);font-size:12px}
+  .imppanel{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .imppanel h3{margin:0;font-size:18px;color:var(--accent)}
+  .imppanel .from{font-size:13px;color:var(--muted);margin:2px 0 12px}
+  .imppanel .from b{color:var(--ink);font-weight:600}
+  .improw{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--border);font-size:14px}
+  .improw:last-of-type{border-bottom:1px solid var(--border)}
+  .improw .st{color:var(--muted);text-align:right}
+  .improw .st.add{color:#3be35b}
+  .improw .st.del{color:#ff6b5e}
+  .impbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .impbtns .replace{margin-left:auto;background:transparent;border-style:dashed;color:var(--muted)}
+  .imppanel .hint2{font-size:12px;color:var(--muted);margin-top:10px}
   .notice{background:#2e221c;border:1px solid #45332a;color:#eda57f;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px;display:none}
 
   .banner{margin-top:26px;background:var(--banner);color:#fff;font-weight:700;text-align:center;padding:16px;border-radius:8px;font-size:15px}
@@ -317,6 +329,7 @@
       <input type="file" id="importFile" accept="application/json" style="display:none">
     </div>
     <div class="devline" id="devLine"></div>
+    <div class="imppanel" id="impPanel" style="display:none"></div>
 
     <div class="banner" id="banner"></div>
     <div class="gears">This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a></div>
@@ -355,6 +368,12 @@ var I18N={
   guideNote:"One measurement gives only an offset. You need at least two, taken at different times, to get a rate in s/day.",
   help:"How it works", close:"Close",
   exportBtn:"Backup", importBtn:"Restore",
+  impTitle:"Restore backup", impFrom:"From", impNoDevice:"backup without device label",
+  impNew:function(n){return "new watch, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" new";}, impRemoved:function(n){return n+" removed";},
+  impSame:"no changes", impLocalOnly:"only on this device, kept", impWatchRemoved:"deleted on the other device",
+  impMerge:"Merge", impCancel:"Cancel", impReplace:"Replace everything",
+  impHint:"Merge adds what\u2019s new in the backup and keeps everything that\u2019s only on this device. Deletions on either side carry over.",
+  impReplaceConfirm:"Replace all data in this browser with this backup? Anything not in the backup is lost.",
   devLbl:"This device:", devSaves:"saves as", devPrompt:"Name for this device (shown in backup files):",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   addToggle:"+ Add watch", addCancel:"Cancel", viewerBtn:"Browse backups",
@@ -402,6 +421,12 @@ var I18N={
   guideNote:"E\u00e9n meting geeft alleen een offset. Voor een gang in s/dag heb je minstens twee metingen op verschillende momenten nodig.",
   help:"Zo werkt het", close:"Sluiten",
   exportBtn:"Back-up", importBtn:"Herstellen",
+  impTitle:"Back-up herstellen", impFrom:"Van", impNoDevice:"back-up zonder apparaatlabel",
+  impNew:function(n){return "nieuw horloge, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" nieuw";}, impRemoved:function(n){return n+" verwijderd";},
+  impSame:"geen wijzigingen", impLocalOnly:"alleen op dit apparaat, blijft staan", impWatchRemoved:"verwijderd op het andere apparaat",
+  impMerge:"Samenvoegen", impCancel:"Annuleren", impReplace:"Alles vervangen",
+  impHint:"Samenvoegen voegt toe wat nieuw is in de back-up en houdt alles wat alleen op dit apparaat staat. Verwijderingen aan beide kanten worden overgenomen.",
+  impReplaceConfirm:"Alle gegevens in deze browser vervangen door deze back-up? Wat niet in de back-up staat, ben je kwijt.",
   devLbl:"Dit apparaat:", devSaves:"opslaan als", devPrompt:"Naam voor dit apparaat (komt in de back-upbestanden):",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   addToggle:"+ Horloge toevoegen", addCancel:"Annuleren", viewerBtn:"Back-ups bekijken",
@@ -468,6 +493,7 @@ function save(){if(memOnly)return;try{localStorage.setItem(KEY,JSON.stringify(st
 function showNotice(){var n=document.getElementById("notice");n.style.display="block";n.textContent=I18N[lang].notice;}
 function seed(){return {version:2,activeWatch:null,watches:[]};}
 state=load()||seed();
+WatchData.ensureIds(state.watches);
 
 /* ===== helpers ===== */
 function activeWatch(){return state.watches.find(function(w){return w.id===state.activeWatch;})||state.watches[0]||null;}
@@ -545,7 +571,7 @@ function renderWatches(){
     c.onclick=function(ev){if(!ev.target.classList.contains("x"))pick();};
     c.querySelector(".x").onclick=function(ev){ev.stopPropagation();
       var msg=lang==="nl"?'Horloge "'+w.name+'" en al zijn metingen verwijderen?':'Delete watch "'+w.name+'" and all its measurements?';
-      if(confirm(msg)){state.watches=state.watches.filter(function(x){return x.id!==w.id;});save();renderAll();}};
+      if(confirm(msg)){WatchData.markWatchDeleted(state,w);state.watches=state.watches.filter(function(x){return x.id!==w.id;});save();renderAll();}};
     box.appendChild(c);
   });
 }
@@ -589,7 +615,7 @@ function renderHistory(){
     html+='<tr><td class="num">'+d+tag+'</td><td class="num">'+signSec(m.offset,true)+'</td><td>'+(m.position?escapeHtml(posLabel(m.position)):"\u2014")+'</td><td>'+escapeHtml(m.note||"")+'</td><td><button class="sm danger ghost" data-id="'+m.id+'">'+t.del+'</button></td></tr>';
   });
   html+="</tbody></table>";wrap.innerHTML=html;
-  wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){w.measurements=w.measurements.filter(function(x){return x.id!==b.getAttribute("data-id");});save();renderAll();};});
+  wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");WatchData.markDeleted(state,id);w.measurements=w.measurements.filter(function(x){return x.id!==id;});save();renderAll();};});
   drawCharts(w);
   renderTG(w);
 }
@@ -620,7 +646,8 @@ function renderTG(w){
   html+='</tbody></table>';
   list.innerHTML=html;
   list.querySelectorAll("button[data-tid]").forEach(function(b){b.onclick=function(){
-    w.timegrapher=w.timegrapher.filter(function(x){return x.id!==b.getAttribute("data-tid");});save();renderAll();};});
+    var id=b.getAttribute("data-tid");WatchData.markDeleted(state,id);
+    w.timegrapher=w.timegrapher.filter(function(x){return x.id!==id;});save();renderAll();};});
 }
 
 /* ===== charts ===== */
@@ -833,7 +860,7 @@ function tick(){var now=Date.now();setClock(refDigs,fmtAms(now));setClock(watchD
 tick();setInterval(tick,200);
 
 /* ===== events ===== */
-window.addEventListener("swclang",function(e){lang=e.detail;if(!window.__rmReady)return;applyLang();renderAll();});
+window.addEventListener("swclang",function(e){lang=e.detail;if(!window.__rmReady)return;closeImport();applyLang();renderAll();});
 
 document.getElementById("helpBtn").onclick=function(){guideOpen=!guideOpen;renderGuide();if(guideOpen)document.getElementById("guide").scrollIntoView({behavior:"smooth",block:"nearest"});};
 document.getElementById("guideClose").onclick=function(){guideOpen=false;renderGuide();};
@@ -845,9 +872,9 @@ document.getElementById("sessionSel").onchange=function(e){selectedSession=e.tar
 document.getElementById("sampleBtn").onclick=function(){
   if(state.watches.length){
     var msg=lang==="nl"?"Alle horloges verwijderen? (dit zijn de voorbeelden \u2014 of je eigen horloges als je die hebt toegevoegd)":"Remove all watches? (these are the samples \u2014 or your own if you added any)";
-    if(confirm(msg)){state.watches=[];state.activeWatch=null;seedOffset();closeTG();save();renderAll();}
+    if(confirm(msg)){state.watches.forEach(function(w){WatchData.markWatchDeleted(state,w);});state.watches=[];state.activeWatch=null;seedOffset();closeTG();save();renderAll();}
   }else{
-    state.watches=sampleWatches();state.activeWatch=state.watches[0].id;seedOffset();save();renderAll();
+    state.watches=sampleWatches();WatchData.ensureIds(state.watches);state.activeWatch=state.watches[0].id;seedOffset();save();renderAll();
   }
 };
 
@@ -951,12 +978,39 @@ document.getElementById("exportBtn").onclick=function(){
 document.getElementById("importBtn").onclick=function(){document.getElementById("importFile").click();};
 document.getElementById("importFile").onchange=function(e){
   var file=e.target.files[0];if(!file)return;var r=new FileReader();
-  r.onload=function(){try{var d=migrate(JSON.parse(r.result));if(!d.watches)throw 0;
-    var msg=lang==="nl"?"Back-up importeren? Dit vervangt je huidige gegevens in deze browser.":"Import backup? This replaces your current data in this browser.";
-    if(confirm(msg)){delete d.exportedFrom;state=d;if(!state.activeWatch&&state.watches[0])state.activeWatch=state.watches[0].id;seedOffset();save();renderAll();}
-  }catch(err){alert(lang==="nl"?"Kon dit bestand niet lezen als geldige back-up.":"Could not read this file as a valid backup.");}};
+  r.onload=function(){var d;try{d=migrate(JSON.parse(r.result));if(!d.watches)throw 0;}
+    catch(err){alert(lang==="nl"?"Kon dit bestand niet lezen als geldige back-up.":"Could not read this file as a valid backup.");return;}
+    showImport(d);};
   r.readAsText(file);e.target.value="";
 };
+function closeImport(){var p=document.getElementById("impPanel");p.style.display="none";p.innerHTML="";}
+function showImport(d){
+  var t=I18N[lang],res=WatchData.merge(state,d),p=document.getElementById("impPanel");
+  var from=d.exportedFrom&&d.exportedFrom.device
+    ?'<b>'+escapeHtml(String(d.exportedFrom.device))+'</b>'+(d.exportedFrom.at?' \u00b7 '+new Date(d.exportedFrom.at).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"")
+    :t.impNoDevice;
+  var rows=res.rows.map(function(r){
+    var st,cls="";
+    if(r.status==="new"){st=t.impNew(r.added);cls="add";}
+    else if(r.status==="changed"){var a=[];if(r.added)a.push(t.impAdded(r.added));if(r.removed)a.push(t.impRemoved(r.removed));st=a.join(", ");cls=r.added?"add":"del";}
+    else if(r.status==="removed"){st=t.impWatchRemoved;cls="del";}
+    else st=r.status==="localOnly"?t.impLocalOnly:t.impSame;
+    return '<div class="improw"><span>'+escapeHtml(r.name)+'</span><span class="st '+cls+'">'+st+'</span></div>';
+  }).join("");
+  p.innerHTML='<h3>'+t.impTitle+'</h3><div class="from">'+t.impFrom+' '+from+'</div>'+rows
+    +'<div class="impbtns"><button class="primary" id="impMerge">'+t.impMerge+'</button><button id="impCancel">'+t.impCancel+'</button>'
+    +'<button class="replace" id="impReplace">'+t.impReplace+'</button></div><div class="hint2">'+t.impHint+'</div>';
+  p.style.display="block";
+  p.scrollIntoView({behavior:"smooth",block:"nearest"});
+  document.getElementById("impCancel").onclick=closeImport;
+  document.getElementById("impMerge").onclick=function(){
+    state=res.state;closeImport();seedOffset();save();renderAll();};
+  document.getElementById("impReplace").onclick=function(){
+    if(!confirm(I18N[lang].impReplaceConfirm))return;
+    delete d.exportedFrom;state=d;WatchData.ensureIds(state.watches);
+    if(!state.activeWatch&&state.watches[0])state.activeWatch=state.watches[0].id;
+    closeImport();seedOffset();save();renderAll();};
+}
 
 function sampleWatches(){return [
   {id:uid(),name:"Omega Speedmaster ’69",measurements:[{t:1781661600000,offset:0.6,position:"dial_up",note:"set to time"},{t:1781787600000,offset:3.5,position:"worn"},{t:1781874000000,offset:5.5,position:"crown_down"},{t:1782007200000,offset:8.6,position:"dial_up"},{t:1782133200000,offset:11.4,position:"worn"},{t:1782219600000,offset:13.4,position:"crown_left"},{t:1782352800000,offset:16.3,position:"worn"},{t:1782478800000,offset:19.4,position:"dial_up"},{t:1782651600000,offset:23.1,position:"worn"},{t:1782698400000,offset:24.2,position:"crown_down"},{t:1782910800000,offset:29.1,position:"dial_up"},{t:1782997200000,offset:31.1,position:"worn"},{t:1783130400000,offset:34.1,position:"crown_left"},{t:1783342800000,offset:39,position:"worn"}],timegrapher:[{t:1781978400000,note:"moon-landing anniversary check",readings:[{position:"dial_up",rate:2,amplitude:295,beatError:0.1},{position:"crown_down",rate:1,amplitude:271,beatError:0.2},{position:"crown_left",rate:3,amplitude:264,beatError:0.2}]},{t:1783015200000,note:"",readings:[{position:"dial_up",rate:2,amplitude:289,beatError:0.1},{position:"crown_down",rate:1,amplitude:266,beatError:0.2}]}]},
