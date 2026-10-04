@@ -28,7 +28,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `glossary/index.html` + `glossary.txt` | Woordenlijst EN/NL |
 | `guide/index.html` | Handleiding per tool |
 | `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
-| `cafe/index.html` + `meetings.txt`, `meetings.js`, `cafe-log.txt` | Café-pagina |
+| `cafe/index.html` + `meetings.txt`, `meetings.js`, `events.txt`, `events.js`, `cafe-log.txt` | Café-pagina |
 | `nav.js` | Gedeelde menubalk, taal-toggle, thema-keuze |
 | `watchdata.js` | Gedeeld: apparaatnaam, back-upnaam, verwijder-tombstones, samenvoegen (Rate Meter + Power Reserve) |
 | `theme.css` | Alle thema-overrides |
@@ -66,6 +66,14 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Live Clock staat op de homepage: zeven-segment LED, schaalt mee, lokale systeemtijd. Het paneel is geen link meer.
 - Naast de datum twee knoppen in datumvak-stijl en accentkleur: links de 10-secondentik (bij elke paginalading uit, want browsers staan geluid pas na een klik toe; daarom niet in localStorage), rechts schermvullend via de Fullscreen-API (verborgen waar dat niet kan, zoals op iPhone).
 - De Amsterdam-regel van de oude klokpagina is bewust niet meegenomen.
+
+## Café-pagina
+
+- Rechterkolom: blok "Next Café" met daaronder "Other watch events". Evenementen staan bewust alleen hier (Benelux-publiek), niet op de tool-gerichte homepage.
+- Next Café (`meetings.js`): datumtegel (maand/dag/weekdag), volledige datum + tijd (dubbele datum is bewust), "Sioux Labs · during the Vrijmibo", pil "26 days to go", daaronder de vaste regel "every last Friday". Tijden in Europe/Amsterdam.
+- Optioneel thema per meeting in `meetings.txt`: `YYYY-MM-DD HH:MM | EN | NL`. Met `;` wordt het een lijst ("On the table" / "Op tafel"), anders label "Theme". NL valt terug op EN. Zonder thema geen themavlak.
+- Other watch events (`events.js`): `events.txt` met `datum[..einddatum] | naam | plaats | link`. Voorbije evenementen verdwijnen; vier zichtbaar, rest achter gestippelde "Show N more"; jaartal-scheiding vanaf een volgend jaar; "today/tomorrow/in N days" binnen twee weken. Sectie verborgen als er niets komt.
+- Scripts staan met `?v=N` in de pagina; ophogen bij een wijziging zodat bezoekers geen oude versie uit de cache halen.
 
 ## Watch Rate Meter
 
