@@ -30,6 +30,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
 | `cafe/index.html` + `meetings.txt`, `meetings.js`, `cafe-log.txt` | Café-pagina |
 | `nav.js` | Gedeelde menubalk, taal-toggle, thema-keuze |
+| `watchdata.js` | Gedeeld: apparaatnaam, back-upnaam, verwijder-tombstones, samenvoegen (Rate Meter + Power Reserve) |
 | `theme.css` | Alle thema-overrides |
 | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Favicon (klokje op 10:10) |
 
@@ -37,8 +38,18 @@ localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
 - `siouxWatchRateMeter`: alle horlogedata (metingen, timegrapher, gangreserve).
 - `siouxWatchRateMeterLang`: taal (EN standaard, NL).
 - `siouxWatchTheme`: gekozen thema.
+- `siouxWatchDevice`: apparaatnaam voor back-ups; alleen gezet als de gebruiker hem wijzigt, anders afgeleid uit de browser (iPhone, iPad, Mac, Windows, Android …).
 
-Backup-JSON: `{ version, activeWatch, watches: [...] }`; horloge `{ id, name, measurements, timegrapher? }`; meting `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
+Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`; horloge `{ id, name, measurements, timegrapher?, powerReserve?, prCurrent? }`; meting `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
+
+## Back-ups tussen apparaten
+
+- Bestandsnaam `watchrate-<apparaat>-JJJJ-MM-DD-UUMM.json`, plus `exportedFrom: { device, at }` in de JSON (overleeft hernoemen). Apparaatnaam aanpasbaar onder de back-upknoppen; de Viewer toont apparaat en tijd op de bestandschip.
+- Herstellen opent een paneel met per horloge wat de back-up toevoegt/verwijdert. Standaard Samenvoegen; "Alles vervangen" is secundair (gestippeld, met bevestiging).
+- Samenvoegen op id. Toevoegen en verwijderen tellen; bewerken bestaat niet in de UI, dus geen "laatst bewerkt wint".
+- Verwijderingen: `state.deleted = { id: ms }`. Elke verwijderknop (horloge, meting, timegrapher-sessie, gangreserve-historie, voorbeelden wissen) moet `WatchData.markDeleted`/`markWatchDeleted` aanroepen, anders komt het item terug bij samenvoegen. Lopende gangreservemeting zonder id: `"pr:<start>"` bij opslaan of verwerpen.
+- Items zonder id (oude voorbeelddata) krijgen een id uit hun inhoud (`ensureIds`), zodat ze op elk apparaat gelijk zijn.
+- Delen-knop via Web Share API, alleen zichtbaar als de browser bestanden kan delen; bij een fout (geen annulering) valt hij terug op downloaden.
 
 ## Homepage en Live Clock
 
