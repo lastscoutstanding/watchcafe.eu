@@ -64,3 +64,14 @@
   --amber:#48c777; --amber-off:#0c2a17; --green:#3be35b; --green-off:#0c2a17; --green-glow:rgba(59,227,91,.7);
   --led-amber:#48c777; --led-amber-off:#0c2a17;
 }
+:root[data-theme="darkside"]{
+  --bg:#0b0b0c; --page:#0b0b0c; --card:#18181a; --card2:#1d1d20; --border:#333336;
+  --accent:#f2c230; --accent-d:#c99e22; --ink:#ececed; --muted:#9b9ba1;
+  --banner:#8a7020;
+  --nav-bg:#101011; --nav-border:#2c2c30; --nav-hover:#202023; --accent-glow:rgba(242,194,48,.55);
+  --led-on:#ffd23a; --led-off:#2e2508; --led-glow:rgba(255,210,58,0.8);
+  --amber-on:#f2c230; --amber-glow:rgba(242,194,48,.75);
+  --panel-1:#151517; --panel-2:#060607; --panel-border:#2a2a2e;
+  --amber:#f2c230; --amber-off:#2e2508; --green:#3be35b; --green-off:#0c2a17; --green-glow:rgba(59,227,91,.7);
+  --led-amber:#f2c230; --led-amber-off:#2e2508;
+}

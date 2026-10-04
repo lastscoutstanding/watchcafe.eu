@@ -102,8 +102,8 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 
 ## Thema's
 
-Zes donkere thema's met iconische accentkleur, merkvrije namen:
-Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowflake (`#5b9bff` + goud), Speedy (`#e2483d`), Monster (`#ff8a2a`), Kermit (`#48c777` + goud).
+Zeven donkere thema's met iconische accentkleur, merkvrije namen:
+Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowflake (`#5b9bff` + goud), Speedy (`#e2483d`), Monster (`#ff8a2a`), Kermit (`#48c777` + goud), Dark Side (`#f2c230` op zwart/antraciet).
 
 - Alleen decoratieve "chrome" themet mee. Functionele kleuren (rode referentieklok, groene horlogeklok, positiekleuren, grafiekschaal) nooit.
 - Overrides alleen in `theme.css`; standaardkleuren blijven inline per pagina tegen een kleurflits bij laden.

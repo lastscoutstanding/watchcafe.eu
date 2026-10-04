@@ -22,7 +22,7 @@
 
   var THEMES = [
     ["cafe","Watch Caf\u00e9"], ["daydate","Day-Date"], ["snowflake","Snowflake"],
-    ["speedy","Speedy"], ["monster","Monster"], ["kermit","Kermit"]
+    ["speedy","Speedy"], ["monster","Monster"], ["kermit","Kermit"], ["darkside","Dark Side"]
   ];
   var TKEY = "siouxWatchTheme";
   function getTheme(){ try{ return localStorage.getItem(TKEY) || "cafe"; }catch(e){ return "cafe"; } }
