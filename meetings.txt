@@ -1,5 +1,8 @@
 # Sioux Watch Cafe - upcoming meetings
 # One date per line, format: YYYY-MM-DD HH:MM   (Amsterdam time)
+# Optional theme after the date:  YYYY-MM-DD HH:MM | English theme | Nederlands thema
+#   Separate several topics with ;  to show them as a list. The Dutch text is optional.
+#   Example: 2026-11-26 16:30 | Dive watches; Strap swap corner | Duikhorloges; Bandjes-ruilhoek
 # Lines starting with # are ignored. Past dates are skipped automatically,
 # so you can list several dates ahead and skip holidays.
 # 2026-08-07 16:30 vervallen door de vakantie periode
