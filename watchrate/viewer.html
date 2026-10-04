@@ -630,12 +630,18 @@ function render(){
   const totMeas=watches.reduce((s,w)=>s+w.valid.length,0);
   document.getElementById("summary").textContent=`${t().watches(watches.length)} · ${t().meas(totMeas)} · ${t().files(FILES.length)}`;
 
-  document.getElementById("chips").innerHTML=FILES.map((f,i)=>
-    `<span class="fchip"><b>${esc(f.name)}</b> ${f.watches.length}♦ <span class="x" data-i="${i}" title="${t().remove}">✕</span></span>`).join("");
+  document.getElementById("chips").innerHTML=FILES.map((f,i)=>{
+    const label=f.from?`<b>${esc(f.from.device)}</b>${f.from.at?" "+esc(fmtFrom(f.from.at)):""}`:`<b>${esc(f.name)}</b>`;
+    return `<span class="fchip" title="${esc(f.name)}">${label} ${f.watches.length}♦ <span class="x" data-i="${i}" title="${t().remove}">✕</span></span>`;
+  }).join("");
   document.querySelectorAll(".fchip .x").forEach(el=>el.onclick=()=>{FILES.splice(+el.dataset.i,1);saveLS();render();});
   document.querySelectorAll(".sessionsel").forEach(sel=>sel.onchange=()=>{
     const v=sel.value; sessionSel[sel.dataset.wid]=isAllSel(v)?v:+v; render();
   });
+}
+
+function fmtFrom(ms){
+  return new Date(ms).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
 }
 
 /* ---------- loading ---------- */
@@ -643,7 +649,8 @@ function loadJSON(name,text){
   let data; try{data=JSON.parse(text);}catch(e){alert(`"${name}": geen geldige JSON / invalid JSON.`);return;}
   const watches=Array.isArray(data.watches)?data.watches:Array.isArray(data)?data:data.watch?[data.watch]:null;
   if(!watches){alert(`"${name}": geen "watches"-lijst gevonden / no "watches" list.`);return;}
-  FILES.push({name,watches,activeWatch:data.activeWatch,rawText:text});
+  const from=data.exportedFrom&&typeof data.exportedFrom.device==="string"?data.exportedFrom:null;
+  FILES.push({name,watches,activeWatch:data.activeWatch,from,rawText:text});
   saveLS();
   guideOpen=false; render();
 }

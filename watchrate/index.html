@@ -110,6 +110,10 @@
   .datatools button,.datatools .btnlink{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);text-decoration:none;font-size:14px;display:inline-flex;align-items:center;gap:7px}
   .datatools button:hover,.datatools .btnlink:hover{background:#30303a}
   .datatools .btnlink{margin-left:auto;color:var(--accent);border-color:var(--accent)}
+  .devline{margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .devline button{font:inherit;color:var(--ink);background:none;border:none;border-bottom:1px dashed #5a5a66;padding:0;cursor:pointer}
+  .devline button:hover{color:var(--accent);border-color:var(--accent)}
+  .devline code{color:var(--ink);font-size:12px}
   .notice{background:#2e221c;border:1px solid #45332a;color:#eda57f;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px;display:none}
 
   .banner{margin-top:26px;background:var(--banner);color:#fff;font-weight:700;text-align:center;padding:16px;border-radius:8px;font-size:15px}
@@ -158,6 +162,7 @@
   @media(max-width:600px){.card{padding:22px 16px 26px}.tgcmp{grid-template-columns:1fr 1fr}}
 </style>
   <script src="/nav.js" defer></script>
+  <script src="/watchdata.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -311,6 +316,7 @@
       <a class="btnlink" id="viewerBtn" href="viewer.html"></a>
       <input type="file" id="importFile" accept="application/json" style="display:none">
     </div>
+    <div class="devline" id="devLine"></div>
 
     <div class="banner" id="banner"></div>
     <div class="gears">This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a></div>
@@ -349,6 +355,7 @@ var I18N={
   guideNote:"One measurement gives only an offset. You need at least two, taken at different times, to get a rate in s/day.",
   help:"How it works", close:"Close",
   exportBtn:"Backup", importBtn:"Restore",
+  devLbl:"This device:", devSaves:"saves as", devPrompt:"Name for this device (shown in backup files):",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   addToggle:"+ Add watch", addCancel:"Cancel", viewerBtn:"Browse backups",
   grpAlign:"Align to your watch", grpRecord:"Record",
@@ -395,6 +402,7 @@ var I18N={
   guideNote:"E\u00e9n meting geeft alleen een offset. Voor een gang in s/dag heb je minstens twee metingen op verschillende momenten nodig.",
   help:"Zo werkt het", close:"Sluiten",
   exportBtn:"Back-up", importBtn:"Herstellen",
+  devLbl:"Dit apparaat:", devSaves:"opslaan als", devPrompt:"Naam voor dit apparaat (komt in de back-upbestanden):",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   addToggle:"+ Horloge toevoegen", addCancel:"Annuleren", viewerBtn:"Back-ups bekijken",
   grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
@@ -779,6 +787,7 @@ function applyLang(){
   document.getElementById("rateChartHint").textContent=t.rateChartHint;
   document.getElementById("exportBtn").textContent=t.exportBtn;
   document.getElementById("importBtn").textContent=t.importBtn;
+  renderDevLine();
   document.getElementById("banner").textContent=t.banner;
   document.getElementById("addToggle").textContent=t.addToggle;
   document.getElementById("addCancel").textContent=t.addCancel;
@@ -925,16 +934,26 @@ document.getElementById("recordBtn").onclick=function(){
   save();renderAll();
 };
 
+function renderDevLine(){
+  var t=I18N[lang];
+  document.getElementById("devLine").innerHTML=t.devLbl+' <button type="button" id="devName">'+escapeHtml(WatchData.getDevice())+'</button> \u00b7 '+t.devSaves+' <code>'+escapeHtml(WatchData.backupName())+'</code>';
+  document.getElementById("devName").onclick=function(){
+    var n=prompt(I18N[lang].devPrompt,WatchData.getDevice());
+    if(n!==null){WatchData.setDevice(n);renderDevLine();}
+  };
+}
 document.getElementById("exportBtn").onclick=function(){
-  var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
-  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="watch-rate-meter-backup.json";a.click();URL.revokeObjectURL(a.href);
+  var now=Date.now();
+  var blob=new Blob([JSON.stringify(WatchData.backupData(state,now),null,2)],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=WatchData.backupName(now);a.click();URL.revokeObjectURL(a.href);
+  renderDevLine();
 };
 document.getElementById("importBtn").onclick=function(){document.getElementById("importFile").click();};
 document.getElementById("importFile").onchange=function(e){
   var file=e.target.files[0];if(!file)return;var r=new FileReader();
   r.onload=function(){try{var d=migrate(JSON.parse(r.result));if(!d.watches)throw 0;
     var msg=lang==="nl"?"Back-up importeren? Dit vervangt je huidige gegevens in deze browser.":"Import backup? This replaces your current data in this browser.";
-    if(confirm(msg)){state=d;if(!state.activeWatch&&state.watches[0])state.activeWatch=state.watches[0].id;seedOffset();save();renderAll();}
+    if(confirm(msg)){delete d.exportedFrom;state=d;if(!state.activeWatch&&state.watches[0])state.activeWatch=state.watches[0].id;seedOffset();save();renderAll();}
   }catch(err){alert(lang==="nl"?"Kon dit bestand niet lezen als geldige back-up.":"Could not read this file as a valid backup.");}};
   r.readAsText(file);e.target.value="";
 };
