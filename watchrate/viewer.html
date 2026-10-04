@@ -144,18 +144,7 @@
   .gears a:hover{text-decoration:underline}
   .hide{display:none !important}
 </style>
-  <script src="/nav.js" defer>
-/* ---------- eerder geladen bestanden herstellen ---------- */
-(function(){
-  try{
-    const raw=localStorage.getItem(LSKEY); if(!raw) return;
-    const arr=JSON.parse(raw); if(!Array.isArray(arr)) return;
-    const items=arr.filter(f=>f&&f.text);
-    FILES.length=0;
-    items.forEach(f=>loadJSON(f.name,f.text));
-  }catch(e){}
-})();
-</script>
+  <script src="/nav.js" defer></script>
 </head>
 <body>
 <div class="wrap">
