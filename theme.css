@@ -9,6 +9,58 @@
    or the other). Functional colours (LED clock red, green watch clock,
    graph scale, position colours) are NOT themed and stay in the pages. */
 
+/* ===== Legend: what each variable colours =====
+   Surfaces
+   --bg / --page    Page background behind everything (homepage + café use
+                    --bg, the other pages --page; always the same value).
+   --card           Main content card that holds a page; also nav dropdowns.
+   --card2          Raised blocks inside a card: homepage tool tiles, café
+                    report + event date tiles, guide TOC chips, PR clock box.
+   --border         Thin outlines of cards, tiles, inputs, dividers, menus.
+
+   Text
+   --ink            Normal body text and headings.
+   --muted          Secondary text: subtitles, hints, labels, dates.
+
+   Accent (the theme's signature colour)
+   --accent         Highlighted text and active states: page titles, links,
+                    icons, hovered tile border, primary buttons, active
+                    toggles/selected watch card, brand dot, menu check
+                    mark, left stripe of café blocks and viewer tips.
+   --accent-d       Second accent: hover colour of primary/solid buttons and
+                    viewer guide headings. Darker accent in most themes, a
+                    contrast colour in Snowflake/Kermit (gold), Speedy (white).
+   --accent-glow    Soft glow around accent items: brand dot, active clock
+                    buttons (tick / fullscreen).
+   --banner         Filled message strips: café "Next Café" block, saved/
+                    info banners (Rate Meter, Power Reserve), checked
+                    switch track in the viewer. Always with white text.
+
+   Menu bar (nav.js)
+   --nav-bg         Menu bar and mobile menu background.
+   --nav-border     Line under the menu bar.
+   --nav-hover      Hovered menu item / dropdown row.
+
+   Clock panels
+   --panel-1/-2     Top/bottom of the dark gradient behind the homepage LED
+                    clock and the Rate Meter clock panel.
+   --panel-border   Outline of the homepage clock panel.
+   --led-on         Lit segments + colon of the homepage LED clock.
+   --led-off        Unlit segments (shown faint) on homepage, Rate Meter and
+                    privacy-page LED digits.
+   --led-glow       Glow around lit homepage LED segments.
+   --amber-on       Date text under the homepage clock.
+   --amber-glow     Glow of that date text and of the Power Reserve LEDs.
+
+   Power Reserve + Viewer LED readouts
+   --amber          Lit Power Reserve LED digits/text and reserve hours.
+   --amber-off      Unlit Power Reserve LED segments.
+   --green / --green-off / --green-glow
+                    Green Power Reserve LED (lit / unlit / glow). Same value
+                    in every theme: it is the functional "watch" colour.
+   --led-amber      Rate digits + sign of the Backup Viewer LED display.
+   --led-amber-off  Unlit "ghost" digits behind that display. */
+
 :root[data-theme="daydate"]{
   --bg:#171208; --page:#171208; --card:#241c0d; --card2:#2b2210; --border:#4a3a1c;
   --accent:#d4af52; --accent-d:#b8923a; --ink:#f0e9d8; --muted:#b3a582;
