@@ -690,7 +690,7 @@ drop.addEventListener("drop",e=>{if(e.dataTransfer?.files?.length)readFiles(e.da
 document.getElementById("merge").onchange=e=>{merge=e.target.checked;render();};
 document.getElementById("sort").onchange=e=>{sortBy=e.target.value;render();};
 document.getElementById("sampleBtn").onclick=e=>{e.stopPropagation();loadJSON("voorbeeld-backup.json",SAMPLE);};
-document.getElementById("qbtn").onclick=()=>{guideOpen=true;render();};
+document.getElementById("qbtn").onclick=()=>{guideOpen=!guideOpen;render();}; // toggles, like on the Rate Meter
 document.getElementById("gx").onclick=()=>{guideOpen=false;render();};
 window.addEventListener("swclang",e=>{lang=e.detail;render();});
 

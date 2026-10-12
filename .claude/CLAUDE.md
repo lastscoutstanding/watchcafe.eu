@@ -93,7 +93,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Dezelfde sessie-pulldown als de Rate Meter; geen pulldown bij één sessie. Ook "Alle sessies, zonder tussenpozen" (`allc`): elke sessie een eigen blok op de tijd-as, dode tijd ertussen weggesneden (gestippelde scheidingslijn), regressielijn per sessie.
 - Grafieken: offset in de tijd en gang in de tijd, vanaf 860 px schermbreedte naast elkaar. Net als op de Rate Meter op pixelmaat getekend (`drawCharts()` na elke render en bij resize), 230 px hoog, onder 600 px 180 px. Gangpunten zoals op de Rate Meter: opeenvolgende metingen ≥ 6 uur uit elkaar, stip op het eindpunt van het interval (dus meestal bij de tweede meting), lijn breekt bij een nieuwe start, timegrapher-ruitjes erbij.
 - Per-positie-gang met spreiding, offsetgrafiek met regressielijn, timegrapher-data, merge-toggle, sorteren, demo-modus.
-- "Zo werkt het"-gids alleen in de lege toestand, terug te halen via `?`.
+- "Zo werkt het"-gids alleen in de lege toestand, terug te halen via `?`; `?` togglet (tweede klik sluit), net als op de Rate Meter.
 
 ## Power Reserve
 
