@@ -82,6 +82,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - "Nieuwe start" is een handmatige checkbox. Geen automatische gat-detectie.
 - Sessies worden afgeleid uit nieuwe-start-vlaggen (datastructuur ongewijzigd). Pulldown boven de grafiek bij >1 sessie, standaard de laatste, plus "Alle sessies" en "Alle sessies, zonder tussenpozen" (`allc`: sessies als aaneengesloten blokken op de tijd-as met gestippelde breuklijn).
 - Rate- en offsetgrafiek delen dezelfde tijd-as.
+- Grafieken worden op echte pixelbreedte getekend (viewBox = gemeten breedte, `ResizeObserver` tekent opnieuw), zodat as-labels altijd 12 px zijn. Hoogte 200 px, onder 600 px schermbreedte 170 px. Y-raster op ronde stappen, eenheid één keer in de titel, aantal datumlabels naar breedte. Nooit meer een vaste viewBox met `preserveAspectRatio="none"`.
 - Timegrapher: "Timegrapher-sessie toevoegen" opent een grid (positie, gang, optioneel amplitude en beat error); posities van de vorige sessie staan klaar. Toont ruitjes in de grafiek, drie vergelijkingskaartjes en een sessielijst.
 - Sample-data: Omega Speedmaster '69 op precies +1,969 s/dag (maanlanding-easter-egg), Tudor Black Bay 58 met reset en twee sessies (+7,2 en −4,5), Casio A300U als kwarts-referentie.
 
@@ -90,7 +91,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Laadt één of meer JSON-backups; geladen bestanden blijven in localStorage.
 - LED-gangweergave in DSEG7 Bold (base64 ingebed uit npm `dseg`).
 - Dezelfde sessie-pulldown als de Rate Meter; geen pulldown bij één sessie. Ook "Alle sessies, zonder tussenpozen" (`allc`): elke sessie een eigen blok op de tijd-as, dode tijd ertussen weggesneden (gestippelde scheidingslijn), regressielijn per sessie.
-- Grafieken: offset in de tijd en gang in de tijd. Gangpunten zoals op de Rate Meter: opeenvolgende metingen ≥ 6 uur uit elkaar, stip op het eindpunt van het interval (dus meestal bij de tweede meting), lijn breekt bij een nieuwe start, timegrapher-ruitjes erbij.
+- Grafieken: offset in de tijd en gang in de tijd, vanaf 860 px schermbreedte naast elkaar. Net als op de Rate Meter op pixelmaat getekend (`drawCharts()` na elke render en bij resize), 230 px hoog, onder 600 px 180 px. Gangpunten zoals op de Rate Meter: opeenvolgende metingen ≥ 6 uur uit elkaar, stip op het eindpunt van het interval (dus meestal bij de tweede meting), lijn breekt bij een nieuwe start, timegrapher-ruitjes erbij.
 - Per-positie-gang met spreiding, offsetgrafiek met regressielijn, timegrapher-data, merge-toggle, sorteren, demo-modus.
 - "Zo werkt het"-gids alleen in de lege toestand, terug te halen via `?`.
 
