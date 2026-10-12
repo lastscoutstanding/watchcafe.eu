@@ -27,9 +27,10 @@
                     icons, hovered tile border, primary buttons, active
                     toggles/selected watch card, brand dot, menu check
                     mark, left stripe of café blocks and viewer tips.
-   --accent-d       Second accent: hover colour of primary/solid buttons and
-                    viewer guide headings. Darker accent in most themes, a
-                    contrast colour in Snowflake/Kermit (gold), Speedy (white).
+   --accent-d       Second accent: viewer guide headings. Darker accent in
+                    most themes, a contrast colour in Snowflake/Kermit (gold),
+                    Speedy (white). Primary buttons no longer use it: they are
+                    a tint of --accent (color-mix) instead of a solid fill.
    --accent-glow    Soft glow around accent items: brand dot, active clock
                     buttons (tick / fullscreen).
    --banner         Filled message strips: café "Next Café" block, saved/

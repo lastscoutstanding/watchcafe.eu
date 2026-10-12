@@ -46,8 +46,9 @@
   button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);touch-action:manipulation}
   button:hover{background:#30303a}
   button:active{transform:scale(.98)}
-  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.primary:hover{background:var(--accent-d)}
+  /* tinted instead of solid accent, so the main action stands out without glaring */
+  button.primary{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  button.primary:hover{background:color-mix(in srgb,var(--accent) 30%,transparent);border-color:var(--accent)}
   button.ghost{background:transparent}
   button.danger{color:#ff6b5e}
   button.sm{padding:6px 10px;font-size:13px}
@@ -57,7 +58,7 @@
 
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
   .chip{border:1px solid var(--border);background:#26262c;border-radius:20px;padding:7px 14px;font-size:14px;cursor:pointer;display:flex;gap:8px;align-items:center}
-  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.active{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
   .chip .x{opacity:.6;font-weight:700}
   .chip .x:hover{opacity:1}
 

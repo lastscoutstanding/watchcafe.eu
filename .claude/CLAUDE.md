@@ -116,6 +116,7 @@ Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowfla
 
 - Modern en donker, niet oud-bollig. Progressive disclosure, minimale UI, hulp impliciet. Zelden gebruikte functies niet prominent.
 - Gestippelde randen voor secundaire acties, genummerde stapgroepen voor meetworkflows.
+- Hoofdknoppen en actief-markeringen (`button.primary`, `.pillbtn.solid`, `.chip.active`, `.actchip`) zijn getint, niet vol: `color-mix` van `--accent` 18% als achtergrond, 55% als rand, tekst in accentkleur. Vol gevuld met wit erop was te fel, vooral in Kermit.
 - Liever expliciete, door de gebruiker gezette vlaggen dan automatische detectie.
 - Geen volledige DOM-rebuild op input-events (sloot de iOS-tijdkiezer).
 - `applyStatic()` niet laten draaien nadat `renderStart()` elementen heeft vervangen.

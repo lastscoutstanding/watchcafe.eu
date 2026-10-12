@@ -67,8 +67,9 @@
   .drop .pills{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
   .pillbtn{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:7px 16px;font-size:13px;color:var(--ink);cursor:pointer}
   .pillbtn:hover{border-color:var(--accent);color:var(--accent)}
-  .pillbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
-  .pillbtn.solid:hover{background:var(--accent-d);color:#fff}
+  /* tinted instead of solid accent, so the main action stands out without glaring */
+  .pillbtn.solid{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  .pillbtn.solid:hover{background:color-mix(in srgb,var(--accent) 30%,transparent);border-color:var(--accent);color:var(--accent)}
 
   /* controls */
   .bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:22px;padding:12px 16px;background:#1f1f25;border:1px solid var(--border);border-radius:12px}
@@ -107,7 +108,7 @@
   .sessionrow{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
   .sessionrow label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
   .sessionrow select{flex:1;min-width:0;font:inherit;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink)}
-  .actchip{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:var(--accent);color:#fff;white-space:nowrap}
+  .actchip{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 9px;border:1px solid;background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent);white-space:nowrap}
 
   .ledrow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin:14px 0 4px}
   .ledwrap{background:linear-gradient(180deg,var(--panel-top),var(--panel-bot));border:1px solid var(--panel-line);border-radius:12px;padding:11px 18px;flex:1 1 200px;min-width:190px}
