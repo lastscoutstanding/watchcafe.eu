@@ -99,7 +99,8 @@
 
   .chart-wrap{background:#0e0e12;border-radius:12px;padding:14px 12px 10px;margin-top:14px}
   .chart-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#999;margin:0 0 8px 4px}
-  .chart-wrap svg{display:block;width:100%;height:auto}
+  .chart-wrap svg{display:block;width:100%}
+  .chart-title .cunit{text-transform:none;letter-spacing:0;color:#777;margin-left:4px}
 
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:18px}
   .addrow{margin-top:10px}
@@ -307,12 +308,12 @@
       <div id="rateSummary" class="hint" style="margin:0 0 6px"></div>
 
       <div class="chart-wrap" id="chartOffWrap" style="display:none">
-        <p class="chart-title" id="chartOffTitle"></p>
-        <svg id="chartOff" viewBox="0 0 600 160" preserveAspectRatio="none"></svg>
+        <p class="chart-title"><span id="chartOffTitle"></span><span class="cunit">(s)</span></p>
+        <svg id="chartOff"></svg>
       </div>
       <div class="chart-wrap" id="chartRateWrap" style="display:none">
-        <p class="chart-title" id="chartRateTitle"></p>
-        <svg id="chartRate" viewBox="0 0 600 160" preserveAspectRatio="none"></svg>
+        <p class="chart-title"><span id="chartRateTitle"></span><span class="cunit" id="chartRateUnit"></span></p>
+        <svg id="chartRate"></svg>
       </div>
       <div class="hint" id="tgLegend" style="display:none"></div>
       <p class="hint" id="rateChartHint" style="display:none"></p>
@@ -677,7 +678,9 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
   var all=[];seriesSegs.forEach(function(s){all=all.concat(s);});
   (tgSessions||[]).forEach(function(sess){sess.readings.forEach(function(r){all.push({t:sess.t,v:r.rate});});});
   if(all.length<2){return false;}
-  var W=600,H=160,L=52,R=10,T=10,B=26;
+  // Drawn at the real pixel width, so labels stay 12px on every screen.
+  var W=Math.round(svgEl.getBoundingClientRect().width)||600,H=innerWidth<600?170:200,L=44,R=10,T=10,B=26;
+  svgEl.setAttribute("viewBox","0 0 "+W+" "+H);svgEl.setAttribute("height",H);
   var t0,t1;
   if(tDomain){t0=tDomain[0];t1=tDomain[1];}
   else{t0=all[0].t;t1=all[all.length-1].t;all.forEach(function(p){if(p.t<t0)t0=p.t;if(p.t>t1)t1=p.t;});}
@@ -688,27 +691,30 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
   var comp=blocks&&blocks.length>1,ax=comp?timeLayout(blocks,L,W-R):null;
   function X(t){return comp?ax.X(t):L+(t1===t0?0:(t-t0)/(t1-t0))*(W-L-R);}
   function Y(v){return H-B-((v-mn)/(mx-mn))*(H-T-B);}
-  function lbl(v){var a=Math.abs(v)>=10?v.toFixed(0):v.toFixed(1);return (v>0?"+":"")+a;}
+  var FS=' font-size="12" fill="#999"';
   var out="";
-  // zero line
-  if(mn<0&&mx>0){var zy=Y(0).toFixed(1);
-    out+='<line x1="'+L+'" y1="'+zy+'" x2="'+(W-R)+'" y2="'+zy+'" stroke="#555" stroke-dasharray="4 4"/>';
-    out+='<text x="'+(L-6)+'" y="'+(+zy+4)+'" text-anchor="end" font-size="11" fill="#888">0</text>';}
-  // min/max labels + faint gridlines
-  [mx-padV,mn+padV].forEach(function(v){var y=Y(v).toFixed(1);
-    out+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#2c2c2c"/>';
-    out+='<text x="'+(L-6)+'" y="'+(+y+4)+'" text-anchor="end" font-size="11" fill="#888">'+lbl(v)+unit+'</text>';});
-  // x labels: first & last date
+  // gridlines on round steps (1/2/5 x 10^k), three to five of them
+  var raw=(mx-mn)/(H<200?4:5),mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  var step=[1,2,5,10].map(function(k){return k*mag;}).filter(function(k){return k>=raw;})[0];
+  var dec=step<1?Math.min(2,-Math.floor(Math.log10(step)+1e-9)):0;
+  for(var gi=Math.ceil(mn/step);gi*step<=mx+1e-9;gi++){var gv=gi*step,gy=Y(gv).toFixed(1),zero=Math.abs(gv)<step/2;
+    out+='<line x1="'+L+'" y1="'+gy+'" x2="'+(W-R)+'" y2="'+gy+'" stroke="'+(zero?'#555':'#2c2c2c')+'"'+(zero?' stroke-dasharray="4 4"':'')+'/>';
+    out+='<text x="'+(L-6)+'" y="'+(+gy+4)+'" text-anchor="end"'+FS+'>'+(zero?"0":(gv>0?"+":"\u2212")+Math.abs(gv).toFixed(dec))+'</text>';}
+  // x labels: as many dates as fit the width (2 to 5)
   var loc=lang==="nl"?"nl-NL":"en-GB";
   function dstr(t){return new Date(t).toLocaleDateString(loc,{day:"numeric",month:"short"});}
-  out+='<text x="'+L+'" y="'+(H-8)+'" font-size="11" fill="#888">'+dstr(t0)+'</text>';
-  out+='<text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end" font-size="11" fill="#888">'+dstr(t1)+'</text>';
-  if(comp){
+  if(!comp){
+    var nx=Math.max(1,Math.min(4,Math.floor((W-L-R)/110)));
+    for(var xi=0;xi<=nx;xi++){var xt=t0+(t1-t0)*xi/nx;
+      out+='<text x="'+X(xt).toFixed(1)+'" y="'+(H-8)+'" text-anchor="'+(xi===0?'start':xi===nx?'end':'middle')+'"'+FS+'>'+dstr(xt)+'</text>';}
+  } else {
+    out+='<text x="'+L+'" y="'+(H-8)+'"'+FS+'>'+dstr(t0)+'</text>';
+    out+='<text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end"'+FS+'>'+dstr(t1)+'</text>';
     // start date per later block (only where it clears its neighbours) + dashed break between blocks
-    var LW=46,prev=L;
+    var LW=52,prev=L;
     for(var bi=1;bi<ax.lay.length;bi++){var b=ax.lay[bi],xm=((ax.lay[bi-1].x1+b.x0)/2).toFixed(1);
       out+='<line x1="'+xm+'" y1="'+T+'" x2="'+xm+'" y2="'+(H-B)+'" stroke="#555" stroke-dasharray="3 3"/>';
-      if(b.x0-prev>=LW&&(W-R)-b.x0>=2*LW){out+='<text x="'+b.x0.toFixed(1)+'" y="'+(H-8)+'" font-size="11" fill="#888">'+dstr(b.t0)+'</text>';prev=b.x0;}
+      if(b.x0-prev>=LW&&(W-R)-b.x0>=2*LW){out+='<text x="'+b.x0.toFixed(1)+'" y="'+(H-8)+'"'+FS+'>'+dstr(b.t0)+'</text>';prev=b.x0;}
     }
   }
   // segments: line per segment + colored dots
@@ -733,9 +739,15 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
   return true;
 }
 
+var chartWatch=null,chartWidth=0;
+// Charts are drawn at pixel size, so redraw them when the column width changes.
+if(window.ResizeObserver)new ResizeObserver(function(es){var wd=Math.round(es[0].contentRect.width);
+  if(wd!==chartWidth){chartWidth=wd;if(chartWatch)drawCharts(chartWatch);}}).observe(document.getElementById("chartOffWrap").parentNode);
 function drawCharts(w){
   var ow=document.getElementById("chartOffWrap"),rw=document.getElementById("chartRateWrap"),rh=document.getElementById("rateChartHint");
+  chartWatch=w;
   if(!w){ow.style.display="none";rw.style.display="none";rh.style.display="none";return;}
+  ow.style.display=rw.style.display="block";
   var allSegs=segments(w);
   var idx=resolvedSegIndex(w);
   var segs=(idx==="all")?allSegs:[allSegs[idx]||allSegs[allSegs.length-1]];
@@ -812,6 +824,7 @@ function applyLang(){
   document.getElementById("histH2").textContent=t.measurements;
   document.getElementById("chartOffTitle").textContent=t.chartOffset;
   document.getElementById("chartRateTitle").textContent=t.chartRate;
+  document.getElementById("chartRateUnit").textContent="("+t.perDay+")";
   document.getElementById("rateChartHint").textContent=t.rateChartHint;
   document.getElementById("exportBtn").textContent=t.exportBtn;
   document.getElementById("importBtn").textContent=t.importBtn;
