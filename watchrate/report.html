@@ -75,7 +75,8 @@
   .foot{margin-top:18px;padding-top:6px;border-top:1px solid var(--p-line);font-size:8pt;color:var(--p-muted);display:flex;justify-content:space-between}
   .empty{color:var(--p-muted);font-style:italic}
 
-  @media (max-width:720px){
+  /* screen only: the printable width (~184 mm) is also under 720px */
+  @media screen and (max-width:720px){
     .sheet{padding:18px 14px}
     .kpis{grid-template-columns:repeat(2,1fr)}
     .charts,.two{grid-template-columns:1fr}
@@ -125,7 +126,7 @@ var I18N={
   powerReserve:"Power reserve",wound:"Wound",stopped:"Stopped",reserve:"Reserve",typical:"Typical",
   allMeas:"All measurements",time:"Time",offset:"Offset",newStart:"new start",
   offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
-  tgLegend:"◇ timegrapher",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
+  tgLegend:"◇ timegrapher per position · ╌ session average",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
   footer:"watchcafe.eu · Sioux Watch Café · data from this browser only",sampleTag:"sample data"},
  nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van al je horloges",print:"Printen / Opslaan als PDF",back:"Terug naar Rate Meter",
   raw:"Alle metingen opnemen",
@@ -139,7 +140,7 @@ var I18N={
   powerReserve:"Gangreserve",wound:"Opgewonden",stopped:"Gestopt",reserve:"Reserve",typical:"Typisch",
   allMeas:"Alle metingen",time:"Tijdstip",offset:"Offset",newStart:"nieuwe start",
   offsetChart:"Offset in de tijd (s)",rateChart:"Gang in de tijd (s/dag)",gapsRemoved:"sessies aaneengesloten, tijd ertussen weggelaten",
-  tgLegend:"◇ timegrapher",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
+  tgLegend:"◇ timegrapher per positie · ╌ sessiegemiddelde",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
   footer:"watchcafe.eu · Sioux Watch Café · alleen data uit deze browser",sampleTag:"voorbeelddata"}
 };
 var POS={
@@ -253,7 +254,8 @@ function rateChart(a){
     var pts=segs[i];
     if(pts.length>1)g+='<polyline fill="none" stroke="#9a97a0" stroke-width="1" points="'+pts.map(function(p){return b.X(p.t).toFixed(1)+","+ax.Y(p.v).toFixed(1);}).join(" ")+'"/>';
     pts.forEach(function(p){g+='<circle cx="'+b.X(p.t).toFixed(1)+'" cy="'+ax.Y(p.v).toFixed(1)+'" r="2.2" fill="#3f9a3f"/>';});
-    tgIn(b).forEach(function(s){var cx=b.X(s.t);
+    tgIn(b).forEach(function(s){var cx=b.X(s.t),ya=ax.Y(s.avg).toFixed(1);
+      g+='<line x1="'+(cx-14).toFixed(1)+'" x2="'+(cx+14).toFixed(1)+'" y1="'+ya+'" y2="'+ya+'" stroke="#b8532e" stroke-width="1.4" stroke-dasharray="3 2"/>';
       s.readings.forEach(function(r){var cy=ax.Y(+r.rate);g+='<rect x="'+(cx-3.2).toFixed(1)+'" y="'+(cy-3.2).toFixed(1)+'" width="6.4" height="6.4" transform="rotate(45 '+cx.toFixed(1)+' '+cy.toFixed(1)+')" fill="#fff" stroke="'+pos(r.position).color+'" stroke-width="1.4"/>';});});
   });
   return '<svg viewBox="0 0 '+CW+' '+CH+'" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">'+g+'</svg>';
