@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch Report — Sioux Watch Café</title>
+<link rel="stylesheet" href="/theme.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script src="/nav.js" defer></script>
+<script src="/watchdata.js"></script>
+<script src="sample.js?v=2"></script>
+<style>
+  :root{
+    --page:#121215; --card:#1c1c21; --border:#33333c;
+    --accent:#d96a41; --ink:#e9e7e2; --muted:#a09da6;
+    --nav-bg:#17171b; --nav-border:#2a2a31; --nav-hover:#22222a; --accent-glow:rgba(217,106,65,.7);
+    /* the report itself is always light: paper, ink, a print-safe accent */
+    --paper:#ffffff; --p-ink:#1d1d22; --p-muted:#6b6872; --p-line:#dcdae0; --p-soft:#f4f3f6; --p-accent:#b8532e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
+  .wrap{max-width:948px;margin:0 auto}
+
+  /* screen toolbar */
+  .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 auto 18px;max-width:210mm}
+  .bar h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+  .bar .sub{color:var(--muted);font-size:14px;margin:0}
+  .bar .grow{flex:1 1 260px}
+  .bar label{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .bar button,.bar a.btn{font:inherit;font-size:14px;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);text-decoration:none}
+  .bar button.primary{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent);font-weight:600}
+  .note{max-width:210mm;margin:0 auto 18px;font-size:13px;color:var(--muted)}
+
+  /* paper */
+  .sheet{background:var(--paper);color:var(--p-ink);max-width:210mm;margin:0 auto 24px;padding:16mm 15mm;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.45);font-size:10.5pt;line-height:1.4}
+  .sheet h2{font-size:20pt;font-weight:800;color:var(--p-accent);margin:0 0 2px;letter-spacing:-.01em}
+  .sheet h3{font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--p-muted);margin:16px 0 6px;break-after:avoid}
+  .sheet .meta{color:var(--p-muted);font-size:9.5pt;margin:0 0 12px}
+  .sheet table{width:100%;border-collapse:collapse;font-size:9.5pt;margin:0 0 4px}
+  .sheet th{text-align:left;font-weight:600;color:var(--p-muted);font-size:8.5pt;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--p-ink);padding:4px 6px}
+  .sheet td{border-bottom:1px solid var(--p-line);padding:3.5px 6px;vertical-align:top}
+  .sheet tr{break-inside:avoid}
+  .sheet thead{display:table-header-group}
+  .sheet .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .sheet .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:9pt}
+  .sheet .dim{color:var(--p-muted)}
+  .sheet .nw{white-space:nowrap}
+  .sheet .ns td{border-top:1.5px dashed var(--p-accent)}
+  .tag{display:inline-block;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--p-accent);border:1px solid var(--p-accent);border-radius:3px;padding:0 3px;margin-left:5px;vertical-align:1px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+
+  .cover-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:2px solid var(--p-accent);padding-bottom:10px;margin-bottom:14px}
+  .brand{font-size:9pt;color:var(--p-muted);text-align:right;line-height:1.5}
+  .brand b{color:var(--p-ink)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 4px}
+  .kpi{background:var(--p-soft);border-radius:6px;padding:8px 10px}
+  .kpi .l{font-size:7.5pt;text-transform:uppercase;letter-spacing:.06em;color:var(--p-muted)}
+  .kpi .v{font-size:15pt;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+  .kpi .v small{font-size:9pt;font-weight:400;color:var(--p-muted)}
+  .kpi.main .v{color:var(--p-accent)}
+
+  .watch{break-before:page}
+  .watch-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:2px solid var(--p-accent);padding-bottom:6px;margin-bottom:6px}
+  .watch-head h2{font-size:17pt}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+  .chart{border:1px solid var(--p-line);border-radius:6px;padding:6px 6px 2px;break-inside:avoid}
+  .chart .ct{font-size:7.5pt;text-transform:uppercase;letter-spacing:.06em;color:var(--p-muted);margin:0 0 2px 2px}
+  .chart svg{display:block;width:100%;height:auto}
+  .legend{font-size:8.5pt;color:var(--p-muted);margin:4px 0 0}
+  .legend span{margin-right:10px;white-space:nowrap}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .foot{margin-top:18px;padding-top:6px;border-top:1px solid var(--p-line);font-size:8pt;color:var(--p-muted);display:flex;justify-content:space-between}
+  .empty{color:var(--p-muted);font-style:italic}
+
+  @media (max-width:720px){
+    .sheet{padding:18px 14px}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .charts,.two{grid-template-columns:1fr}
+    .sheet table{font-size:9pt}
+  }
+
+  /* no fixed paper size: the print dialog uses the reader's default (A4, or Letter in the US/Canada) */
+  @page{margin:14mm 13mm}
+  @media print{
+    body{background:#fff;padding:0;min-height:0}
+    body > *:not(#report){display:none !important}
+    .bar,.note{display:none !important}
+    .sheet{box-shadow:none;border-radius:0;margin:0;padding:0;max-width:none}
+    .sheet + .sheet{break-before:page}
+    .kpi,.chart{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .dot,.tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+<div id="report">
+  <div class="bar">
+    <div class="grow">
+      <h1 id="t-title"></h1>
+      <p class="sub" id="t-sub"></p>
+    </div>
+    <label><input type="checkbox" id="optRaw" checked> <span id="t-raw"></span></label>
+    <a class="btn" href="./" id="t-back"></a>
+    <button class="primary" id="printBtn"></button>
+  </div>
+  <p class="note" id="t-note"></p>
+  <div id="sheets"></div>
+</div>
+
+<script>
+"use strict";
+var I18N={
+ en:{title:"Watch Report",sub:"A readable, printable copy of all your watches",print:"Print / Save as PDF",back:"Back to Rate Meter",
+  raw:"Include all measurements",
+  note:"Use your browser’s print dialog and choose “Save as PDF”. On iPhone/iPad: Print, then Share → Save to Files.",
+  sampleNote:"No watches in this browser yet — showing the sample watches.",
+  rTitle:"Watch Report",generated:"Generated",device:"Device",period:"Period",watches:"Watches",measurements:"Measurements",
+  overview:"Overview",watch:"Watch",meas:"Meas.",current:"Current rate",allSessions:"All sessions",tgLatest:"Timegrapher",pr:"Power reserve",
+  sessions:"Sessions",session:"Session",from:"From",to:"To",duration:"Duration",n:"N",rate:"Rate",r2:"R²",
+  positions:"Rate per position",positionsSub:"latest session",position:"Position",spread:"Spread between positions",
+  timegrapher:"Timegrapher",date:"Date",avg:"Avg",readings:"Readings",note2:"Note",amp:"Amplitude",beat:"Beat error",
+  powerReserve:"Power reserve",wound:"Wound",stopped:"Stopped",reserve:"Reserve",typical:"Typical",
+  allMeas:"All measurements",time:"Time",offset:"Offset",newStart:"new start",
+  offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
+  tgLegend:"◇ timegrapher",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
+  footer:"watchcafe.eu · Sioux Watch Café · data from this browser only",sampleTag:"sample data"},
+ nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van al je horloges",print:"Printen / Opslaan als PDF",back:"Terug naar Rate Meter",
+  raw:"Alle metingen opnemen",
+  note:"Gebruik het printvenster van je browser en kies “Opslaan als PDF”. Op iPhone/iPad: Print, dan Deel → Bewaar in Bestanden.",
+  sampleNote:"Nog geen horloges in deze browser — je ziet de voorbeeldhorloges.",
+  rTitle:"Horlogerapport",generated:"Gemaakt",device:"Apparaat",period:"Periode",watches:"Horloges",measurements:"Metingen",
+  overview:"Overzicht",watch:"Horloge",meas:"Met.",current:"Huidige gang",allSessions:"Alle sessies",tgLatest:"Timegrapher",pr:"Gangreserve",
+  sessions:"Sessies",session:"Sessie",from:"Van",to:"Tot",duration:"Duur",n:"N",rate:"Gang",r2:"R²",
+  positions:"Gang per positie",positionsSub:"laatste sessie",position:"Positie",spread:"Spreiding tussen posities",
+  timegrapher:"Timegrapher",date:"Datum",avg:"Gem.",readings:"Metingen",note2:"Notitie",amp:"Amplitude",beat:"Beat error",
+  powerReserve:"Gangreserve",wound:"Opgewonden",stopped:"Gestopt",reserve:"Reserve",typical:"Typisch",
+  allMeas:"Alle metingen",time:"Tijdstip",offset:"Offset",newStart:"nieuwe start",
+  offsetChart:"Offset in de tijd (s)",rateChart:"Gang in de tijd (s/dag)",gapsRemoved:"sessies aaneengesloten, tijd ertussen weggelaten",
+  tgLegend:"◇ timegrapher",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
+  footer:"watchcafe.eu · Sioux Watch Café · alleen data uit deze browser",sampleTag:"voorbeelddata"}
+};
+var POS={
+  dial_up:{en:"Dial up",nl:"Wijzerplaat boven",abbr:"DU",color:"#e0921f"},
+  dial_down:{en:"Dial down",nl:"Wijzerplaat onder",abbr:"DD",color:"#b5651d"},
+  crown_up:{en:"Crown up",nl:"Kroon boven",abbr:"CU",color:"#1f9e8f"},
+  crown_down:{en:"Crown down",nl:"Kroon onder",abbr:"CD",color:"#3b74b8"},
+  crown_left:{en:"Crown left",nl:"Kroon links",abbr:"CL",color:"#8a63c2"},
+  crown_right:{en:"Crown right",nl:"Kroon rechts",abbr:"CR",color:"#c94a72"},
+  worn:{en:"Worn",nl:"Gedragen",abbr:"WR",color:"#3f9a3f"}
+};
+var DAY=86400000,MIN_RATE_GAP=6*3600000;
+var lang=(function(){try{return localStorage.getItem("siouxWatchRateMeterLang")||"en";}catch(e){return "en";}})();
+function t(k){return I18N[lang][k];}
+function pos(code){var p=POS[code];return p?{label:p[lang],abbr:p.abbr,color:p.color}:{label:code?String(code).replace(/_/g," "):t("none"),abbr:code?String(code).slice(0,2).toUpperCase():"—",color:"#8a8a8a"};}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function loc(){return lang==="nl"?"nl-NL":"en-GB";}
+function fDate(ms){return new Date(ms).toLocaleDateString(loc(),{day:"numeric",month:"short",year:"numeric"});}
+function fShort(ms){return new Date(ms).toLocaleDateString(loc(),{day:"numeric",month:"short"});}
+function fDTs(ms){return new Date(ms).toLocaleString(loc(),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});}
+function fDT(ms){return new Date(ms).toLocaleString(loc(),{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+function sgn(v,d){if(v==null||!isFinite(v))return t("none");var s=Math.abs(v).toFixed(d==null?1:d);return (v>0&&+s!==0?"+":v<0&&+s!==0?"−":"")+s;}
+function fDur(ms){var h=ms/3600000;return h<48?Math.round(h)+" h":(ms/DAY).toFixed(1)+" "+t("days");}
+function fHM(ms){var m=Math.round(ms/60000);return Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"m";}
+
+/* ---------- data ---------- */
+function loadState(){
+  try{var raw=localStorage.getItem("siouxWatchRateMeter");if(raw){var s=JSON.parse(raw);if(s&&Array.isArray(s.watches)&&s.watches.length)return {state:s,sample:false};}}catch(e){}
+  var w=WatchSample.watches();w.forEach(function(x,i){x.id="sample-"+i;});
+  return {state:{watches:w},sample:true};
+}
+function linreg(pts){
+  var n=pts.length;if(n<2)return null;var x0=pts[0].t,sx=0,sy=0,sxx=0,sxy=0,syy=0;
+  pts.forEach(function(p){var x=(p.t-x0)/DAY,y=p.offset;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;syy+=y*y;});
+  var den=n*sxx-sx*sx;if(den===0)return null;
+  var slope=(n*sxy-sx*sy)/den,icpt=(sy-slope*sx)/n,ssTot=syy-sy*sy/n,ssRes=0;
+  pts.forEach(function(p){var f=icpt+slope*(p.t-x0)/DAY;ssRes+=(p.offset-f)*(p.offset-f);});
+  return {rate:slope,icpt:icpt,x0:x0,r2:ssTot>0?1-ssRes/ssTot:null};
+}
+function analyse(w){
+  var ms=(w.measurements||[]).filter(function(m){return isFinite(m.t)&&isFinite(m.offset);}).slice().sort(function(a,b){return a.t-b.t;});
+  var sessions=[],cur=[];
+  ms.forEach(function(m){if(m.newStart&&cur.length){sessions.push(cur);cur=[];}cur.push(m);});
+  if(cur.length)sessions.push(cur);
+  var sess=sessions.map(function(s){return {pts:s,fit:linreg(s),t0:s[0].t,t1:s[s.length-1].t};});
+  var last=sess[sess.length-1];
+  var groups={},order=[];
+  (last?last.pts:[]).forEach(function(m){var k=m.position||"";if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(m);});
+  var positions=order.filter(function(k){return k;}).map(function(k){var f=linreg(groups[k]);return {code:k,n:groups[k].length,rate:f?f.rate:null};})
+    .sort(function(a,b){return (b.rate==null?-1e9:b.rate)-(a.rate==null?-1e9:a.rate);});
+  var rated=positions.filter(function(p){return p.rate!=null;}).map(function(p){return p.rate;});
+  var tg=(w.timegrapher||[]).filter(function(s){return s.readings&&s.readings.length;}).slice().sort(function(a,b){return a.t-b.t;});
+  tg.forEach(function(s){s.avg=s.readings.reduce(function(a,r){return a+(+r.rate);},0)/s.readings.length;});
+  var pr=(w.powerReserve||[]).slice().sort(function(a,b){return a.start-b.start;});
+  var prAvg=pr.length?pr.reduce(function(a,p){return a+p.reserveMs;},0)/pr.length:null;
+  var allFit=linreg(ms);
+  return {w:w,ms:ms,sess:sess,last:last,positions:positions,spread:rated.length>=2?Math.max.apply(null,rated)-Math.min.apply(null,rated):null,
+    tg:tg,pr:pr,prAvg:prAvg,t0:ms.length?ms[0].t:null,t1:ms.length?ms[ms.length-1].t:null,
+    current:last&&last.fit?last.fit.rate:null,allRate:sess.length>1?null:(allFit?allFit.rate:null)};
+}
+
+/* ---------- charts: sessions back to back, idle time removed ---------- */
+var CW=340,CH=170,PAD={l:34,r:8,t:8,b:20},GAP=10;
+function niceStep(range,target){var raw=range/target,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return (f<1.5?1:f<3?2:f<7?5:10)*p;}
+function layout(a){
+  var sess=a.sess.filter(function(s){return s.pts.length;});
+  var total=sess.reduce(function(x,s){return x+Math.max(s.t1-s.t0,DAY/4);},0);
+  var avail=CW-PAD.l-PAD.r-GAP*(sess.length-1),x=PAD.l;
+  return sess.map(function(s){var span=Math.max(s.t1-s.t0,DAY/4),w=avail*span/total,x0=x;x+=w+GAP;
+    return {s:s,x0:x0,x1:x0+w,X:function(tt){return x0+(tt-s.t0)/span*w;}};});
+}
+function yAxis(vals){
+  var lo=Math.min.apply(null,vals.concat([0])),hi=Math.max.apply(null,vals.concat([0]));if(hi-lo<1){hi+=.5;lo-=.5;}
+  var step=niceStep(hi-lo,4);lo=Math.floor(lo/step)*step;hi=Math.ceil(hi/step)*step;
+  var Y=function(v){return PAD.t+(hi-v)/(hi-lo)*(CH-PAD.t-PAD.b);},g="";
+  for(var v=lo;v<=hi+1e-9;v+=step){var y=Y(v).toFixed(1);
+    g+='<line x1="'+PAD.l+'" x2="'+(CW-PAD.r)+'" y1="'+y+'" y2="'+y+'" stroke="'+(Math.abs(v)<1e-9?"#9a97a0":"#e6e4ea")+'" stroke-width="'+(Math.abs(v)<1e-9?1:.8)+'"'+(Math.abs(v)<1e-9?' stroke-dasharray="3 3"':'')+'/>';
+    g+='<text x="'+(PAD.l-4)+'" y="'+(+y+3)+'" text-anchor="end" font-size="8.5" fill="#6b6872">'+(v>0?"+":"")+(+v.toFixed(2))+'</text>';}
+  return {Y:Y,g:g};
+}
+function frame(blocks){
+  var g="";
+  blocks.forEach(function(b,i){
+    if(i>0){var xs=(b.x0-GAP/2).toFixed(1);g+='<line x1="'+xs+'" x2="'+xs+'" y1="'+PAD.t+'" y2="'+(CH-PAD.b)+'" stroke="#b8b5bd" stroke-dasharray="2 3"/>';}
+    g+='<text x="'+b.x0.toFixed(1)+'" y="'+(CH-6)+'" font-size="8.5" fill="#6b6872">'+esc(fShort(b.s.t0))+'</text>';
+    if(b.x1-b.x0>70)g+='<text x="'+b.x1.toFixed(1)+'" y="'+(CH-6)+'" font-size="8.5" fill="#6b6872" text-anchor="end">'+esc(fShort(b.s.t1))+'</text>';
+  });
+  return g;
+}
+function offsetChart(a){
+  var blocks=layout(a);if(!blocks.length)return "";
+  var ax=yAxis(a.ms.map(function(m){return m.offset;})),g=ax.g+frame(blocks);
+  blocks.forEach(function(b){
+    var f=b.s.fit;
+    if(f){var ya=f.icpt,yb=f.icpt+f.rate*(b.s.t1-f.x0)/DAY;
+      g+='<line x1="'+b.X(b.s.t0).toFixed(1)+'" y1="'+ax.Y(ya).toFixed(1)+'" x2="'+b.X(b.s.t1).toFixed(1)+'" y2="'+ax.Y(yb).toFixed(1)+'" stroke="#b8532e" stroke-width="1.2" opacity=".75"/>';}
+    b.s.pts.forEach(function(m){g+='<circle cx="'+b.X(m.t).toFixed(1)+'" cy="'+ax.Y(m.offset).toFixed(1)+'" r="2.4" fill="'+pos(m.position).color+'"/>';});
+  });
+  return '<svg viewBox="0 0 '+CW+' '+CH+'" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">'+g+'</svg>';
+}
+function ratePoints(s){var out=[],lu=s[0];for(var i=1;i<s.length;i++){var dt=s[i].t-lu.t;if(dt>=MIN_RATE_GAP){out.push({t:s[i].t,v:(s[i].offset-lu.offset)/dt*DAY});lu=s[i];}}return out;}
+function rateChart(a){
+  var blocks=layout(a);if(!blocks.length)return "";
+  var segs=blocks.map(function(b){return ratePoints(b.s.pts);});
+  var tgIn=function(b){return a.tg.filter(function(s){return s.t>=b.s.t0&&s.t<=b.s.t1;});};
+  var vals=[];segs.forEach(function(s){s.forEach(function(p){vals.push(p.v);});});
+  blocks.forEach(function(b){tgIn(b).forEach(function(s){s.readings.forEach(function(r){vals.push(+r.rate);});});});
+  if(!vals.length)return "";
+  var ax=yAxis(vals),g=ax.g+frame(blocks);
+  blocks.forEach(function(b,i){
+    var pts=segs[i];
+    if(pts.length>1)g+='<polyline fill="none" stroke="#9a97a0" stroke-width="1" points="'+pts.map(function(p){return b.X(p.t).toFixed(1)+","+ax.Y(p.v).toFixed(1);}).join(" ")+'"/>';
+    pts.forEach(function(p){g+='<circle cx="'+b.X(p.t).toFixed(1)+'" cy="'+ax.Y(p.v).toFixed(1)+'" r="2.2" fill="#3f9a3f"/>';});
+    tgIn(b).forEach(function(s){var cx=b.X(s.t);
+      s.readings.forEach(function(r){var cy=ax.Y(+r.rate);g+='<rect x="'+(cx-3.2).toFixed(1)+'" y="'+(cy-3.2).toFixed(1)+'" width="6.4" height="6.4" transform="rotate(45 '+cx.toFixed(1)+' '+cy.toFixed(1)+')" fill="#fff" stroke="'+pos(r.position).color+'" stroke-width="1.4"/>';});});
+  });
+  return '<svg viewBox="0 0 '+CW+' '+CH+'" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">'+g+'</svg>';
+}
+
+/* ---------- report ---------- */
+function kpi(label,val,unit,main){return '<div class="kpi'+(main?' main':'')+'"><div class="l">'+esc(label)+'</div><div class="v">'+val+(unit?' <small>'+esc(unit)+'</small>':'')+'</div></div>';}
+function tgReadings(s){return s.readings.map(function(r){var p=pos(r.position);return '<span style="white-space:nowrap"><span class="dot" style="background:'+p.color+'"></span>'+p.abbr+' '+sgn(+r.rate,0)+'</span>';}).join(" &nbsp;");}
+
+function overview(list,info,isSample){
+  var all=[];list.forEach(function(a){if(a.t0!=null){all.push(a.t0,a.t1);}});
+  var nMeas=list.reduce(function(x,a){return x+a.ms.length;},0);
+  var rows=list.map(function(a){
+    var tgL=a.tg[a.tg.length-1];
+    return '<tr><td><b>'+esc(a.w.name)+'</b></td><td class="num">'+a.ms.length+'</td><td class="num">'+a.sess.length+'</td>'
+      +'<td style="white-space:nowrap">'+(a.t0!=null?esc(fShort(a.t0))+' – '+esc(fShort(a.t1)):t("none"))+'</td>'
+      +'<td class="num"><b>'+sgn(a.current,2)+'</b></td>'
+      +'<td class="num">'+(tgL?sgn(tgL.avg):t("none"))+'</td>'
+      +'<td class="num">'+(a.prAvg!=null?fHM(a.prAvg):t("none"))+'</td></tr>';
+  }).join("");
+  return '<section class="sheet">'
+    +'<div class="cover-head"><div><h2>'+esc(t("rTitle"))+'</h2><p class="meta">'+esc(t("generated"))+' '+esc(fDT(Date.now()))+(isSample?' · <i>'+esc(t("sampleTag"))+'</i>':'')+'</p></div>'
+    +'<div class="brand"><b>Sioux Watch Café</b><br>watchcafe.eu<br>'+esc(t("device"))+': '+esc(info.device)+'</div></div>'
+    +'<div class="kpis">'+kpi(t("watches"),list.length)+kpi(t("measurements"),nMeas)
+    +kpi(t("period"),all.length?esc(fShort(Math.min.apply(null,all)))+' – '+esc(fShort(Math.max.apply(null,all))):t("none"))
+    +kpi(t("timegrapher"),list.reduce(function(x,a){return x+a.tg.length;},0))+'</div>'
+    +'<h3>'+esc(t("overview"))+'</h3>'
+    +'<table><thead><tr><th>'+t("watch")+'</th><th class="num">'+t("meas")+'</th><th class="num">'+t("sessions")+'</th><th>'+t("period")+'</th><th class="num">'+t("current")+' <span style="text-transform:none">('+t("perDay")+')</span></th><th class="num">'+t("tgLatest")+'</th><th class="num">'+t("pr")+'</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'</section>';
+}
+
+function watchPage(a,withRaw){
+  var h='<section class="sheet watch">';
+  h+='<div class="watch-head"><h2>'+esc(a.w.name)+'</h2><span class="meta" style="margin:0">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+'</span></div>';
+  var lastTg=a.tg[a.tg.length-1];
+  h+='<div class="kpis">'+kpi(t("current"),sgn(a.current,2),t("perDay"),true)
+    +kpi(t("sessions"),a.sess.length)+kpi(t("measurements"),a.ms.length)
+    +(a.prAvg!=null?kpi(t("powerReserve"),fHM(a.prAvg)):kpi(t("timegrapher"),lastTg?sgn(lastTg.avg):t("none"),lastTg?t("perDay"):""))+'</div>';
+
+  if(a.ms.length>=2){
+    var used={};a.ms.forEach(function(m){if(m.position)used[m.position]=1;});
+    h+='<div class="charts"><div class="chart"><div class="ct">'+esc(t("offsetChart"))+'</div>'+offsetChart(a)+'</div>'
+      +'<div class="chart"><div class="ct">'+esc(t("rateChart"))+'</div>'+rateChart(a)+'</div></div>';
+    h+='<p class="legend">'+Object.keys(used).map(function(k){var p=pos(k);return '<span><span class="dot" style="background:'+p.color+'"></span>'+esc(p.label)+'</span>';}).join("")
+      +(a.tg.length?'<span>'+esc(t("tgLegend"))+'</span>':'')+(a.sess.length>1?'<span>┆ '+esc(t("gapsRemoved"))+'</span>':'')+'</p>';
+  } else h+='<p class="empty">'+esc(t("noData"))+'</p>';
+
+  if(a.sess.length){
+    h+='<h3>'+esc(t("sessions"))+'</h3><table><thead><tr><th>'+t("session")+'</th><th>'+t("from")+'</th><th>'+t("to")+'</th><th class="num">'+t("duration")+'</th><th class="num">'+t("n")+'</th><th class="num">'+t("rate")+' ('+t("perDay")+')</th><th class="num">'+t("r2")+'</th><th>'+t("note2")+'</th></tr></thead><tbody>'
+      +a.sess.map(function(s,i){return '<tr><td>'+(i+1)+'</td><td class="nw">'+esc(fDTs(s.t0))+'</td><td class="nw">'+esc(fDTs(s.t1))+'</td><td class="num">'+fDur(s.t1-s.t0)+'</td><td class="num">'+s.pts.length+'</td><td class="num"><b>'+(s.fit?sgn(s.fit.rate,2):t("none"))+'</b></td><td class="num dim">'+(s.fit&&s.fit.r2!=null?s.fit.r2.toFixed(3):t("none"))+'</td><td class="dim">'+esc(s.pts[0].note||"")+'</td></tr>';}).join("")
+      +'</tbody></table>';
+  }
+
+  var side=[];
+  if(a.positions.length>1){
+    side.push('<div><h3>'+esc(t("positions"))+' <span style="text-transform:none;letter-spacing:0;font-weight:400">('+esc(t("positionsSub"))+')</span></h3><table><thead><tr><th>'+t("position")+'</th><th class="num">'+t("n")+'</th><th class="num">'+t("perDay")+'</th></tr></thead><tbody>'
+      +a.positions.map(function(p){var i=pos(p.code);return '<tr><td><span class="dot" style="background:'+i.color+'"></span>'+esc(i.label)+'</td><td class="num">'+p.n+'</td><td class="num">'+sgn(p.rate)+'</td></tr>';}).join("")
+      +(a.spread!=null?'<tr><td colspan="2"><b>'+esc(t("spread"))+'</b></td><td class="num"><b>'+a.spread.toFixed(1)+'</b></td></tr>':'')+'</tbody></table></div>');
+  }
+  if(a.pr.length){
+    side.push('<div><h3>'+esc(t("powerReserve"))+'</h3><table><thead><tr><th>'+t("wound")+'</th><th>'+t("stopped")+'</th><th class="num">'+t("reserve")+'</th></tr></thead><tbody>'
+      +a.pr.map(function(p){return '<tr><td>'+esc(fDTs(p.start))+'</td><td>'+esc(fDTs(p.stop))+'</td><td class="num">'+fHM(p.reserveMs)+'</td></tr>';}).join("")
+      +(a.pr.length>1?'<tr><td colspan="2"><b>'+esc(t("typical"))+'</b></td><td class="num"><b>'+fHM(a.prAvg)+'</b></td></tr>':'')+'</tbody></table></div>');
+  }
+  if(side.length)h+='<div class="two">'+side.join("")+'</div>';
+
+  if(a.tg.length){
+    h+='<h3>'+esc(t("timegrapher"))+'</h3><table><thead><tr><th>'+t("date")+'</th><th class="num">'+t("avg")+'</th><th>'+t("readings")+' ('+t("perDay")+')</th><th class="num">'+t("amp")+'</th><th class="num">'+t("beat")+'</th><th>'+t("note2")+'</th></tr></thead><tbody>'
+      +a.tg.map(function(s){
+        var amps=s.readings.map(function(r){return r.amplitude;}).filter(function(v){return v!=null&&isFinite(v);});
+        var bes=s.readings.map(function(r){return r.beatError;}).filter(function(v){return v!=null&&isFinite(v);});
+        return '<tr><td>'+esc(fDate(s.t))+'</td><td class="num"><b>'+sgn(s.avg)+'</b></td><td>'+tgReadings(s)+'</td>'
+          +'<td class="num">'+(amps.length?Math.min.apply(null,amps)+'–'+Math.max.apply(null,amps)+'°':t("none"))+'</td>'
+          +'<td class="num">'+(bes.length?Math.min.apply(null,bes).toFixed(1)+'–'+Math.max.apply(null,bes).toFixed(1)+' ms':t("none"))+'</td>'
+          +'<td class="dim">'+esc(s.note||"")+'</td></tr>';}).join("")
+      +'</tbody></table>';
+  }
+
+  if(withRaw&&a.ms.length){
+    h+='<h3>'+esc(t("allMeas"))+' ('+a.ms.length+')</h3><table><thead><tr><th>'+t("time")+'</th><th class="num">'+t("offset")+' (s)</th><th>'+t("position")+'</th><th>'+t("note2")+'</th></tr></thead><tbody>'
+      +a.ms.map(function(m,i){var p=pos(m.position);
+        return '<tr'+(m.newStart&&i>0?' class="ns"':'')+'><td class="mono">'+esc(fDT(m.t))+(m.newStart?'<span class="tag">'+esc(t("newStart"))+'</span>':'')+'</td><td class="num mono">'+sgn(m.offset)+'</td><td>'+(m.position?'<span class="dot" style="background:'+p.color+'"></span>'+esc(p.label):t("none"))+'</td><td class="dim">'+esc(m.note||"")+'</td></tr>';}).join("")
+      +'</tbody></table>';
+  }
+  h+='<div class="foot"><span>'+esc(t("footer"))+'</span><span>'+esc(fDT(Date.now()))+'</span></div>';
+  return h+'</section>';
+}
+
+function render(){
+  document.documentElement.lang=lang;
+  ["title","sub","raw","back","note"].forEach(function(k){document.getElementById("t-"+k).textContent=t(k);});
+  document.getElementById("printBtn").textContent=t("print");
+  var src=loadState(),list=src.state.watches.map(analyse);
+  if(src.sample)document.getElementById("t-note").textContent=t("note")+" "+t("sampleNote");
+  document.title=t("title")+" — Sioux Watch Café";
+  var withRaw=document.getElementById("optRaw").checked;
+  document.getElementById("sheets").innerHTML=overview(list,{device:WatchData.getDevice()},src.sample)
+    +list.map(function(a){return watchPage(a,withRaw);}).join("");
+}
+document.getElementById("optRaw").onchange=render;
+document.getElementById("printBtn").onclick=function(){window.print();};
+window.addEventListener("swclang",function(e){lang=e.detail;render();});
+render();
+</script>
+</body>
+</html>

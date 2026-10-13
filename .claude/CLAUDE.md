@@ -24,6 +24,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `clock/index.html` | Alleen doorverwijzing naar `/` (oude bladwijzers); de klok staat op de homepage |
 | `watchrate/index.html` | Watch Rate Meter |
 | `watchrate/viewer.html` | Backup Viewer |
+| `watchrate/report.html` | Printbaar rapport (PDF via printvenster) |
 | `watchrate/sample.js` | Voorbeeldhorloges, gedeeld door Rate Meter en Viewer |
 | `powerreserve/index.html` | Power Reserve |
 | `glossary/index.html` + `glossary.txt` | Woordenlijst EN/NL |
@@ -86,6 +87,15 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Grafieken worden op echte pixelbreedte getekend (viewBox = gemeten breedte, `ResizeObserver` tekent opnieuw), zodat as-labels altijd 12 px zijn. Hoogte 200 px, onder 600 px schermbreedte 170 px. Y-raster op ronde stappen, eenheid één keer in de titel, aantal datumlabels naar breedte. Nooit meer een vaste viewBox met `preserveAspectRatio="none"`.
 - Timegrapher: "Timegrapher-sessie toevoegen" opent een grid (positie, gang, optioneel amplitude en beat error); posities van de vorige sessie staan klaar. Toont ruitjes in de grafiek, drie vergelijkingskaartjes en een sessielijst.
 - Sample-data: Omega Speedmaster '69 op precies +1,969 s/dag (maanlanding-easter-egg, niet aanpassen), Omega Seamaster 300M met drie sessies met gaten ertussen (toont `allc`; per sessie één positie: worn, dial up, worn, voor een rustige ganggrafiek), drie timegrapher-sessies en drie gangreservemetingen (~55 u), Tudor Black Bay 58 met drie sessies (+7,2, −4,5, ~+1,2), drie timegrapher-sessies en twee gangreservemetingen (~70 u), Ancre 17 Jewels (vintage) met één sessie, per positie een blok van twee dagen (DU +18, DD +24, CD −8, CL +3, worn +10) zodat de positietabel van de Viewer een duidelijke spreiding toont, Casio A300U als kwarts-referentie. Staat in `watchrate/sample.js` (`WatchSample.watches()`), gedeeld door Rate Meter en Viewer; bij wijziging `?v=N` ophogen in beide pagina's.
+
+## Rapport
+
+- Knop "Report"/"Rapport" naast Backup/Restore op de Rate Meter, opent `watchrate/report.html`. Leest `siouxWatchRateMeter`; zonder horloges toont hij de voorbeeldhorloges (met "sample data" in de kop).
+- Leesbare back-up naast de JSON: PDF via het printvenster ("Opslaan als PDF"), geen PDF-library.
+- Opbouw: overzichtspagina (kerncijfers + tabel per horloge), dan per horloge een nieuwe pagina met kerncijfers, offset- en ganggrafiek (sessies altijd aaneengesloten, zoals `allc`), sessies, gang per positie (laatste sessie), gangreserve, timegrapher en optioneel alle metingen.
+- Altijd licht (papier), los van het thema. Grafieken zijn vaste SVG met viewBox; schalen mee in print.
+- Geen vaste papiermaat in `@page`: het printvenster kiest A4 of Letter (VS/Canada). Getest op beide met Chrome headless; Safari/iOS nog niet.
+- Datums met maand in letters en 24-uurs tijd, zodat ze internationaal eenduidig zijn.
 
 ## Backup Viewer
 

@@ -111,7 +111,7 @@
   .datatools{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
   .datatools button,.datatools .btnlink{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);text-decoration:none;font-size:14px;display:inline-flex;align-items:center;gap:7px}
   .datatools button:hover,.datatools .btnlink:hover{background:#30303a}
-  .datatools .btnlink{margin-left:auto;color:var(--accent);border-color:var(--accent)}
+  #viewerBtn{margin-left:auto;color:var(--accent);border-color:var(--accent)}
   .devline{margin-top:10px;font-size:12.5px;color:var(--muted)}
   .devline button{font:inherit;color:var(--ink);background:none;border:none;border-bottom:1px dashed #5a5a66;padding:0;cursor:pointer}
   .devline button:hover{color:var(--accent);border-color:var(--accent)}
@@ -329,6 +329,7 @@
       <button id="exportBtn"></button>
       <button id="shareBtn" style="display:none"></button>
       <button id="importBtn"></button>
+      <a class="btnlink" id="reportBtn" href="report.html"></a>
       <a class="btnlink" id="viewerBtn" href="viewer.html"></a>
       <input type="file" id="importFile" accept="application/json" style="display:none">
     </div>
@@ -380,7 +381,7 @@ var I18N={
   impReplaceConfirm:"Replace all data in this browser with this backup? Anything not in the backup is lost.",
   devLbl:"This device:", devSaves:"saves as", devPrompt:"Name for this device (shown in backup files):",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
-  addToggle:"+ Add watch", addCancel:"Cancel", viewerBtn:"Browse backups",
+  addToggle:"+ Add watch", addCancel:"Cancel", viewerBtn:"Browse backups", reportBtn:"Report",
   grpAlign:"Align to your watch", grpRecord:"Record",
   alignHint:"Use the \u25b2/\u25bc arrows so the green clock matches your watch to the second, then record.",
   sessionLbl:"Session", allSessions:"All sessions", allSessionsC:"All sessions, gaps removed",
@@ -433,7 +434,7 @@ var I18N={
   impReplaceConfirm:"Alle gegevens in deze browser vervangen door deze back-up? Wat niet in de back-up staat, ben je kwijt.",
   devLbl:"Dit apparaat:", devSaves:"opslaan als", devPrompt:"Naam voor dit apparaat (komt in de back-upbestanden):",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
-  addToggle:"+ Horloge toevoegen", addCancel:"Annuleren", viewerBtn:"Back-ups bekijken",
+  addToggle:"+ Horloge toevoegen", addCancel:"Annuleren", viewerBtn:"Back-ups bekijken", reportBtn:"Rapport",
   grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
   alignHint:"Zet met de \u25b2/\u25bc pijltjes de groene klok gelijk aan je horloge tot op de seconde, en leg dan vast.",
   sessionLbl:"Sessie", allSessions:"Alle sessies", allSessionsC:"Alle sessies, zonder tussenpozen",
@@ -836,6 +837,7 @@ function applyLang(){
   document.getElementById("addToggle").textContent=t.addToggle;
   document.getElementById("addCancel").textContent=t.addCancel;
   document.getElementById("viewerBtn").textContent=t.viewerBtn;
+  document.getElementById("reportBtn").textContent=t.reportBtn;
   document.getElementById("guideTitle").textContent=t.guideTitle;
   document.getElementById("guideIntro").textContent=t.guideIntro;
   document.getElementById("gStep1").innerHTML=t.gStep1;
