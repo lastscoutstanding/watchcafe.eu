@@ -255,7 +255,7 @@ function rateChart(a){
     if(pts.length>1)g+='<polyline fill="none" stroke="#9a97a0" stroke-width="1" points="'+pts.map(function(p){return b.X(p.t).toFixed(1)+","+ax.Y(p.v).toFixed(1);}).join(" ")+'"/>';
     pts.forEach(function(p){g+='<circle cx="'+b.X(p.t).toFixed(1)+'" cy="'+ax.Y(p.v).toFixed(1)+'" r="2.2" fill="#3f9a3f"/>';});
     tgIn(b).forEach(function(s){var cx=b.X(s.t),ya=ax.Y(s.avg).toFixed(1);
-      g+='<line x1="'+(cx-14).toFixed(1)+'" x2="'+(cx+14).toFixed(1)+'" y1="'+ya+'" y2="'+ya+'" stroke="#b8532e" stroke-width="1.4" stroke-dasharray="3 2"/>';
+      if(s.readings.length>1)g+='<line x1="'+(cx-14).toFixed(1)+'" x2="'+(cx+14).toFixed(1)+'" y1="'+ya+'" y2="'+ya+'" stroke="#b8532e" stroke-width="1.4" stroke-dasharray="3 2"/>';
       s.readings.forEach(function(r){var cy=ax.Y(+r.rate);g+='<rect x="'+(cx-3.2).toFixed(1)+'" y="'+(cy-3.2).toFixed(1)+'" width="6.4" height="6.4" transform="rotate(45 '+cx.toFixed(1)+' '+cy.toFixed(1)+')" fill="#fff" stroke="'+pos(r.position).color+'" stroke-width="1.4"/>';});});
   });
   return '<svg viewBox="0 0 '+CW+' '+CH+'" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">'+g+'</svg>';
