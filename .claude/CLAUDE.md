@@ -84,7 +84,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Rate- en offsetgrafiek delen dezelfde tijd-as.
 - Grafieken worden op echte pixelbreedte getekend (viewBox = gemeten breedte, `ResizeObserver` tekent opnieuw), zodat as-labels altijd 12 px zijn. Hoogte 200 px, onder 600 px schermbreedte 170 px. Y-raster op ronde stappen, eenheid één keer in de titel, aantal datumlabels naar breedte. Nooit meer een vaste viewBox met `preserveAspectRatio="none"`.
 - Timegrapher: "Timegrapher-sessie toevoegen" opent een grid (positie, gang, optioneel amplitude en beat error); posities van de vorige sessie staan klaar. Toont ruitjes in de grafiek, drie vergelijkingskaartjes en een sessielijst.
-- Sample-data: Omega Speedmaster '69 op precies +1,969 s/dag (maanlanding-easter-egg), Tudor Black Bay 58 met reset en twee sessies (+7,2 en −4,5), Casio A300U als kwarts-referentie.
+- Sample-data: Omega Speedmaster '69 op precies +1,969 s/dag (maanlanding-easter-egg, niet aanpassen), Omega Seamaster 300M met drie sessies met gaten ertussen (toont `allc`), drie timegrapher-sessies en drie gangreservemetingen (~55 u), Tudor Black Bay 58 met drie sessies (+7,2, −4,5, ~+1,2), drie timegrapher-sessies en twee gangreservemetingen (~70 u), Casio A300U als kwarts-referentie. De Viewer heeft nog een eigen, simpelere voorbeeldset.
 
 ## Backup Viewer
 
