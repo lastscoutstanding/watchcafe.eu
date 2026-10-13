@@ -202,6 +202,7 @@
   </div>
 </div>
 
+<script src="sample.js?v=1"></script>
 <script>
 "use strict";
 const MS_PER_DAY=86400000, SPEC_BAND=5;
@@ -695,13 +696,13 @@ document.getElementById("gx").onclick=()=>{guideOpen=false;render();};
 window.addEventListener("swclang",e=>{lang=e.detail;render();});
 
 /* ---------- sample ---------- */
-const DAY=MS_PER_DAY,T0=Date.parse("2026-06-01T08:00:00");
-function mk(arr){return arr.map((m,i)=>({id:"m"+i,t:T0+m[0]*DAY,offset:m[1],position:m[2],note:m[3]||""}));}
-const SAMPLE=JSON.stringify({version:1,activeWatch:"w1",watches:[
-  {id:"w1",name:"Seiko SKX007",measurements:mk([[0,0,"dial_up","net geregeld"],[0.4,5.1,"crown_down"],[1.0,12.3,"dial_up"],[1.6,17.0,"crown_down"],[2.2,26.4,"dial_up"],[3.1,38.0,"dial_up"],[3.6,40.9,"crown_down"],[4.4,54.2,"dial_up"],[5.0,61.1,"crown_down"]])},
-  {id:"w2",name:"Omega Speedmaster",measurements:mk([[0,0,"dial_up"],[0.8,-1.4,"worn"],[1.7,-3.0,"dial_up"],[2.5,-5.1,"worn"],[3.4,-6.2,"dial_up"],[4.3,-8.0,"worn"],[5.2,-9.4,"dial_up"]])},
-  {id:"w3",name:"Vostok Amphibia",measurements:mk([[0,0,"dial_up"],[0.5,9.0,"crown_up"],[1.1,11.8,"dial_up"],[1.9,30.5,"crown_up"],[2.6,33.0,"dial_up"],[3.5,55.0,"crown_up"],[4.2,58.4,"dial_up"]])}
-]},null,0);
+// Same sample watches as the Rate Meter (sample.js), with ids as the Rate Meter would assign them
+const SAMPLE=JSON.stringify({version:1,activeWatch:"w1",watches:WatchSample.watches().map((w,i)=>{
+  w.id="w"+(i+1);
+  w.measurements.forEach(m=>{m.id="m"+m.t+"_"+m.offset;});
+  (w.timegrapher||[]).forEach(s=>{s.id="g"+s.t;});
+  return w;
+})});
 
 render();
 

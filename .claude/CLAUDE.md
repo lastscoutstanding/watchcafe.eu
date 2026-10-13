@@ -24,6 +24,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `clock/index.html` | Alleen doorverwijzing naar `/` (oude bladwijzers); de klok staat op de homepage |
 | `watchrate/index.html` | Watch Rate Meter |
 | `watchrate/viewer.html` | Backup Viewer |
+| `watchrate/sample.js` | Voorbeeldhorloges, gedeeld door Rate Meter en Viewer |
 | `powerreserve/index.html` | Power Reserve |
 | `glossary/index.html` + `glossary.txt` | Woordenlijst EN/NL |
 | `guide/index.html` | Handleiding per tool |
@@ -84,7 +85,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Rate- en offsetgrafiek delen dezelfde tijd-as.
 - Grafieken worden op echte pixelbreedte getekend (viewBox = gemeten breedte, `ResizeObserver` tekent opnieuw), zodat as-labels altijd 12 px zijn. Hoogte 200 px, onder 600 px schermbreedte 170 px. Y-raster op ronde stappen, eenheid één keer in de titel, aantal datumlabels naar breedte. Nooit meer een vaste viewBox met `preserveAspectRatio="none"`.
 - Timegrapher: "Timegrapher-sessie toevoegen" opent een grid (positie, gang, optioneel amplitude en beat error); posities van de vorige sessie staan klaar. Toont ruitjes in de grafiek, drie vergelijkingskaartjes en een sessielijst.
-- Sample-data: Omega Speedmaster '69 op precies +1,969 s/dag (maanlanding-easter-egg, niet aanpassen), Omega Seamaster 300M met drie sessies met gaten ertussen (toont `allc`; per sessie één positie: worn, dial up, worn, voor een rustige ganggrafiek), drie timegrapher-sessies en drie gangreservemetingen (~55 u), Tudor Black Bay 58 met drie sessies (+7,2, −4,5, ~+1,2), drie timegrapher-sessies en twee gangreservemetingen (~70 u), Casio A300U als kwarts-referentie. De Viewer heeft nog een eigen, simpelere voorbeeldset.
+- Sample-data: Omega Speedmaster '69 op precies +1,969 s/dag (maanlanding-easter-egg, niet aanpassen), Omega Seamaster 300M met drie sessies met gaten ertussen (toont `allc`; per sessie één positie: worn, dial up, worn, voor een rustige ganggrafiek), drie timegrapher-sessies en drie gangreservemetingen (~55 u), Tudor Black Bay 58 met drie sessies (+7,2, −4,5, ~+1,2), drie timegrapher-sessies en twee gangreservemetingen (~70 u), Casio A300U als kwarts-referentie. Staat in `watchrate/sample.js` (`WatchSample.watches()`), gedeeld door Rate Meter en Viewer; bij wijziging `?v=N` ophogen in beide pagina's.
 
 ## Backup Viewer
 
