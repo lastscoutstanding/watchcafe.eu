@@ -696,13 +696,16 @@ document.getElementById("gx").onclick=()=>{guideOpen=false;render();};
 window.addEventListener("swclang",e=>{lang=e.detail;render();});
 
 /* ---------- sample ---------- */
-// Same sample watches as the Rate Meter (sample.js), with ids as the Rate Meter would assign them
-const SAMPLE=JSON.stringify({version:1,activeWatch:"w1",watches:WatchSample.watches().map((w,i)=>{
-  w.id="w"+(i+1);
+// Same sample watches as the Rate Meter (sample.js). Measurement and timegrapher ids
+// follow WatchData.ensureIds; watch ids come from the name, so they never clash with
+// the older example (w1-w3) that visitors may still have stored.
+const SAMPLE_WATCHES=WatchSample.watches().map(w=>{
+  w.id="sample-"+w.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   w.measurements.forEach(m=>{m.id="m"+m.t+"_"+m.offset;});
   (w.timegrapher||[]).forEach(s=>{s.id="g"+s.t;});
   return w;
-})});
+});
+const SAMPLE=JSON.stringify({version:1,activeWatch:SAMPLE_WATCHES[0].id,watches:SAMPLE_WATCHES});
 
 render();
 
