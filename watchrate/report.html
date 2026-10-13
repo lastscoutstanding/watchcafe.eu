@@ -114,7 +114,7 @@
 <script>
 "use strict";
 var I18N={
- en:{title:"Watch Report",sub:"A readable, printable copy of all your watches",print:"Print / Save as PDF",back:"Back to Rate Meter",
+ en:{title:"Watch Report",sub:"A readable, printable copy of all your watches",print:"Print / Save as PDF",back:"Back to Rate Meter",backViewer:"Back to Viewer",sources:"Backups",
   raw:"Include all measurements",
   note:"Use your browser’s print dialog and choose “Save as PDF”. On iPhone/iPad: Print, then Share → Save to Files.",
   sampleNote:"No watches in this browser yet — showing the sample watches.",
@@ -128,7 +128,7 @@ var I18N={
   offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
   tgLegend:"◇ timegrapher per position · ╌ session average",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
   footer:"watchcafe.eu · Sioux Watch Café · data from this browser only",sampleTag:"sample data"},
- nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van al je horloges",print:"Printen / Opslaan als PDF",back:"Terug naar Rate Meter",
+ nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van al je horloges",print:"Printen / Opslaan als PDF",back:"Terug naar Rate Meter",backViewer:"Terug naar Viewer",sources:"Back-ups",
   raw:"Alle metingen opnemen",
   note:"Gebruik het printvenster van je browser en kies “Opslaan als PDF”. Op iPhone/iPad: Print, dan Deel → Bewaar in Bestanden.",
   sampleNote:"Nog geen horloges in deze browser — je ziet de voorbeeldhorloges.",
@@ -167,7 +167,37 @@ function fDur(ms){var h=ms/3600000;return h<48?Math.round(h)+" h":(ms/DAY).toFix
 function fHM(ms){var m=Math.round(ms/60000);return Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"m";}
 
 /* ---------- data ---------- */
+// ?src=viewer: report on the backups loaded in the Viewer (merged when &merge=1, as there)
+var PARAMS=new URLSearchParams(location.search),FROM_VIEWER=PARAMS.get("src")==="viewer",MERGE=PARAMS.get("merge")==="1";
+function viewerFiles(){
+  try{var arr=JSON.parse(localStorage.getItem("swcViewerFiles")||"[]");
+    return arr.map(function(f){try{var d=JSON.parse(f.text);
+      var ws=Array.isArray(d.watches)?d.watches:Array.isArray(d)?d:d.watch?[d.watch]:[];
+      return {name:f.name,from:d.exportedFrom&&typeof d.exportedFrom.device==="string"?d.exportedFrom:null,watches:ws};}catch(e){return null;}})
+      .filter(function(f){return f&&f.watches.length;});}catch(e){return [];}
+}
+function mergeFiles(files){
+  var by={},order=[];
+  function addAll(dst,src,key){(src||[]).forEach(function(x,i){var k=x.id!=null?"id:"+x.id:key(x,i);if(!dst._seen[k]){dst._seen[k]=1;dst.list.push(x);}});}
+  files.forEach(function(f){f.watches.forEach(function(w){
+    var k=(w.id!=null?"id:"+w.id:"name:"+(w.name||"")).toLowerCase();
+    if(!by[k]){by[k]={name:w.name,m:{_seen:{},list:[]},g:{_seen:{},list:[]},p:{_seen:{},list:[]}};order.push(k);}
+    var a=by[k];
+    addAll(a.m,w.measurements,function(m){return "t:"+m.t+"|o:"+m.offset;});
+    addAll(a.g,w.timegrapher,function(g){return "t:"+g.t;});
+    addAll(a.p,w.powerReserve,function(r){return "s:"+r.start;});
+  });});
+  return order.map(function(k){var a=by[k];return {name:a.name,measurements:a.m.list,timegrapher:a.g.list,powerReserve:a.p.list};});
+}
 function loadState(){
+  if(FROM_VIEWER){
+    var files=viewerFiles();
+    if(files.length){
+      var ws=MERGE?mergeFiles(files):[].concat.apply([],files.map(function(f){
+        return f.watches.map(function(w){var c=Object.assign({},w);if(files.length>1)c._source=f.from?f.from.device+(f.from.at?" · "+fShort(f.from.at):""):f.name;return c;});}));
+      return {state:{watches:ws},sample:false,files:files};
+    }
+  }
   try{var raw=localStorage.getItem("siouxWatchRateMeter");if(raw){var s=JSON.parse(raw);if(s&&Array.isArray(s.watches)&&s.watches.length)return {state:s,sample:false};}}catch(e){}
   var w=WatchSample.watches();w.forEach(function(x,i){x.id="sample-"+i;});
   return {state:{watches:w},sample:true};
@@ -270,7 +300,7 @@ function overview(list,info,isSample){
   var nMeas=list.reduce(function(x,a){return x+a.ms.length;},0);
   var rows=list.map(function(a){
     var tgL=a.tg[a.tg.length-1];
-    return '<tr><td><b>'+esc(a.w.name)+'</b></td><td class="num">'+a.ms.length+'</td><td class="num">'+a.sess.length+'</td>'
+    return '<tr><td><b>'+esc(a.w.name)+'</b>'+(a.w._source?'<br><span class="dim" style="font-size:8pt">'+esc(a.w._source)+'</span>':'')+'</td><td class="num">'+a.ms.length+'</td><td class="num">'+a.sess.length+'</td>'
       +'<td style="white-space:nowrap">'+(a.t0!=null?esc(fShort(a.t0))+' – '+esc(fShort(a.t1)):t("none"))+'</td>'
       +'<td class="num"><b>'+sgn(a.current,2)+'</b></td>'
       +'<td class="num">'+(tgL?sgn(tgL.avg):t("none"))+'</td>'
@@ -278,7 +308,8 @@ function overview(list,info,isSample){
   }).join("");
   return '<section class="sheet">'
     +'<div class="cover-head"><div><h2>'+esc(t("rTitle"))+'</h2><p class="meta">'+esc(t("generated"))+' '+esc(fDT(Date.now()))+(isSample?' · <i>'+esc(t("sampleTag"))+'</i>':'')+'</p></div>'
-    +'<div class="brand"><b>Sioux Watch Café</b><br>watchcafe.eu<br>'+esc(t("device"))+': '+esc(info.device)+'</div></div>'
+    +'<div class="brand"><b>Sioux Watch Café</b><br>watchcafe.eu'+(info.files?'':'<br>'+esc(t("device"))+': '+esc(info.device))+'</div></div>'
+    +(info.files?'<p class="meta">'+esc(t("sources"))+': '+info.files.map(function(f){return esc(f.name)+(f.from?' <span class="dim">('+esc(f.from.device)+(f.from.at?', '+esc(fDT(f.from.at)):'')+')</span>':'');}).join('; ')+'</p>':'')
     +'<div class="kpis">'+kpi(t("watches"),list.length)+kpi(t("measurements"),nMeas)
     +kpi(t("period"),all.length?esc(fShort(Math.min.apply(null,all)))+' – '+esc(fShort(Math.max.apply(null,all))):t("none"))
     +kpi(t("timegrapher"),list.reduce(function(x,a){return x+a.tg.length;},0))+'</div>'
@@ -289,7 +320,7 @@ function overview(list,info,isSample){
 
 function watchPage(a,withRaw){
   var h='<section class="sheet watch">';
-  h+='<div class="watch-head"><h2>'+esc(a.w.name)+'</h2><span class="meta" style="margin:0">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+'</span></div>';
+  h+='<div class="watch-head"><h2>'+esc(a.w.name)+'</h2><span class="meta" style="margin:0;text-align:right">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+(a.w._source?'<br>'+esc(a.w._source):'')+'</span></div>';
   var lastTg=a.tg[a.tg.length-1];
   h+='<div class="kpis">'+kpi(t("current"),sgn(a.current,2),t("perDay"),true)
     +kpi(t("sessions"),a.sess.length)+kpi(t("measurements"),a.ms.length)
@@ -352,7 +383,8 @@ function render(){
   if(src.sample)document.getElementById("t-note").textContent=t("note")+" "+t("sampleNote");
   document.title=t("title")+" — Sioux Watch Café";
   var withRaw=document.getElementById("optRaw").checked;
-  document.getElementById("sheets").innerHTML=overview(list,{device:WatchData.getDevice()},src.sample)
+  if(src.files){var bk=document.getElementById("t-back");bk.textContent=t("backViewer");bk.href="viewer.html";}
+  document.getElementById("sheets").innerHTML=overview(list,{device:WatchData.getDevice(),files:src.files},src.sample)
     +list.map(function(a){return watchPage(a,withRaw);}).join("");
 }
 document.getElementById("optRaw").onchange=render;

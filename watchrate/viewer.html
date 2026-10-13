@@ -65,7 +65,7 @@
   .drop .big{font-size:15px;color:var(--ink)}
   .drop .small{font-size:13px;color:var(--muted);margin-top:5px}
   .drop .pills{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-  .pillbtn{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:7px 16px;font-size:13px;color:var(--ink);cursor:pointer}
+  .pillbtn{text-decoration:none;border:1px solid var(--border);background:var(--card);border-radius:999px;padding:7px 16px;font-size:13px;color:var(--ink);cursor:pointer}
   .pillbtn:hover{border-color:var(--accent);color:var(--accent)}
   /* tinted instead of solid accent, so the main action stands out without glaring */
   .pillbtn.solid{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
@@ -191,6 +191,7 @@
           <option value="count"></option><option value="recent"></option>
         </select>
       </div>
+      <a class="pillbtn" id="reportBtn" href="report.html?src=viewer"></a>
       <div class="chips" id="chips"></div>
     </div>
 
@@ -215,7 +216,7 @@ const T={
     dBig:"Drop one or more .json backups here",
     dSmall:"or click to choose — everything stays local in your browser, nothing is uploaded",
     pick:"Choose file", sample:"Show example",
-    merge:"Merge watches", mergeTip:"Combine watches with the same id/name across different files",
+    report:"Report", merge:"Merge watches", mergeTip:"Combine watches with the same id/name across different files",
     sort:"Sort", sName:"by name", sRate:"largest deviation first", sCount:"most measurements", sRecent:"most recent",
     rate:"Rate", sday:"s/day", noRate:"too few measurements for a rate",
     posHead:"Position", n:"n", spread:"Spread between positions",
@@ -240,7 +241,7 @@ const T={
     dBig:"Sleep een of meer .json-backups hierheen",
     dSmall:"of klik om te kiezen — alles blijft lokaal in je browser, er wordt niets verstuurd",
     pick:"Bestand kiezen", sample:"Toon voorbeeld",
-    merge:"Horloges samenvoegen", mergeTip:"Voeg horloges met hetzelfde id/naam uit verschillende bestanden samen",
+    report:"Rapport", merge:"Horloges samenvoegen", mergeTip:"Voeg horloges met hetzelfde id/naam uit verschillende bestanden samen",
     sort:"Sorteer", sName:"op naam", sRate:"grootste afwijking eerst", sCount:"meeste metingen", sRecent:"recentst gemeten",
     rate:"Gang", sday:"s/dag", noRate:"te weinig metingen voor een gang",
     posHead:"Positie", n:"n", spread:"Spreiding tussen posities",
@@ -617,6 +618,7 @@ function applyChrome(){
   document.getElementById("pickBtn").textContent=t().pick;
   document.getElementById("sampleBtn").textContent=t().sample;
   document.getElementById("t-merge").textContent=t().merge;
+  document.getElementById("reportBtn").textContent=t().report;
   document.getElementById("mergeLbl").title=t().mergeTip;
   document.getElementById("t-sort").textContent=t().sort;
   const so=document.getElementById("sort").options;
@@ -626,6 +628,7 @@ function applyChrome(){
 
 function render(){
   applyChrome();
+  document.getElementById("reportBtn").href="report.html?src=viewer"+(merge?"&merge=1":"");
   const has=FILES.length>0;
   // guide visibility: altijd in lege toestand, anders alleen als geopend
   const showGuide=!has||guideOpen;
