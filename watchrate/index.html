@@ -54,6 +54,7 @@
   button.sm{padding:6px 10px;font-size:13px}
 
   .block{border-top:1px solid var(--border);margin-top:26px;padding-top:22px}
+  .block h2 .wname{color:var(--accent);text-transform:none;letter-spacing:0}
   .block h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:0 0 14px;font-weight:700}
 
   .watchpick{margin-top:6px}
@@ -232,7 +233,7 @@
     </div>
 
     <div class="block" id="meterBlock">
-      <h2><span id="meterLabel"></span> &mdash; <span id="activeWatchName" style="color:var(--accent);text-transform:none;letter-spacing:0">—</span></h2>
+      <h2><span id="meterLabel"></span> &mdash; <span id="activeWatchName" class="wname">—</span></h2>
 
       <div class="pcol">
         <div class="panel">
@@ -372,7 +373,7 @@ var I18N={
   perDay:"s/day",
   position:"Position", note:"Note", optional:"optional", record:"Record measurement",
   newStart:"New start",
-  measurements:"Measurements", noMeasurements:"No measurements recorded yet.", needTwo:"Record at least 2 measurements to calculate the rate.",
+  measurements:"Measurements", measLog:"Measurement log", noMeasurements:"No measurements recorded yet.", needTwo:"Record at least 2 measurements to calculate the rate.",
   sinceStart:"since the last new start",
   thTime:"Time", thOffset:"Offset", thPosition:"Position", thNote:"Note", del:"delete",
   newStartTag:"new start",
@@ -427,7 +428,7 @@ var I18N={
   perDay:"s/dag",
   position:"Positie", note:"Notitie", optional:"optioneel", record:"Meting vastleggen",
   newStart:"Nieuwe start",
-  measurements:"Metingen", noMeasurements:"Nog geen metingen vastgelegd.", needTwo:"Leg minstens 2 metingen vast om de gang te berekenen.",
+  measurements:"Metingen", measLog:"Meetlog", noMeasurements:"Nog geen metingen vastgelegd.", needTwo:"Leg minstens 2 metingen vast om de gang te berekenen.",
   sinceStart:"sinds de laatste nieuwe start",
   thTime:"Tijdstip", thOffset:"Offset", thPosition:"Positie", thNote:"Notitie", del:"verwijder",
   newStartTag:"nieuwe start",
@@ -616,8 +617,11 @@ function renderSessionPicker(w){
   var val=(selectedSession==="last")?(segs.length-1):selectedSession;
   sel.value=String(val);
 }
+// " — <watch name>" after a section heading, so the active watch is always in view
+function watchSuffix(w){return w?' &mdash; <span class="wname">'+escapeHtml(w.name)+'</span>':'';}
 function renderHistory(){
   var t=I18N[lang],w=activeWatch(),wrap=document.getElementById("historyWrap"),sum=document.getElementById("rateSummary");
+  document.getElementById("histH2").innerHTML=escapeHtml(t.measurements)+watchSuffix(w);
   renderSessionPicker(w);
   if(!w||!w.measurements.length){wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderTG(w||null);return;}
   var pts=selectedMeas(w).slice().sort(function(a,b){return b.t-a.t;}),r=rateOf(w);
@@ -625,7 +629,7 @@ function renderHistory(){
     var since=r.partial?(" ("+t.sinceStart+")"):"";
     sum.innerHTML=(lang==="nl"?"Gang: <b>"+rstr+"</b> &mdash; uit "+r.n+" metingen over "+humanSpan(r.span):"Rate: <b>"+rstr+"</b> &mdash; from "+r.n+" measurements over "+humanSpan(r.span))+since+".";}
   else sum.textContent=t.needTwo;
-  var html='<table><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
+  var html='<h2 style="margin-top:22px">'+escapeHtml(t.measLog)+watchSuffix(w)+'</h2><table><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
   pts.forEach(function(m){
     var d=new Date(m.t).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
     var tag=m.newStart?('<span class="tag">'+t.newStartTag+'</span>'):"";
@@ -652,7 +656,7 @@ function renderTG(w){
   cmp.style.display="grid";
   // sessielijst
   var loc=lang==="nl"?"nl-NL":"en-GB";
-  var html='<h2 style="margin-top:22px">'+t.tgSessions+'</h2><table><thead><tr><th>'+t.tgDate+'</th><th>'+t.tgAvg+'</th><th>'+t.tgReadings+'</th><th>'+t.tgNote2+'</th><th></th></tr></thead><tbody>';
+  var html='<h2 style="margin-top:22px">'+escapeHtml(t.tgSessions)+watchSuffix(w)+'</h2><table><thead><tr><th>'+t.tgDate+'</th><th>'+t.tgAvg+'</th><th>'+t.tgReadings+'</th><th>'+t.tgNote2+'</th><th></th></tr></thead><tbody>';
   sessions.slice().reverse().forEach(function(sess){
     var d=new Date(sess.t).toLocaleDateString(loc,{day:"2-digit",month:"short",year:"numeric"});
     var reads=sess.readings.map(function(r){
@@ -836,7 +840,6 @@ function applyLang(){
   document.getElementById("noteIn").placeholder=t.optional;
   document.getElementById("recordBtn").textContent=t.record;
   document.getElementById("newStartLbl").textContent=t.newStart;
-  document.getElementById("histH2").textContent=t.measurements;
   document.getElementById("chartOffTitle").textContent=t.chartOffset;
   document.getElementById("chartRateTitle").textContent=t.chartRate;
   document.getElementById("chartRateUnit").textContent="("+t.perDay+")";
