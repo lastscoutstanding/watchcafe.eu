@@ -111,14 +111,34 @@
   .chart-title .cunit{text-transform:none;letter-spacing:0;color:#777;margin-left:4px}
 
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:18px}
-  .datatools{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
-  .datatools button,.datatools .btnlink{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);text-decoration:none;font-size:14px;display:inline-flex;align-items:center;gap:7px}
-  .datatools button:hover,.datatools .btnlink:hover{background:#30303a}
-  #viewerBtn{margin-left:auto;color:var(--accent);border-color:var(--accent)}
-  .devline{margin-top:10px;font-size:12.5px;color:var(--muted)}
-  .devline button{font:inherit;color:var(--ink);background:none;border:none;border-bottom:1px dashed #5a5a66;padding:0;cursor:pointer}
-  .devline button:hover{color:var(--accent);border-color:var(--accent)}
-  .devline code{color:var(--ink);font-size:12px}
+  /* Your data: backup status, backup/share, report + viewer tiles, restore */
+  .bkstatus{display:flex;align-items:baseline;gap:10px;font-size:14px;margin-bottom:14px}
+  .bkdot{width:10px;height:10px;border-radius:50%;flex:none;align-self:center;background:#5a5a66}
+  .bkdot.ok{background:#3be35b;box-shadow:0 0 6px rgba(59,227,91,.6)}
+  .bkdot.due{background:#ffb02e;box-shadow:0 0 6px rgba(255,176,46,.6)}
+  .bkstatus .mut,.bkstatus.idle{color:var(--muted)}
+  .bkmain{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .devline{margin-left:auto;font-size:12.5px;color:var(--muted)}
+  .devline button{font:inherit;color:var(--ink);background:none;border:none;border-bottom:1px dashed #5a5a66;border-radius:0;padding:0;cursor:pointer}
+  .devline button:hover{color:var(--accent);border-color:var(--accent);background:none}
+  @media(max-width:520px){.devline{margin-left:0;flex-basis:100%}}
+  .bkmore{margin-top:18px;padding-top:16px;border-top:1px dashed var(--border)}
+  .bktools{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.bktools{grid-template-columns:1fr}}
+  .bktool{background:#1a1a20;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .bktool .btn{align-self:flex-start;text-decoration:none;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+  .bktool .btn:hover{background:#30303a}
+  .bktool .btn svg{width:17px;height:17px;flex:none}
+  .bktool p{margin:0;font-size:13px;line-height:1.5;color:var(--muted)}
+  .bkrestore{display:flex;justify-content:flex-end;margin-top:12px}
+  .bkrestore button{background:transparent;border-style:dashed;color:var(--muted)}
+  /* reminder under "Record measurement" when a backup is due */
+  .bknudge{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--muted);background:#0e0e12;border:1px solid var(--border)}
+  .bknudge .txt{flex:1 1 220px}
+  .bknudge .txt b{color:var(--ink);font-weight:600}
+  .bknudge .ok{color:#3be35b;font-weight:700;margin-right:4px}
+  .bknudge .x{background:none;border:none;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1}
+  .bknudge .x:hover{color:var(--ink);background:none}
   .imppanel{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
   .imppanel h3{margin:0;font-size:18px;color:var(--accent)}
   .imppanel .from{font-size:13px;color:var(--muted);margin:2px 0 12px}
@@ -179,7 +199,7 @@
   @media(max-width:600px){.card{padding:22px 16px 26px}.tgcmp{grid-template-columns:1fr 1fr}}
 </style>
   <script src="/nav.js" defer></script>
-  <script src="/watchdata.js"></script>
+  <script src="/watchdata.js?v=2"></script>
   <script src="sample.js?v=2"></script>
 </head>
 <body>
@@ -288,6 +308,7 @@
           <button class="primary" id="recordBtn" style="flex:none"></button>
         </div>
         <p class="hint infobox" id="nsHint" style="display:none"></p>
+        <div class="bknudge" id="bkNudge" style="display:none"></div>
       </div>
 
       <div class="tgframe" id="tgFrame">
@@ -337,15 +358,29 @@
       <div id="historyWrap"></div>
     </div>
 
-    <div class="datatools">
-      <button id="exportBtn"></button>
-      <button id="shareBtn" style="display:none"></button>
-      <button id="importBtn"></button>
-      <a class="btnlink" id="reportBtn" href="report.html"></a>
-      <a class="btnlink" id="viewerBtn" href="viewer.html"></a>
+    <div class="block" id="dataBlock">
+      <h2 id="dataH2"></h2>
+      <div class="bkstatus" id="bkStatus"><span class="bkdot" id="bkDot"></span><span id="bkText"></span></div>
+      <div class="bkmain">
+        <button class="primary" id="exportBtn"></button>
+        <button id="shareBtn" style="display:none"></button>
+        <span class="devline" id="devLine"></span>
+      </div>
+      <div class="bkmore">
+        <div class="bktools">
+          <div class="bktool">
+            <a class="btn" id="reportBtn" href="report.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 17v-3M12 17v-6M15 17v-4"/></svg><span id="reportLbl"></span></a>
+            <p id="reportTxt"></p>
+          </div>
+          <div class="bktool">
+            <a class="btn" id="viewerBtn" href="viewer.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3"/></svg><span id="viewerLbl"></span></a>
+            <p id="viewerTxt"></p>
+          </div>
+        </div>
+        <div class="bkrestore"><button class="sm" id="importBtn"></button></div>
+      </div>
       <input type="file" id="importFile" accept="application/json" style="display:none">
     </div>
-    <div class="devline" id="devLine"></div>
     <div class="imppanel" id="impPanel" style="display:none"></div>
 
     <div class="banner" id="banner"></div>
@@ -386,14 +421,24 @@ var I18N={
   gStep4:"<b>Come back later</b> \u2014 after a few hours or a day, measure again. The rate is calculated automatically.",
   guideNote:"One measurement gives only an offset. You need at least two, taken at different times, to get a rate in s/day.",
   help:"How it works", close:"Close",
-  exportBtn:"Backup", importBtn:"Restore", shareBtn:"Share",
+  exportBtn:"Back up now", importBtn:"Restore from backup\u2026", shareBtn:"Share\u2026",
+  dataH2:"Your data",
+  bkIdle:"Your measurements are stored in this browser only. Back up now and then to keep them safe.",
+  bkNever:"Never backed up", bkOnlyHere:function(n){return n+" measurement"+(n===1?"":"s")+" live only in this browser";},
+  bkDone:"Backed up", bkLast:"Last backup", bkNewSince:function(n){return n+" new measurement"+(n===1?"":"s")+" since";},
+  bkToday:"today", bkYesterday:"yesterday", bkDaysAgo:function(n){return n+" days ago";},
+  bkSaved:"Saved.", bkMeas:function(n){return n+" measurement"+(n===1?"":"s");},
+  bkNudgeSince:function(m,ago){return "<b>"+m+"</b> since your last backup "+ago+".";},
+  bkNudgeNever:function(m){return "<b>"+m+"</b> live only in this browser.";}, bkDismiss:"Dismiss",
+  reportTxt:"All your watches on paper: rate, charts, positions and timegrapher results. Save it as a PDF to keep or share at the Caf\u00e9.",
+  viewerTxt:"Open backups from your phone, laptop or a friend side by side and compare watches. Your own measurements here stay untouched.",
   impTitle:"Restore backup", impFrom:"From", impNoDevice:"backup without device label",
   impNew:function(n){return "new watch, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" new";}, impRemoved:function(n){return n+" removed";},
   impSame:"no changes", impLocalOnly:"only on this device, kept", impWatchRemoved:"deleted on the other device",
   impMerge:"Merge", impCancel:"Cancel", impReplace:"Replace everything",
   impHint:"Merge adds what\u2019s new in the backup and keeps everything that\u2019s only on this device. Deletions on either side carry over.",
   impReplaceConfirm:"Replace all data in this browser with this backup? Anything not in the backup is lost.",
-  devLbl:"This device:", devSaves:"saves as", devPrompt:"Name for this device (shown in backup files):",
+  devLbl:"This device:", devPrompt:"Name for this device (shown in backup files):",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   addToggle:"+ Add watch", addCancel:"Cancel", viewerBtn:"Browse backups", reportBtn:"Report",
   grpAlign:"Align to your watch", grpRecord:"Record",
@@ -441,14 +486,24 @@ var I18N={
   gStep4:"<b>Kom later terug</b> \u2014 meet na een paar uur of een dag opnieuw. De gang wordt dan automatisch berekend.",
   guideNote:"E\u00e9n meting geeft alleen een offset. Voor een gang in s/dag heb je minstens twee metingen op verschillende momenten nodig.",
   help:"Zo werkt het", close:"Sluiten",
-  exportBtn:"Back-up", importBtn:"Herstellen", shareBtn:"Delen",
+  exportBtn:"Back-up maken", importBtn:"Herstellen uit back-up\u2026", shareBtn:"Delen\u2026",
+  dataH2:"Je gegevens",
+  bkIdle:"Je metingen staan alleen in deze browser. Maak af en toe een back-up, dan zijn ze veilig.",
+  bkNever:"Nog nooit een back-up gemaakt", bkOnlyHere:function(n){return n+(n===1?" meting staat":" metingen staan")+" alleen in deze browser";},
+  bkDone:"Back-up gemaakt", bkLast:"Laatste back-up", bkNewSince:function(n){return n+(n===1?" nieuwe meting":" nieuwe metingen")+" sindsdien";},
+  bkToday:"vandaag", bkYesterday:"gisteren", bkDaysAgo:function(n){return n+" dagen geleden";},
+  bkSaved:"Opgeslagen.", bkMeas:function(n){return n+(n===1?" meting":" metingen");},
+  bkNudgeSince:function(m,ago){return "<b>"+m+"</b> sinds je laatste back-up van "+ago+".";},
+  bkNudgeNever:function(m,n){return "<b>"+m+"</b> "+(n===1?"staat":"staan")+" alleen in deze browser.";}, bkDismiss:"Sluiten",
+  reportTxt:"Al je horloges op papier: gang, grafieken, posities en timegrapher-resultaten. Bewaar het als PDF of laat het zien op het Caf\u00e9.",
+  viewerTxt:"Open back-ups van je telefoon, laptop of van een vriend naast elkaar en vergelijk horloges. Je eigen metingen hier blijven onaangeroerd.",
   impTitle:"Back-up herstellen", impFrom:"Van", impNoDevice:"back-up zonder apparaatlabel",
   impNew:function(n){return "nieuw horloge, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" nieuw";}, impRemoved:function(n){return n+" verwijderd";},
   impSame:"geen wijzigingen", impLocalOnly:"alleen op dit apparaat, blijft staan", impWatchRemoved:"verwijderd op het andere apparaat",
   impMerge:"Samenvoegen", impCancel:"Annuleren", impReplace:"Alles vervangen",
   impHint:"Samenvoegen voegt toe wat nieuw is in de back-up en houdt alles wat alleen op dit apparaat staat. Verwijderingen aan beide kanten worden overgenomen.",
   impReplaceConfirm:"Alle gegevens in deze browser vervangen door deze back-up? Wat niet in de back-up staat, ben je kwijt.",
-  devLbl:"Dit apparaat:", devSaves:"opslaan als", devPrompt:"Naam voor dit apparaat (komt in de back-upbestanden):",
+  devLbl:"Dit apparaat:", devPrompt:"Naam voor dit apparaat (komt in de back-upbestanden):",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
   addToggle:"+ Horloge toevoegen", addCancel:"Annuleren", viewerBtn:"Back-ups bekijken", reportBtn:"Rapport",
   grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
@@ -823,7 +878,7 @@ function renderGuide(){
   var sb=document.getElementById("sampleBtn");
   if(sb)sb.textContent=empty?I18N[lang].loadSample:I18N[lang].clearSample;
 }
-function renderAll(){renderWatches();renderMeter();renderHistory();renderGuide();}
+function renderAll(){renderWatches();renderMeter();renderHistory();renderGuide();renderBackup();}
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 
 /* ===== apply language ===== */
@@ -856,8 +911,11 @@ function applyLang(){
   document.getElementById("delWatch").title=t.delWatch;
   disarmDelete();
   document.getElementById("addCancel").textContent=t.addCancel;
-  document.getElementById("viewerBtn").textContent=t.viewerBtn;
-  document.getElementById("reportBtn").textContent=t.reportBtn;
+  document.getElementById("viewerLbl").textContent=t.viewerBtn;
+  document.getElementById("reportLbl").textContent=t.reportBtn;
+  document.getElementById("viewerTxt").textContent=t.viewerTxt;
+  document.getElementById("reportTxt").textContent=t.reportTxt;
+  document.getElementById("dataH2").textContent=t.dataH2;
   document.getElementById("guideTitle").textContent=t.guideTitle;
   document.getElementById("guideIntro").textContent=t.guideIntro;
   document.getElementById("gStep1").innerHTML=t.gStep1;
@@ -899,7 +957,7 @@ function tick(){var now=Date.now();setClock(refDigs,fmtAms(now));setClock(watchD
 tick();setInterval(tick,200);
 
 /* ===== events ===== */
-window.addEventListener("swclang",function(e){lang=e.detail;if(!window.__rmReady)return;closeImport();applyLang();renderAll();});
+window.addEventListener("swclang",function(e){lang=e.detail;if(!window.__rmReady)return;closeImport();hideNudge();applyLang();renderAll();});
 
 document.getElementById("helpBtn").onclick=function(){guideOpen=!guideOpen;renderGuide();if(guideOpen)document.getElementById("guide").scrollIntoView({behavior:"smooth",block:"nearest"});};
 document.getElementById("guideClose").onclick=function(){guideOpen=false;renderGuide();};
@@ -1023,23 +1081,46 @@ document.getElementById("recordBtn").onclick=function(){
   if(chk.checked)m.newStart=true;
   w.measurements.push(m);
   document.getElementById("noteIn").value="";chk.checked=false;
-  save();renderAll();
+  save();renderAll();showNudge();
 };
 
 function renderDevLine(){
   var t=I18N[lang];
-  document.getElementById("devLine").innerHTML=t.devLbl+' <button type="button" id="devName">'+escapeHtml(WatchData.getDevice())+'</button> \u00b7 '+t.devSaves+' <code>'+escapeHtml(WatchData.backupName())+'</code>';
+  document.getElementById("devLine").innerHTML=t.devLbl+' <button type="button" id="devName">'+escapeHtml(WatchData.getDevice())+'</button>';
   document.getElementById("devName").onclick=function(){
     var n=prompt(I18N[lang].devPrompt,WatchData.getDevice());
     if(n!==null){WatchData.setDevice(n);renderDevLine();}
   };
 }
-function backupBlob(now){return new Blob([JSON.stringify(WatchData.backupData(state,now),null,2)],{type:"application/json"});}
-function downloadBackup(){
-  var now=Date.now();
-  var a=document.createElement("a");a.href=URL.createObjectURL(backupBlob(now));a.download=WatchData.backupName(now);a.click();URL.revokeObjectURL(a.href);
-  renderDevLine();
+// "today, 14:32" / "yesterday, 14:32" / "12 days ago", by calendar day
+function backupAgo(ms){
+  var t=I18N[lang],a=WatchData.backupAge(ms);
+  return a.days===0?t.bkToday+", "+a.hm:a.days===1?t.bkYesterday+", "+a.hm:t.bkDaysAgo(a.days);
 }
+function renderBackup(){
+  var t=I18N[lang],st=WatchData.backupStatus(state),html;
+  document.getElementById("bkDot").className="bkdot "+st.level;
+  document.getElementById("bkStatus").classList.toggle("idle",st.level==="idle");
+  if(st.level==="idle")html=escapeHtml(t.bkIdle);
+  else if(!st.last)html=t.bkNever+' <span class="mut">· '+t.bkOnlyHere(st.count)+'</span>';
+  else if(!st.count)html=t.bkDone+" "+backupAgo(st.last.at)+(st.last.file?' <span class="mut">· '+escapeHtml(st.last.file)+'</span>':"");
+  else html=t.bkLast+" "+backupAgo(st.last.at)+' <span class="mut">· '+t.bkNewSince(st.count)+'</span>';
+  document.getElementById("bkText").innerHTML=html;
+}
+// Reminder under "Record measurement", only when a backup is due
+function hideNudge(){var n=document.getElementById("bkNudge");n.style.display="none";n.innerHTML="";}
+function showNudge(){
+  var t=I18N[lang],st=WatchData.backupStatus(state),n=document.getElementById("bkNudge");
+  if(st.level!=="due"){hideNudge();return;}
+  var m=t.bkMeas(st.count);
+  n.innerHTML='<span class="txt"><span class="ok">✓</span>'+t.bkSaved+" "+(st.last?t.bkNudgeSince(m,backupAgo(st.last.at)):t.bkNudgeNever(m,st.count))+'</span>'
+    +'<button class="primary sm" id="bkNudgeGo">'+t.exportBtn+'</button>'
+    +'<button class="x" id="bkNudgeX" aria-label="'+t.bkDismiss+'" title="'+t.bkDismiss+'">×</button>';
+  n.style.display="";
+  document.getElementById("bkNudgeGo").onclick=downloadBackup;
+  document.getElementById("bkNudgeX").onclick=hideNudge;
+}
+function downloadBackup(){WatchData.downloadBackup(state);hideNudge();renderBackup();}
 document.getElementById("exportBtn").onclick=downloadBackup;
 // Share sheet (AirDrop, Messages, Drive, ...) where the browser can share files
 (function(){
@@ -1049,9 +1130,11 @@ document.getElementById("exportBtn").onclick=downloadBackup;
   }catch(e){return;}
   btn.style.display="";
   btn.onclick=function(){
-    var now=Date.now(),f=new File([backupBlob(now)],WatchData.backupName(now),{type:"application/json"});
-    navigator.share({files:[f],title:f.name}).catch(function(err){if(err&&err.name!=="AbortError")downloadBackup();});
-    renderDevLine();
+    var now=Date.now(),name=WatchData.backupName(now);
+    var f=new File([JSON.stringify(WatchData.backupData(state,now),null,2)],name,{type:"application/json"});
+    navigator.share({files:[f],title:name})
+      .then(function(){WatchData.markBackedUp(name,now);hideNudge();renderBackup();})
+      .catch(function(err){if(err&&err.name!=="AbortError")downloadBackup();});
   };
 })();
 document.getElementById("importBtn").onclick=function(){document.getElementById("importFile").click();};

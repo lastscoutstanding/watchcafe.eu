@@ -1,7 +1,8 @@
 /* ===== Sioux Watch Café — shared watch-data helpers =====
    Used by /watchrate/, /watchrate/viewer.html and /powerreserve/.
    Device label: 'siouxWatchDevice' in localStorage, only stored when the user
-   changes it; otherwise derived from the browser. */
+   changes it; otherwise derived from the browser. Last backup: see
+   backupStatus below. */
 var WatchData=(function(){
   var DKEY="siouxWatchDevice";
 
@@ -127,7 +128,61 @@ var WatchData=(function(){
     return {state:loc,rows:rows};
   }
 
+  /* ----- backup status -----
+     'siouxWatchLastBackup' = {at, file}: when this device last saved or shared
+     a backup. A download can't be confirmed, so the click counts. */
+  var BKEY="siouxWatchLastBackup",DAY=864e5;
+  var DUE_DAYS=14,DUE_ITEMS=10;
+  function lastBackup(){
+    try{var b=JSON.parse(localStorage.getItem(BKEY));return b&&b.at?b:null;}catch(e){return null;}
+  }
+  function markBackedUp(file,ms){
+    try{localStorage.setItem(BKEY,JSON.stringify({at:ms||Date.now(),file:file||""}));}catch(e){}
+  }
+  // Creation time of an id made by uid() (base-36 Date.now + random), or 0 for
+  // ids derived from content (sample data, items from before ids existed).
+  function idTime(id){
+    if(typeof id!=="string"||!/^[0-9a-z]{9,13}$/.test(id))return 0;
+    var ms=parseInt(id.slice(0,8),36);
+    return ms>1577836800000&&ms<Date.now()+DAY?ms:0;
+  }
+  /* {level:"idle"|"ok"|"due", last, count, own}
+     own = items made on a device (not samples); count = those created since
+     the last backup. Due when something is new and there was never a backup,
+     it is DUE_DAYS old, or DUE_ITEMS have piled up. */
+  function backupStatus(state,now){
+    now=now||Date.now();
+    var last=lastBackup(),since=last?last.at:0,own=0,count=0;
+    ((state&&state.watches)||[]).forEach(function(w){
+      LISTS.forEach(function(L){
+        (w[L[0]]||[]).forEach(function(x){
+          var ms=idTime(x.id);if(!ms)return;
+          own++;if(ms>since)count++;
+        });
+      });
+    });
+    var level=!last&&!own?"idle"
+      :count&&(!last||now-last.at>=DUE_DAYS*DAY||count>=DUE_ITEMS)?"due":"ok";
+    return {level:level,last:last,count:count,own:own};
+  }
+  // Age of a backup in calendar days (0 = today) plus its time as "14:32"
+  function backupAge(ms){
+    var d=new Date(ms),today=new Date();today.setHours(0,0,0,0);
+    return {days:Math.max(0,Math.round((today-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/DAY)),
+      hm:pad(d.getHours())+":"+pad(d.getMinutes())};
+  }
+  // Save a backup file of state and remember it; returns the file name.
+  function downloadBackup(state){
+    var now=Date.now(),name=backupName(now);
+    var blob=new Blob([JSON.stringify(backupData(state,now),null,2)],{type:"application/json"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+    markBackedUp(name,now);
+    return name;
+  }
+
   return {getDevice:getDevice,setDevice:setDevice,guessDevice:guessDevice,
     backupName:backupName,backupData:backupData,
+    lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
     markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,ensureIds:ensureIds,merge:merge};
 })();

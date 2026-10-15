@@ -41,17 +41,23 @@ localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
 - `siouxWatchRateMeterLang`: taal (EN standaard, NL).
 - `siouxWatchTheme`: gekozen thema.
 - `siouxWatchDevice`: apparaatnaam voor back-ups; alleen gezet als de gebruiker hem wijzigt, anders afgeleid uit de browser (iPhone, iPad, Mac, Windows, Android …).
+- `siouxWatchLastBackup`: `{ at, file }` van de laatste back-up op dit apparaat, voor de back-upstatus en -herinnering.
 
 Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`; horloge `{ id, name, measurements, timegrapher?, powerReserve?, prCurrent? }`; meting `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
 
 ## Back-ups tussen apparaten
 
-- Bestandsnaam `watchrate-<apparaat>-JJJJ-MM-DD-UUMM.json`, plus `exportedFrom: { device, at }` in de JSON (overleeft hernoemen). Apparaatnaam aanpasbaar onder de back-upknoppen; de Viewer toont apparaat en tijd op de bestandschip.
+- Bestandsnaam `watchrate-<apparaat>-JJJJ-MM-DD-UUMM.json`, plus `exportedFrom: { device, at }` in de JSON (overleeft hernoemen). Apparaatnaam aanpasbaar naast de back-upknop; de Viewer toont apparaat en tijd op de bestandschip.
 - Herstellen opent een paneel met per horloge wat de back-up toevoegt/verwijdert. Standaard Samenvoegen; "Alles vervangen" is secundair (gestippeld, met bevestiging).
 - Samenvoegen op id. Toevoegen en verwijderen tellen; bewerken bestaat niet in de UI, dus geen "laatst bewerkt wint".
 - Verwijderingen: `state.deleted = { id: ms }`. Elke verwijderknop (horloge, meting, timegrapher-sessie, gangreserve-historie, voorbeelden wissen) moet `WatchData.markDeleted`/`markWatchDeleted` aanroepen, anders komt het item terug bij samenvoegen. Lopende gangreservemeting zonder id: `"pr:<start>"` bij opslaan of verwerpen.
 - Items zonder id (oude voorbeelddata) krijgen een id uit hun inhoud (`ensureIds`), zodat ze op elk apparaat gelijk zijn.
 - Delen-knop via Web Share API, alleen zichtbaar als de browser bestanden kan delen; bij een fout (geen annulering) valt hij terug op downloaden.
+- Blok "Your data" onderaan de Rate Meter: statusregel met stip, "Back up now" (getint) + Share + apparaatnaam; onder een stippellijn twee tegels met grijze knop en toelichting (Report, Browse backups); daaronder klein en gestippeld "Restore from backup…".
+- Back-upstatus (`WatchData.backupStatus`): grijs zonder eigen metingen (alleen voorbeelden of leeg), groen na een back-up, oranje als er iets nieuw is en er nooit een back-up was, de laatste ≥ 14 dagen oud is of ≥ 10 nieuwe items wachten. "Nieuw" = metingen, timegrapher-sessies en gangreservemetingen met een `uid()`-id jonger dan de laatste back-up (de aanmaaktijd zit in de eerste 8 tekens van het id; voorbeelddata heeft id's uit de inhoud en telt niet).
+- Een download valt niet te bevestigen: de klik telt als back-up, bij Delen alleen een geslaagde share.
+- Herinnering (`bkNudge`) direct na "Record measurement" en na opslaan in Power Reserve, alleen bij oranje, met "Back up now" en ×. Geen pop-up.
+- `watchdata.js` staat met `?v=N` in Rate Meter en Power Reserve; ophogen bij wijzigingen.
 
 ## Homepage en Live Clock
 
@@ -92,7 +98,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 
 ## Rapport
 
-- Knop "Report"/"Rapport" naast Backup/Restore op de Rate Meter, opent `watchrate/report.html`. Leest `siouxWatchRateMeter`; zonder horloges toont hij de voorbeeldhorloges (met "sample data" in de kop).
+- Tegel "Report"/"Rapport" in het blok "Your data" op de Rate Meter, opent `watchrate/report.html`. Leest `siouxWatchRateMeter`; zonder horloges toont hij de voorbeeldhorloges (met "sample data" in de kop).
 - Ook een knop "Report" in de balk van de Viewer: opent `report.html?src=viewer` (plus `&merge=1` als "Merge watches" aan staat). Het rapport leest dan de geladen back-ups uit `swcViewerFiles`, samengevoegd op id (anders naam) zoals de Viewer, of per bestand met apparaat en datum onder de naam. Bovenaan staan de bronbestanden in plaats van het apparaat; de terugknop gaat naar de Viewer.
 - Leesbare back-up naast de JSON: PDF via het printvenster ("Opslaan als PDF"), geen PDF-library.
 - Opbouw: overzichtspagina (kerncijfers + tabel per horloge), dan per horloge een nieuwe pagina met kerncijfers, offset- en ganggrafiek (sessies altijd aaneengesloten, zoals `allc`), sessies, gang per positie (laatste sessie), gangreserve, timegrapher en optioneel alle metingen.

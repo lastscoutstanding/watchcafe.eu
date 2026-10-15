@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js"></script>
+<script src="/watchdata.js?v=2"></script>
 <style>
   :root{
     --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -88,6 +88,14 @@
   td.num{font-variant-numeric:tabular-nums;font-family:"Courier New",monospace;white-space:nowrap}
   .empty{color:var(--muted);font-size:14px;padding:14px 2px;line-height:1.6}
   .empty a{color:var(--accent)}
+  /* reminder after saving when a backup is due (same as the Rate Meter) */
+  .bknudge{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--muted);background:#0e0e12;border:1px solid var(--border)}
+  .bknudge .txt{flex:1 1 220px}
+  .bknudge .txt b{color:var(--ink);font-weight:600}
+  .bknudge .ok{color:#3be35b;font-weight:700;margin-right:4px}
+  .bknudge button.sm{padding:6px 10px;font-size:13px}
+  .bknudge .x{background:none;border:none;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1}
+  .bknudge .x:hover{color:var(--ink);background:none}
   .notice{background:#2e221c;border:1px solid #45332a;color:#eda57f;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px;display:none}
 
   .banner{margin-top:26px;background:var(--banner,#b06a4a);color:#fff;font-weight:700;text-align:center;padding:16px;border-radius:8px;font-size:15px}
@@ -129,6 +137,7 @@
 
     <p class="lab" id="runningLbl" style="display:none"></p>
     <div id="running"></div>
+    <div class="bknudge" id="bkNudge" style="display:none"></div>
 
     <div class="block">
       <h2 id="histH2"></h2>
@@ -172,6 +181,9 @@ var I18N={
   noHist:"No power-reserve measurements saved for this watch yet.",
   thDate:"Wound", thReserve:"Reserve", thNote:"Note", typical:"Typical:", over:"over {n} measurements",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
+  bkSaved:"Saved.", bkOne:"1 measurement", bkMany:"{n} measurements",
+  bkSince:"<b>{m}</b> since your last backup {ago}.", bkNeverOne:"<b>{m}</b> lives only in this browser.", bkNeverMany:"<b>{m}</b> live only in this browser.",
+  bkToday:"today", bkYesterday:"yesterday", bkDaysAgo:"{n} days ago", bkGo:"Back up now", bkDismiss:"Dismiss",
   linkHome:"watchcafe.eu home", linkMeter:"Rate Meter",
   gears:"This site runs on gears, not cookies. Your watch data never leaves your browser \u2014 ",
   gearsLink:"see for yourself \u2192",
@@ -198,6 +210,9 @@ var I18N={
   noHist:"Nog geen gangreserve-metingen opgeslagen voor dit horloge.",
   thDate:"Opgewonden", thReserve:"Gangreserve", thNote:"Notitie", typical:"Typisch:", over:"uit {n} metingen",
   banner:"\u00a9 2026 The Sioux Watch Caf\u00e9 \u2014 info@watchcafe.eu",
+  bkSaved:"Opgeslagen.", bkOne:"1 meting", bkMany:"{n} metingen",
+  bkSince:"<b>{m}</b> sinds je laatste back-up van {ago}.", bkNeverOne:"<b>{m}</b> staat alleen in deze browser.", bkNeverMany:"<b>{m}</b> staan alleen in deze browser.",
+  bkToday:"vandaag", bkYesterday:"gisteren", bkDaysAgo:"{n} dagen geleden", bkGo:"Back-up maken", bkDismiss:"Sluiten",
   linkHome:"watchcafe.eu home", linkMeter:"Rate Meter",
   gears:"Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit \u2014 ",
   gearsLink:"zie het zelf \u2192",
@@ -426,7 +441,7 @@ function wireRunning(){
     var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx);
     if(!Array.isArray(w.powerReserve))w.powerReserve=[];
     w.powerReserve.push({id:uid(),start:pr.start,stop:stopMs,offset:pr.offset,reserveMs:stopMs-pr.start,note:""});
-    WatchData.markDeleted(state,"pr:"+pr.start);delete w.prCurrent;save();renderAll();};});
+    WatchData.markDeleted(state,"pr:"+pr.start);delete w.prCurrent;save();renderAll();showNudge();};});
 }
 function byId(id){return state.watches.find(function(w){return w.id===id;});}
 
@@ -454,6 +469,23 @@ function renderHistory(){
     var ww=byId(b.getAttribute("data-delw"));WatchData.markDeleted(state,b.getAttribute("data-delh"));ww.powerReserve=ww.powerReserve.filter(function(x){return x.id!==b.getAttribute("data-delh");});save();renderAll();};});
 }
 
+// Reminder after saving a measurement, only when a backup is due
+function hideNudge(){var n=document.getElementById("bkNudge");n.style.display="none";n.innerHTML="";}
+function showNudge(){
+  var st=WatchData.backupStatus(state),n=document.getElementById("bkNudge");
+  if(st.level!=="due"){hideNudge();return;}
+  var m=st.count===1?tr("bkOne"):tr("bkMany",{n:st.count}),msg;
+  if(st.last){
+    var a=WatchData.backupAge(st.last.at);
+    msg=tr("bkSince",{m:m,ago:a.days===0?tr("bkToday")+", "+a.hm:a.days===1?tr("bkYesterday")+", "+a.hm:tr("bkDaysAgo",{n:a.days})});
+  }else msg=tr(st.count===1?"bkNeverOne":"bkNeverMany",{m:m});
+  n.innerHTML='<span class="txt"><span class="ok">\u2713</span>'+tr("bkSaved")+" "+msg+'</span>'
+    +'<button class="primary sm" id="bkNudgeGo">'+tr("bkGo")+'</button>'
+    +'<button class="x" id="bkNudgeX" aria-label="'+tr("bkDismiss")+'" title="'+tr("bkDismiss")+'">\u00d7</button>';
+  n.style.display="";
+  document.getElementById("bkNudgeGo").onclick=function(){WatchData.downloadBackup(state);hideNudge();};
+  document.getElementById("bkNudgeX").onclick=hideNudge;
+}
 function renderAll(){applyStatic();renderStart();renderRunning();renderHistory();tickClock();}
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 
@@ -480,7 +512,7 @@ document.getElementById("woundBtn").onclick=function(){
   w.prCurrent={start:Date.now(),offset:0,lastRunning:null,stopped:false,handsInput:"",dayIdx:null};
   save();renderAll();tickClock();
 };
-window.addEventListener("swclang",function(e){lang=e.detail;renderAll();tickClock();});
+window.addEventListener("swclang",function(e){lang=e.detail;hideNudge();renderAll();tickClock();});
 
 /* ===== init ===== */
 if(memOnly)showNotice();
