@@ -705,7 +705,9 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
   else{t0=all[0].t;t1=all[all.length-1].t;all.forEach(function(p){if(p.t<t0)t0=p.t;if(p.t>t1)t1=p.t;});}
   var vs=all.map(function(p){return p.v;});
   var mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs);
-  if(mn===mx){mn-=1;mx+=1;}
+  // a flat series (quartz: every rate 0.1 with float noise) gets a range of 2, like the Viewer;
+  // otherwise the grid step becomes ~1e-17 and the gridline loop runs for millions of rounds
+  if(mx-mn<0.5){var mid=(mn+mx)/2;mn=mid-1;mx=mid+1;}
   var padV=(mx-mn)*0.12;mn-=padV;mx+=padV;
   var comp=blocks&&blocks.length>1,ax=comp?timeLayout(blocks,L,W-R):null;
   function X(t){return comp?ax.X(t):L+(t1===t0?0:(t-t0)/(t1-t0))*(W-L-R);}
