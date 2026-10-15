@@ -80,6 +80,8 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 ## Watch Rate Meter
 
 - Gang in s/dag via lineaire regressie over offsetmetingen. Horloges worden hier aangemaakt.
+- Horlogekeuze is een pulldown (zoals Power Reserve) met onderaan "+ Add watch"; die zet een naamveld op de plek van de select (Enter/Escape). Zonder horloges staat het naamveld er meteen. Prullenbak ernaast met bevestiging in twee stappen (rood, 5 s), zoals de profielkeuze van de Rangecard.
+- Bewust geen hernoemknop: samenvoegen houdt de lokale naam, dus een nieuwe naam bereikt andere apparaten nooit en de Viewer toont dan een willekeurige naam.
 - Meten: groene "jouw horloge"-klok met ▲/▼ gelijkzetten, dan vastleggen. Hele seconden; tik-sync is bewust verwijderd.
 - "Nieuwe start" is een handmatige checkbox. Geen automatische gat-detectie.
 - Sessies worden afgeleid uit nieuwe-start-vlaggen (datastructuur ongewijzigd). Pulldown boven de grafiek bij >1 sessie, standaard de laatste, plus "Alle sessies" en "Alle sessies, zonder tussenpozen" (`allc`: sessies als aaneengesloten blokken op de tijd-as met gestippelde breuklijn).
