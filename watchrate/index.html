@@ -761,7 +761,7 @@ if(window.ResizeObserver)new ResizeObserver(function(es){var wd=Math.round(es[0]
 function drawCharts(w){
   var ow=document.getElementById("chartOffWrap"),rw=document.getElementById("chartRateWrap"),rh=document.getElementById("rateChartHint");
   chartWatch=w;
-  if(!w){ow.style.display="none";rw.style.display="none";rh.style.display="none";return;}
+  if(!w||!segments(w).length){ow.style.display="none";rw.style.display="none";rh.style.display="none";return;}
   ow.style.display=rw.style.display="block";
   var allSegs=segments(w);
   var idx=resolvedSegIndex(w);
