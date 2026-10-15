@@ -165,7 +165,7 @@
   .tgcmp small{display:block;color:var(--muted);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
   .tgcmp b{font-family:"Courier New",monospace;font-size:19px;font-weight:700;color:#e9e7e2}
   .tgcmp .dv b{color:var(--accent)}
-  .tgdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
+  .tgdot{display:inline-block;width:8px;height:8px;box-sizing:border-box;border:1.5px solid;transform:rotate(45deg);margin:0 6px 0 2px;vertical-align:0}
   .grp{background:#1a1a20;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:14px}
   .grp-h{display:flex;align-items:center;gap:9px;margin-bottom:12px;font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:700}
   .grp-n{color:var(--muted);font-weight:700}
@@ -660,7 +660,7 @@ function renderTG(w){
   sessions.slice().reverse().forEach(function(sess){
     var d=new Date(sess.t).toLocaleDateString(loc,{day:"2-digit",month:"short",year:"numeric"});
     var reads=sess.readings.map(function(r){
-      return '<span title="'+escapeHtml(r.title)+'" style="white-space:nowrap"><span class="tgdot" style="background:'+posColor(r.position)+'"></span>'+posAbbr(r.position)+' '+(r.rate>0?"+":"")+r.rate+'</span>';
+      return '<span title="'+escapeHtml(r.title)+'" style="white-space:nowrap"><span class="tgdot" style="border-color:'+posColor(r.position)+'"></span>'+posAbbr(r.position)+' '+(r.rate>0?"+":"")+r.rate+'</span>';
     }).join(" \u00b7 ");
     html+='<tr><td class="num">'+d+'</td><td class="num">'+fr(sess.avg)+'</td><td>'+reads+'</td><td>'+escapeHtml(sess.note)+'</td><td><button class="sm danger ghost" data-tid="'+sess.id+'">'+t.del+'</button></td></tr>';
   });

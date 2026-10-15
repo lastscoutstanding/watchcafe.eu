@@ -51,6 +51,7 @@
   .sheet .ns td{border-top:1.5px dashed var(--p-accent)}
   .tag{display:inline-block;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--p-accent);border:1px solid var(--p-accent);border-radius:3px;padding:0 3px;margin-left:5px;vertical-align:1px}
   .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+  .tgmark{display:inline-block;width:8px;height:8px;box-sizing:border-box;border:1.5px solid;transform:rotate(45deg);margin:0 6px 0 2px;vertical-align:0}
 
   .cover-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:2px solid var(--p-accent);padding-bottom:10px;margin-bottom:14px}
   .brand{font-size:9pt;color:var(--p-muted);text-align:right;line-height:1.5}
@@ -293,7 +294,7 @@ function rateChart(a){
 
 /* ---------- report ---------- */
 function kpi(label,val,unit,main){return '<div class="kpi'+(main?' main':'')+'"><div class="l">'+esc(label)+'</div><div class="v">'+val+(unit?' <small>'+esc(unit)+'</small>':'')+'</div></div>';}
-function tgReadings(s){return s.readings.map(function(r){var p=pos(r.position);return '<span style="white-space:nowrap"><span class="dot" style="background:'+p.color+'"></span>'+p.abbr+' '+sgn(+r.rate,0)+'</span>';}).join(" &nbsp;");}
+function tgReadings(s){return s.readings.map(function(r){var p=pos(r.position);return '<span style="white-space:nowrap"><span class="tgmark" style="border-color:'+p.color+'"></span>'+p.abbr+' '+sgn(+r.rate,0)+'</span>';}).join(" &nbsp;");}
 
 function overview(list,info,isSample){
   var all=[];list.forEach(function(a){if(a.t0!=null){all.push(a.t0,a.t1);}});
