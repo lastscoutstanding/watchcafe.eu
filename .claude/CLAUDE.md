@@ -42,6 +42,7 @@ localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
 - `siouxWatchTheme`: gekozen thema.
 - `siouxWatchDevice`: apparaatnaam voor back-ups; alleen gezet als de gebruiker hem wijzigt, anders afgeleid uit de browser (iPhone, iPad, Mac, Windows, Android …).
 - `siouxWatchLastBackup`: `{ at, file }` van de laatste back-up op dit apparaat, voor de back-upstatus en -herinnering.
+- `siouxWatchReportPick`: welke horloges in het rapport aan/uit staan (alleen expliciete keuzes, alleen Rate Meter-bron).
 
 Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`; horloge `{ id, name, measurements, timegrapher?, powerReserve?, prCurrent? }`; meting `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
 
@@ -100,6 +101,9 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 
 - Tegel "Report"/"Rapport" in het blok "Your data" op de Rate Meter, opent `watchrate/report.html`. Leest `siouxWatchRateMeter`; zonder horloges toont hij de voorbeeldhorloges (met "sample data" in de kop).
 - Ook een knop "Report" in de balk van de Viewer: opent `report.html?src=viewer` (plus `&merge=1` als "Merge watches" aan staat). Het rapport leest dan de geladen back-ups uit `swcViewerFiles`, samengevoegd op id (anders naam) zoals de Viewer, of per bestand met apparaat en datum onder de naam. Bovenaan staan de bronbestanden in plaats van het apparaat; de terugknop gaat naar de Viewer.
+- Horlogekeuze: rij chips boven het papier (niet geprint), met "N of M" en All/None. Lege horloges (geen metingen, timegrapher of gangreserve) staan standaard uit. Geen horloges gekozen = melding in plaats van pagina's.
+  - Vanaf de Rate Meter: één rij; keuze onthouden in `siouxWatchReportPick` (`{ watchId: bool }`, alleen expliciete keuzes, dus nieuwe horloges staan vanzelf aan).
+  - Vanaf de Viewer: de live Rate Meter-data doet mee als bron "This device · now", standaard uit (staat vaak al in een back-up). Per bestand: een rij per bron met eigen All/None. Met merge: bronnen als chips aan/uit, daaronder de samengevoegde horloges (op id, anders naam). Keuze wordt hier niet onthouden.
 - Leesbare back-up naast de JSON: PDF via het printvenster ("Opslaan als PDF"), geen PDF-library.
 - Opbouw: overzichtspagina (kerncijfers + tabel per horloge), dan per horloge een nieuwe pagina met kerncijfers, offset- en ganggrafiek (sessies altijd aaneengesloten, zoals `allc`), sessies, gang per positie (laatste sessie), gangreserve, timegrapher en optioneel alle metingen.
 - Altijd licht (papier), los van het thema. Grafieken zijn vaste SVG met viewBox; schalen mee in print.

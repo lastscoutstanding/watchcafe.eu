@@ -34,6 +34,30 @@
   .bar button.primary{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent);font-weight:600}
   .note{max-width:210mm;margin:0 auto 18px;font-size:13px;color:var(--muted)}
 
+  /* watch picker: which sources and watches go into the report */
+  .pick{max-width:210mm;margin:0 auto 18px;padding-top:12px;border-top:1px dashed var(--border)}
+  .pick-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:8px}
+  .pick-head .lbl{font-size:13px;font-weight:600}
+  .pick-head .cnt{font-size:13px;color:var(--muted)}
+  .pick-head .sp{flex:1}
+  .pick .grp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0 0 8px}
+  .pick .src{font-size:12px;color:var(--muted);min-width:110px}
+  .pick .src b{color:var(--ink);font-weight:600}
+  .pick .glnk{margin-left:auto;font-size:12px;color:var(--muted)}
+  .pick .lnk{font:inherit;font-size:13px;background:none;border:0;padding:0;color:var(--accent);cursor:pointer}
+  .pick .glnk .lnk{font-size:12px}
+  .pick .lnk:hover{text-decoration:underline}
+  .pick .sep{color:var(--muted);font-size:13px;margin:0 2px}
+  .pick .chip{font:inherit;font-size:13px;cursor:pointer;border-radius:999px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;
+    background:color-mix(in srgb,var(--accent) 18%,transparent);border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  .pick .chip .ck{font-size:11px;width:10px}
+  .pick .chip.off{background:transparent;border:1px dashed color-mix(in srgb,var(--muted) 50%,transparent);color:var(--muted)}
+  .pick .chip.off .nm{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 50%,transparent)}
+  .pick .chip .em{font-size:11px;opacity:.75}
+  .pick .foot{font-size:12px;color:var(--muted);margin:2px 0 0;padding:0;border:0;display:block}
+  .pick-none{max-width:210mm;margin:0 auto;padding:40px 20px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:10px;font-size:14px}
+  @media (max-width:600px){ .pick .src{flex-basis:100%} }
+
   /* paper */
   .sheet{background:var(--paper);color:var(--p-ink);max-width:210mm;margin:0 auto 24px;padding:16mm 15mm;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.45);font-size:10.5pt;line-height:1.4}
   .sheet h2{font-size:20pt;font-weight:800;color:var(--p-accent);margin:0 0 2px;letter-spacing:-.01em}
@@ -89,7 +113,7 @@
   @media print{
     body{background:#fff;padding:0;min-height:0}
     body > *:not(#report){display:none !important}
-    .bar,.note{display:none !important}
+    .bar,.note,.pick{display:none !important}
     .sheet{box-shadow:none;border-radius:0;margin:0;padding:0;max-width:none}
     .sheet + .sheet{break-before:page}
     .kpi,.chart{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -109,13 +133,19 @@
     <button class="primary" id="printBtn"></button>
   </div>
   <p class="note" id="t-note"></p>
+  <div class="pick" id="pick"></div>
   <div id="sheets"></div>
 </div>
 
 <script>
 "use strict";
 var I18N={
- en:{title:"Watch Report",sub:"A readable, printable copy of all your watches",print:"Print / Save as PDF",back:"Back to Rate Meter",backViewer:"Back to Viewer",sources:"Backups",
+ en:{title:"Watch Report",sub:"A readable, printable copy of your watches",print:"Print / Save as PDF",back:"Back to Rate Meter",backViewer:"Back to Viewer",sources:"Sources",
+  inReport:"Watches in report",of:"of",all:"All",noneSel:"None",empty:"empty",thisDevice:"This device",now:"now",
+  pickNone:"No watches selected. Pick at least one watch above.",
+  pickRemember:"Your choice is remembered on this device. Watches you add later are included automatically.",
+  pickMerged:"Watches with the same id are merged across the sources you tick.",
+  pickDevice:"“This device” is off by default: its watches are often in a backup already.",
   raw:"Include all measurements",
   note:"Use your browser’s print dialog and choose “Save as PDF”. On iPhone/iPad: Print, then Share → Save to Files.",
   sampleNote:"No watches in this browser yet — showing the sample watches.",
@@ -129,7 +159,12 @@ var I18N={
   offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
   tgLegend:"◇ timegrapher per position · ╌ session average",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
   footer:"watchcafe.eu · Sioux Watch Café · data from this browser only",sampleTag:"sample data"},
- nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van al je horloges",print:"Printen / Opslaan als PDF",back:"Terug naar Rate Meter",backViewer:"Terug naar Viewer",sources:"Back-ups",
+ nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van je horloges",print:"Printen / Opslaan als PDF",back:"Terug naar Rate Meter",backViewer:"Terug naar Viewer",sources:"Bronnen",
+  inReport:"Horloges in rapport",of:"van",all:"Alle",noneSel:"Geen",empty:"leeg",thisDevice:"Dit apparaat",now:"nu",
+  pickNone:"Geen horloges gekozen. Kies hierboven minstens één horloge.",
+  pickRemember:"Je keuze wordt op dit apparaat onthouden. Horloges die je later toevoegt, gaan er vanzelf in.",
+  pickMerged:"Horloges met hetzelfde id worden samengevoegd over de bronnen die je aanvinkt.",
+  pickDevice:"“Dit apparaat” staat standaard uit: de horloges staan vaak al in een back-up.",
   raw:"Alle metingen opnemen",
   note:"Gebruik het printvenster van je browser en kies “Opslaan als PDF”. Op iPhone/iPad: Print, dan Deel → Bewaar in Bestanden.",
   sampleNote:"Nog geen horloges in deze browser — je ziet de voorbeeldhorloges.",
@@ -168,8 +203,10 @@ function fDur(ms){var h=ms/3600000;return h<48?Math.round(h)+" h":(ms/DAY).toFix
 function fHM(ms){var m=Math.round(ms/60000);return Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"m";}
 
 /* ---------- data ---------- */
-// ?src=viewer: report on the backups loaded in the Viewer (merged when &merge=1, as there)
+// ?src=viewer: report on the backups loaded in the Viewer (merged when &merge=1, as there),
+// optionally plus this device's own Rate Meter data
 var PARAMS=new URLSearchParams(location.search),FROM_VIEWER=PARAMS.get("src")==="viewer",MERGE=PARAMS.get("merge")==="1";
+var PICK_KEY="siouxWatchReportPick";
 function viewerFiles(){
   try{var arr=JSON.parse(localStorage.getItem("swcViewerFiles")||"[]");
     return arr.map(function(f){try{var d=JSON.parse(f.text);
@@ -177,32 +214,65 @@ function viewerFiles(){
       return {name:f.name,from:d.exportedFrom&&typeof d.exportedFrom.device==="string"?d.exportedFrom:null,watches:ws};}catch(e){return null;}})
       .filter(function(f){return f&&f.watches.length;});}catch(e){return [];}
 }
+function localWatches(){
+  try{var raw=localStorage.getItem("siouxWatchRateMeter");if(raw){var s=JSON.parse(raw);if(s&&Array.isArray(s.watches))return s.watches;}}catch(e){}
+  return [];
+}
+function mergeKey(w){return (w.id!=null?"id:"+w.id:"name:"+(w.name||"")).toLowerCase();}
 function mergeFiles(files){
   var by={},order=[];
   function addAll(dst,src,key){(src||[]).forEach(function(x,i){var k=x.id!=null?"id:"+x.id:key(x,i);if(!dst._seen[k]){dst._seen[k]=1;dst.list.push(x);}});}
   files.forEach(function(f){f.watches.forEach(function(w){
-    var k=(w.id!=null?"id:"+w.id:"name:"+(w.name||"")).toLowerCase();
+    var k=mergeKey(w);
     if(!by[k]){by[k]={name:w.name,m:{_seen:{},list:[]},g:{_seen:{},list:[]},p:{_seen:{},list:[]}};order.push(k);}
     var a=by[k];
     addAll(a.m,w.measurements,function(m){return "t:"+m.t+"|o:"+m.offset;});
     addAll(a.g,w.timegrapher,function(g){return "t:"+g.t;});
     addAll(a.p,w.powerReserve,function(r){return "s:"+r.start;});
   });});
-  return order.map(function(k){var a=by[k];return {name:a.name,measurements:a.m.list,timegrapher:a.g.list,powerReserve:a.p.list};});
+  return order.map(function(k){var a=by[k];return {_key:k,name:a.name,measurements:a.m.list,timegrapher:a.g.list,powerReserve:a.p.list};});
 }
-function loadState(){
+// SRC.viewer: the report covers backups (and optionally this device); otherwise only this device (or the samples)
+function loadSources(){
+  var local=localWatches().filter(function(w){return w&&typeof w==="object";});
   if(FROM_VIEWER){
     var files=viewerFiles();
     if(files.length){
-      var ws=MERGE?mergeFiles(files):[].concat.apply([],files.map(function(f){
-        return f.watches.map(function(w){var c=Object.assign({},w);if(files.length>1)c._source=f.from?f.from.device+(f.from.at?" · "+fShort(f.from.at):""):f.name;return c;});}));
-      return {state:{watches:ws},sample:false,files:files};
+      var list=files.map(function(f){return {name:f.name,from:f.from,watches:f.watches};});
+      if(local.length)list.unshift({dev:true,watches:local});
+      return {viewer:true,sample:false,list:list};
     }
   }
-  try{var raw=localStorage.getItem("siouxWatchRateMeter");if(raw){var s=JSON.parse(raw);if(s&&Array.isArray(s.watches)&&s.watches.length)return {state:s,sample:false};}}catch(e){}
+  if(local.length)return {viewer:false,sample:false,list:[{dev:true,watches:local}]};
   var w=WatchSample.watches();w.forEach(function(x,i){x.id="sample-"+i;});
-  return {state:{watches:w},sample:true};
+  return {viewer:false,sample:true,list:[{dev:true,watches:w}]};
 }
+var SRC=loadSources(),pick={},srcPick={};
+// remembered choice, only for this device's own watches: { watchId: true|false }
+if(!SRC.viewer&&!SRC.sample){try{var saved=JSON.parse(localStorage.getItem(PICK_KEY)||"{}");Object.keys(saved).forEach(function(id){pick["w|"+id]=!!saved[id];});}catch(e){}}
+function savePick(){
+  if(SRC.viewer||SRC.sample)return;
+  var out={},ids={};SRC.list[0].watches.forEach(function(w){ids[watchId(w)]=1;});
+  Object.keys(pick).forEach(function(k){var id=k.slice(2);if(ids[id])out[id]=pick[k];});
+  try{if(Object.keys(out).length)localStorage.setItem(PICK_KEY,JSON.stringify(out));else localStorage.removeItem(PICK_KEY);}catch(e){}
+}
+function watchId(w){return w.id!=null?String(w.id):"name:"+(w.name||"");}
+function srcLabel(s){return s.dev?{b:t("thisDevice"),d:t("now")}:s.from?{b:s.from.device,d:s.from.at?fShort(s.from.at):""}:{b:s.name,d:""};}
+function srcText(s){var l=srcLabel(s);return l.b+(l.d?" · "+l.d:"");}
+function isEmptyWatch(w){return !(w.measurements||[]).length&&!(w.timegrapher||[]).length&&!(w.powerReserve||[]).length;}
+function srcOn(i){return i in srcPick?srcPick[i]:!SRC.list[i].dev;}
+// groups of pickable watches: one per source, or a single merged one
+function groups(){
+  if(!SRC.viewer)return [{src:null,items:SRC.list[0].watches.map(function(w){return {key:"w|"+watchId(w),w:w};})}];
+  if(MERGE){
+    var ws=mergeFiles(SRC.list.filter(function(s,i){return srcOn(i);}));
+    return [{src:null,items:ws.map(function(w){return {key:"m|"+w._key,w:w};})}];
+  }
+  var many=SRC.list.length>1;
+  return SRC.list.map(function(s,i){return {src:s,items:s.watches.map(function(w){
+    var c=Object.assign({},w);if(many)c._source=srcText(s);return {key:i+"|"+watchId(w),w:c};})};});
+}
+function isOn(it,g){return it.key in pick?pick[it.key]:!isEmptyWatch(it.w)&&!(g.src&&g.src.dev);}
 function linreg(pts){
   var n=pts.length;if(n<2)return null;var x0=pts[0].t,sx=0,sy=0,sxx=0,sxy=0,syy=0;
   pts.forEach(function(p){var x=(p.t-x0)/DAY,y=p.offset;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;syy+=y*y;});
@@ -309,8 +379,9 @@ function overview(list,info,isSample){
   }).join("");
   return '<section class="sheet">'
     +'<div class="cover-head"><div><h2>'+esc(t("rTitle"))+'</h2><p class="meta">'+esc(t("generated"))+' '+esc(fDT(Date.now()))+(isSample?' · <i>'+esc(t("sampleTag"))+'</i>':'')+'</p></div>'
-    +'<div class="brand"><b>Sioux Watch Café</b><br>watchcafe.eu'+(info.files?'':'<br>'+esc(t("device"))+': '+esc(info.device))+'</div></div>'
-    +(info.files?'<p class="meta">'+esc(t("sources"))+': '+info.files.map(function(f){return esc(f.name)+(f.from?' <span class="dim">('+esc(f.from.device)+(f.from.at?', '+esc(fDT(f.from.at)):'')+')</span>':'');}).join('; ')+'</p>':'')
+    +'<div class="brand"><b>Sioux Watch Café</b><br>watchcafe.eu'+(info.sources?'':'<br>'+esc(t("device"))+': '+esc(info.device))+'</div></div>'
+    +(info.sources&&info.sources.length?'<p class="meta">'+esc(t("sources"))+': '+info.sources.map(function(f){
+      return f.dev?esc(t("thisDevice"))+' <span class="dim">('+esc(info.device)+')</span>':esc(f.name)+(f.from?' <span class="dim">('+esc(f.from.device)+(f.from.at?', '+esc(fDT(f.from.at)):'')+')</span>':'');}).join('; ')+'</p>':'')
     +'<div class="kpis">'+kpi(t("watches"),list.length)+kpi(t("measurements"),nMeas)
     +kpi(t("period"),all.length?esc(fShort(Math.min.apply(null,all)))+' – '+esc(fShort(Math.max.apply(null,all))):t("none"))
     +kpi(t("timegrapher"),list.reduce(function(x,a){return x+a.tg.length;},0))+'</div>'
@@ -376,17 +447,54 @@ function watchPage(a,withRaw){
   return h+'</section>';
 }
 
+function renderPick(gs){
+  var sel=0,tot=0,h="";
+  gs.forEach(function(g){g.items.forEach(function(it){tot++;if(isOn(it,g))sel++;});});
+  var allNone=function(gi){var x=gi==null?"":' data-g="'+gi+'"';return '<button class="lnk" data-all="1"'+x+'>'+esc(t("all"))+'</button><span class="sep">·</span><button class="lnk" data-all="0"'+x+'>'+esc(t("noneSel"))+'</button>';};
+  var chip=function(on,label,attr,extra){return '<button class="chip'+(on?'':' off')+'" '+attr+' aria-pressed="'+on+'"><span class="ck">'+(on?'✓':'')+'</span><span class="nm">'+label+'</span>'+(extra||'')+'</button>';};
+  var lbl=function(s){var l=srcLabel(s);return '<b>'+esc(l.b)+'</b>'+(l.d?' · '+esc(l.d):'');};
+  if(SRC.viewer&&MERGE&&SRC.list.length>1){
+    h+='<div class="grp"><span class="src"><b>'+esc(t("sources"))+'</b></span>'+SRC.list.map(function(s,i){return chip(srcOn(i),lbl(s),'data-src="'+i+'"');}).join("")+'</div>';
+  }
+  h+='<div class="pick-head"><span class="lbl">'+esc(t("inReport"))+'</span><span class="cnt">'+sel+' '+esc(t("of"))+' '+tot+'</span><span class="sp"></span>'+allNone(null)+'</div>';
+  gs.forEach(function(g,gi){
+    h+='<div class="grp">'+(g.src&&gs.length>1?'<span class="src">'+lbl(g.src)+'</span>':'');
+    h+=g.items.map(function(it,ii){return chip(isOn(it,g),esc(it.w.name||"?"),'data-g="'+gi+'" data-i="'+ii+'"',isEmptyWatch(it.w)?'<span class="em">'+esc(t("empty"))+'</span>':'');}).join("");
+    if(g.src&&gs.length>1)h+='<span class="glnk">'+allNone(gi)+'</span>';
+    h+='</div>';
+  });
+  var foot=!SRC.viewer?(SRC.sample?"":t("pickRemember")):MERGE?t("pickMerged"):SRC.list[0].dev?t("pickDevice"):"";
+  if(MERGE&&SRC.viewer&&SRC.list[0].dev)foot+=" "+t("pickDevice");
+  if(foot)h+='<p class="foot">'+esc(foot)+'</p>';
+  document.getElementById("pick").innerHTML=h;
+}
+document.getElementById("pick").onclick=function(e){
+  var b=e.target.closest("button");if(!b)return;
+  var gs=groups();
+  if(b.dataset.src!=null){var i=+b.dataset.src;srcPick[i]=!srcOn(i);}
+  else if(b.dataset.all!=null){var v=b.dataset.all==="1";
+    gs.forEach(function(g,gi){if(b.dataset.g!=null&&+b.dataset.g!==gi)return;g.items.forEach(function(it){pick[it.key]=v;});});}
+  else if(b.dataset.i!=null){var g=gs[+b.dataset.g],it=g.items[+b.dataset.i];pick[it.key]=!isOn(it,g);}
+  else return;
+  savePick();render();
+};
+
 function render(){
   document.documentElement.lang=lang;
   ["title","sub","raw","back","note"].forEach(function(k){document.getElementById("t-"+k).textContent=t(k);});
   document.getElementById("printBtn").textContent=t("print");
-  var src=loadState(),list=src.state.watches.map(analyse);
-  if(src.sample)document.getElementById("t-note").textContent=t("note")+" "+t("sampleNote");
+  if(SRC.sample)document.getElementById("t-note").textContent=t("note")+" "+t("sampleNote");
   document.title=t("title")+" — Sioux Watch Café";
   var withRaw=document.getElementById("optRaw").checked;
-  if(src.files){var bk=document.getElementById("t-back");bk.textContent=t("backViewer");bk.href="viewer.html";}
-  document.getElementById("sheets").innerHTML=overview(list,{device:WatchData.getDevice(),files:src.files},src.sample)
-    +list.map(function(a){return watchPage(a,withRaw);}).join("");
+  if(FROM_VIEWER){var bk=document.getElementById("t-back");bk.textContent=t("backViewer");bk.href="viewer.html";}
+  var gs=groups(),chosen=[],used=[];
+  gs.forEach(function(g){var any=false;g.items.forEach(function(it){if(isOn(it,g)){chosen.push(it.w);any=true;}});if(any&&g.src)used.push(g.src);});
+  if(SRC.viewer&&MERGE)used=SRC.list.filter(function(s,i){return srcOn(i);});
+  renderPick(gs);
+  var list=chosen.map(analyse);
+  document.getElementById("sheets").innerHTML=list.length
+    ?overview(list,{device:WatchData.getDevice(),sources:SRC.viewer?used:null},SRC.sample)+list.map(function(a){return watchPage(a,withRaw);}).join("")
+    :'<div class="pick-none">'+esc(t("pickNone"))+'</div>';
 }
 document.getElementById("optRaw").onchange=render;
 document.getElementById("printBtn").onclick=function(){window.print();};
