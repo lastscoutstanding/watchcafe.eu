@@ -6,11 +6,11 @@
 (function(){
   var PAGES = [
     { title: "Home",          url: "/" },
-    { title: "Watch Café",    url: "/cafe/" },
     { title: "Rate Meter",    url: "/watchrate/" },
     { title: "Power Reserve", url: "/powerreserve/" },
     { title: "Glossary",      url: "/glossary/" },
-    { title: "Guide",         url: "/guide/" }
+    { title: "Guide",         url: "/guide/" },
+    { title: "Watch Café",    url: "/cafe/" }
   ];
   var LANGS = [ ["en","English"], ["nl","Nederlands"] ];
   var LKEY = "siouxWatchRateMeterLang";
