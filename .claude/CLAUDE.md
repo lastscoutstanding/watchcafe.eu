@@ -63,6 +63,8 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 ## Homepage en Live Clock
 
 - Site is tool-gericht; café-inhoud staat onder `/cafe/`.
+- Merknaam buiten de café-pagina is `watchcafe.eu` (menubalk, paginatitels, footers, rapport); tool-ondertitels zonder achtervoegsel. "Sioux" alleen op `/cafe/` en in de regel onder de homepage-tegels, met uitleg ("a monthly meetup of watch fans at Dutch tech company Sioux"): buiten Sioux zegt de naam niemand iets en het is ook de naam van inheemse Amerikaanse volken.
+- Menuvolgorde: Home, Rate Meter, Power Reserve, Glossary, Guide, Watch Café (café bewust achteraan).
 - Eén kolom op de breedte van de menubalk (980 px): klokpaneel vult de breedte, wereldklok op één rij van negen (3×3 onder 940 px), vier tegels naast elkaar (2×2 onder 860 px, onder elkaar onder 520 px).
 - Tegeliconen zijn inline SVG-lijniconen in `currentColor` (accentkleur), geen emoji.
 - Kopstijl overal gelijk: titel links, 30 px/800 in accentkleur, subtitel 14 px, 4 px ertussen. Andere pagina's zetten die bovenin hun kaart; de homepage op de linkerrand van de kolom.
