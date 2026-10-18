@@ -94,7 +94,7 @@
     return '<button data-theme-opt="' + t[0] + '"><span>' + t[1] + '</span><span class="ck">\u2713</span></button>';
   }).join('');
   nav.innerHTML = '<div class="swc-in">'
-    + '<a class="swc-brand" href="/"><span class="dot"></span>Sioux Watch Caf\u00e9</a>'
+    + '<a class="swc-brand" href="/"><span class="dot"></span>watchcafe.eu</a>'
     + '<button class="swc-burger" aria-label="Menu" aria-expanded="false">\u2630</button>'
     + '<div class="swc-links">' + links + '</div>'
     + '<div class="swc-tools"><div class="swc-gear">'
