@@ -27,8 +27,8 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `watchrate/report.html` | Printbaar rapport (PDF via printvenster) |
 | `watchrate/sample.js` | Voorbeeldhorloges, gedeeld door Rate Meter en Viewer |
 | `powerreserve/index.html` | Power Reserve |
-| `glossary/index.html` + `glossary.txt` | Woordenlijst EN/NL |
-| `guide/index.html` | Handleiding per tool |
+| `guide/index.html` + `glossary.txt` | Guide met twee tabs: handleiding per tool en woordenlijst EN/NL (`#glossary`) |
+| `glossary/index.html` | Alleen doorverwijzing naar `/guide/#glossary` (oude bladwijzers) |
 | `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
 | `cafe/index.html` + `meetings.txt`, `meetings.js`, `events.txt`, `events.js`, `cafe-log.txt` | Café-pagina |
 | `nav.js` | Gedeelde menubalk, taal-toggle, thema-keuze |
@@ -64,12 +64,13 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 
 - Site is tool-gericht; café-inhoud staat onder `/cafe/`.
 - Merknaam buiten de café-pagina is `watchcafe.eu` (menubalk, paginatitels, footers, rapport); tool-ondertitels zonder achtervoegsel. "Sioux" alleen op `/cafe/` en in de regel onder de homepage-tegels, met uitleg ("a monthly meetup of watch fans at Dutch tech company Sioux"): buiten Sioux zegt de naam niemand iets en het is ook de naam van inheemse Amerikaanse volken.
-- Menuvolgorde: Home, Rate Meter, Power Reserve, Glossary, Guide, Watch Café (café bewust achteraan).
+- Menuvolgorde: Home, Rate Meter, Power Reserve, Guide, Watch Café (café bewust achteraan). Glossary is een tab van de Guide, om het menu kort te houden.
+- Gepland (mockup `_mockup/collection.html`, akkoord): pagina Collection als eerste menu-item, met overzicht, horloge aanmaken/verwijderen, gegevens, logboek en draaglog. De homepage-tegel Glossary (nu naar `/guide/#glossary`) wordt dan Collection. Bouwvolgorde in losse commits: Collection-basis, Logbook-tab, Worn-tab + "Wearing today", rapport.
 - Eén kolom op de breedte van de menubalk (980 px): klokpaneel vult de breedte, wereldklok op één rij van negen (3×3 onder 940 px), vier tegels naast elkaar (2×2 onder 860 px, onder elkaar onder 520 px).
 - Tegeliconen zijn inline SVG-lijniconen in `currentColor` (accentkleur), geen emoji.
 - Kopstijl overal gelijk: titel links, 30 px/800 in accentkleur, subtitel 14 px, 4 px ertussen. Andere pagina's zetten die bovenin hun kaart; de homepage op de linkerrand van de kolom.
 - Alle pagina's gebruiken dezelfde kolom als de menubalk: 948 px inhoud (980 px min 16 px padding), linkerrand gelijk met het logo.
-- Lopende tekst blijft leesbaar smal binnen die kolom: Guide (zijbalk 190 px met meelopende inhoudsopgave + tekst 680 px), Privacy (tekst 720 px, slotsecties in twee kolommen), Glossary (begrippen in twee alfabetische kolommen), Café (welkom/onderwerpen naast een kolom van 320 px met de volgende datum, verslagen als raster van twee kaarten). Onder ~720–760 px valt alles terug op één kolom.
+- Lopende tekst blijft leesbaar smal binnen die kolom: Guide (zijbalk 190 px met meelopende inhoudsopgave + tekst 680 px), Privacy (tekst 720 px, slotsecties in twee kolommen), Glossary-tab (begrippen in twee alfabetische kolommen), Café (welkom/onderwerpen naast een kolom van 320 px met de volgende datum, verslagen als raster van twee kaarten). Onder ~720–760 px valt alles terug op één kolom.
 - Sectie-iconen (homepage-tegels, Guide) zijn SVG-lijniconen in `currentColor`, geen emoji.
 - Taalkeuze alleen via de menubalk; pagina's luisteren naar het `swclang`-event.
 - LED-klok: geen achtergrondvlakje per cijfer; onverlichte segmenten blijven zwak zichtbaar (`opacity:.28`).

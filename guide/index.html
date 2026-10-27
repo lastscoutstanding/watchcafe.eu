@@ -70,6 +70,25 @@
   .go{display:inline-block;margin-top:12px;color:var(--accent);text-decoration:none;font-weight:600;font-size:14px}
   .go:hover{text-decoration:underline}
 
+  /* Guide / Glossary tabs */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin:18px 0 0}
+  .tabs a{color:var(--muted);text-decoration:none;font-size:14.5px;font-weight:600;padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tabs a:hover{color:var(--ink)}
+  .tabs a.on{color:var(--accent);border-bottom-color:var(--accent)}
+  #paneGuide .lead{margin-top:22px}
+
+  /* glossary */
+  #gSearch{font:inherit;width:100%;max-width:420px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);margin-top:24px}
+  #gSearch::placeholder{color:#77747d}
+  .gcount{color:var(--muted);font-size:13px;margin:10px 2px 0}
+  dl{margin:18px 0 0;columns:2;column-gap:44px}
+  .entry{border-top:1px solid var(--border);padding:14px 2px;break-inside:avoid}
+  dt{color:var(--accent);font-weight:700;font-size:15.5px;margin:0 0 4px}
+  dt small{color:var(--muted);font-weight:400;font-size:12.5px;margin-left:8px}
+  dd{margin:0;font-size:14.5px;line-height:1.6;color:var(--ink)}
+  .gempty{color:var(--muted);font-size:14px;padding:20px 2px}
+  @media(max-width:720px){dl{columns:1}#gSearch{max-width:none}}
+
   .foot{border-top:1px solid var(--border);margin-top:32px;padding-top:20px;color:var(--muted);font-size:14px;line-height:1.7}
   .foot a{color:var(--accent);text-decoration:none;font-weight:600}
   .foot a:hover{text-decoration:underline}
@@ -88,11 +107,23 @@
     </div>
     <p class="sub" id="sub"></p>
 
-    <p class="lead" id="intro"></p>
+    <nav class="tabs" id="tabs">
+      <a href="#" data-tab="guide" id="tabGuide"></a>
+      <a href="#glossary" data-tab="glossary" id="tabGlossary"></a>
+    </nav>
 
-    <div class="layout">
-      <nav class="toc" id="toc"></nav>
-      <div id="body"></div>
+    <div id="paneGuide">
+      <p class="lead" id="intro"></p>
+      <div class="layout">
+        <nav class="toc" id="toc"></nav>
+        <div id="body"></div>
+      </div>
+    </div>
+
+    <div id="paneGlossary" hidden>
+      <input type="text" id="gSearch" autocomplete="off">
+      <p class="gcount" id="gCount"></p>
+      <dl id="gList"></dl>
     </div>
 
     <div class="foot" id="foot"></div>
@@ -104,9 +135,12 @@
 var C={
  en:{
   title:"Guide",
-  sub:"How this site and its tools work.",
+  sub:"How the tools work, and the words watch people use.",
+  tabGuide:"Guide", tabGlossary:"Glossary",
+  gSearch:"Search terms\u2026", gCount:function(n){return n+" term"+(n===1?"":"s");},
+  gNone:"No terms match your search.", gFail:"Could not load the glossary. It works on the live site (watchcafe.eu).",
   intro:"Everything here runs in your own browser \u2014 nothing is sent anywhere, and your watch data stays on your device. This guide walks through each tool and the few concepts worth knowing. New to measuring watches? Start with \u201cThe two numbers\u201d below.",
-  toc:[["concepts","The two numbers"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Power Reserve"],["viewer","Backup Viewer"],["glossary","Glossary"],["data","Your data & backups"]],
+  toc:[["concepts","The two numbers"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Power Reserve"],["viewer","Backup Viewer"],["data","Your data & backups"]],
   sections:[
     {id:"concepts",h:"The two numbers",tag:"Offset and rate \u2014 the heart of it all.",html:
       "<p>Two numbers describe how a watch keeps time, and it helps to keep them apart:</p>"+
@@ -147,9 +181,6 @@ var C={
       "<p>Export a backup from the Rate Meter and load it here to review it \u2014 handy for keeping the live tool tidy while your older measurements stay safe in files. It reads the rate, positions and offset trace per watch, plus any timegrapher and power-reserve data.</p>"+
       "<p>You can load several files at once to compare watches, and the same session dropdown from the Rate Meter is here too. Loaded files are remembered in this browser, so they're still here when you come back.</p>"+
       "<a class='go' href='/watchrate/viewer.html'>Open the Backup Viewer \u2192</a>"},
-    {id:"glossary",h:"Glossary",tag:"Watch and timegrapher terms, in plain language.",html:
-      "<p>A searchable list of horology terms \u2014 from movement and escapement to amplitude, beat error and lift angle \u2014 each explained in one line, in English and Dutch. A good place to look up anything in this guide you'd like defined.</p>"+
-      "<a class='go' href='/glossary/'>Open the Glossary \u2192</a>"},
     {id:"data",h:"Your data & backups",tag:"Where everything is stored, and how to move it.",html:
       "<p>All your watches and measurements are stored by your browser, on your own device \u2014 there is no server or account, and nothing leaves your machine. That also means your data doesn't automatically follow you to another device or browser.</p>"+
       "<p>To move data or keep it safe, use <b>Back up now</b> under <b>Your data</b> in the Rate Meter to save a <kbd>.json</kbd> file, and <b>Restore from backup</b> to load it elsewhere. On a phone or tablet, <b>Share</b> sends the file straight to AirDrop, Messages or a cloud folder. Clearing your browser data will erase your measurements, so make a backup now and then. A coloured dot shows when you last did: it turns orange when new measurements have waited a while, and then a reminder appears right after you record one.</p>"+
@@ -162,9 +193,12 @@ var C={
  },
  nl:{
   title:"Handleiding",
-  sub:"Hoe deze site en de tools werken.",
+  sub:"Hoe de tools werken, en de woorden die horlogemensen gebruiken.",
+  tabGuide:"Handleiding", tabGlossary:"Begrippenlijst",
+  gSearch:"Zoek een begrip\u2026", gCount:function(n){return n+" begrip"+(n===1?"":"pen");},
+  gNone:"Geen begrippen gevonden voor je zoekopdracht.", gFail:"Kon de begrippenlijst niet laden. Op de live site (watchcafe.eu) werkt dit wel.",
   intro:"Alles hier draait in je eigen browser \u2014 er wordt niets verstuurd, en je horlogedata blijft op je apparaat. Deze handleiding loopt elke tool langs, plus de paar begrippen die het waard zijn om te kennen. Nieuw met het meten van horloges? Begin met \u201cDe twee getallen\u201d hieronder.",
-  toc:[["concepts","De twee getallen"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Gangreserve"],["viewer","Backup Viewer"],["glossary","Begrippenlijst"],["data","Je data & back-ups"]],
+  toc:[["concepts","De twee getallen"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Gangreserve"],["viewer","Backup Viewer"],["data","Je data & back-ups"]],
   sections:[
     {id:"concepts",h:"De twee getallen",tag:"Offset en gang \u2014 waar alles om draait.",html:
       "<p>Twee getallen beschrijven hoe een horloge de tijd bijhoudt, en het helpt ze uit elkaar te houden:</p>"+
@@ -205,9 +239,6 @@ var C={
       "<p>Exporteer een back-up uit de Rate Meter en laad die hier om terug te kijken \u2014 handig om de live tool overzichtelijk te houden terwijl je oudere metingen veilig in bestanden blijven. De viewer leest per horloge de gang, posities en het offset-verloop, plus eventuele timegrapher- en gangreserve-data.</p>"+
       "<p>Je kunt meerdere bestanden tegelijk laden om horloges te vergelijken, en hetzelfde sessie-keuzemenu uit de Rate Meter zit ook hier. Geladen bestanden worden in deze browser onthouden, dus ze staan er nog als je terugkomt.</p>"+
       "<a class='go' href='/watchrate/viewer.html'>Open de Backup Viewer \u2192</a>"},
-    {id:"glossary",h:"Begrippenlijst",tag:"Horloge- en timegrapher-begrippen, in gewone taal.",html:
-      "<p>Een doorzoekbare lijst met horlogebegrippen \u2014 van uurwerk en echappement tot amplitude, slagfout en lifthoek \u2014 elk in \u00e9\u00e9n regel uitgelegd, in het Nederlands en Engels. Een goede plek om alles uit deze handleiding op te zoeken dat je verklaard wilt zien.</p>"+
-      "<a class='go' href='/glossary/'>Open de Begrippenlijst \u2192</a>"},
     {id:"data",h:"Je data & back-ups",tag:"Waar alles wordt bewaard, en hoe je het verplaatst.",html:
       "<p>Al je horloges en metingen worden door je browser bewaard, op je eigen apparaat \u2014 er is geen server of account, en er verlaat niets je machine. Dat betekent ook dat je data niet automatisch meereist naar een ander apparaat of browser.</p>"+
       "<p>Om data te verplaatsen of veilig te stellen, gebruik je <b>Back-up maken</b> onder <b>Je gegevens</b> in de Rate Meter om een <kbd>.json</kbd>-bestand op te slaan, en <b>Herstellen uit back-up</b> om het elders te laden. Op een telefoon of tablet stuurt <b>Delen</b> het bestand direct naar AirDrop, Berichten of een cloudmap. Je browsergegevens wissen verwijdert je metingen, dus maak af en toe een back-up. Een gekleurde stip laat zien wanneer je dat voor het laatst deed: hij wordt oranje als nieuwe metingen een tijdje wachten, en dan verschijnt er direct na het vastleggen van een meting een herinnering.</p>"+
@@ -229,7 +260,6 @@ var ICONS={
   ratemeter:'<circle cx="12" cy="13.5" r="7.5"/><path d="M10 2.5h4M12 2.5V6M18.2 6.8l1.3-1.3M12 13.5l3-3"/>',
   powerreserve:'<path d="M6.5 3h11M6.5 21h11M7.5 3v3.5L12 12l4.5-5.5V3M7.5 21v-3.5L12 12l4.5 5.5V21"/><path d="M10 19.2h4"/>',
   viewer:'<path d="M4 4v16h16"/><path d="M7.5 15l3.5-4 3 2.5 5-6"/>',
-  glossary:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19M9 7.5h6M9 10.5h4"/>',
   data:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/>'
 };
 function icon(id){
@@ -240,6 +270,10 @@ function render(){
   var c=C[lang];
   document.getElementById("title").textContent=c.title;
   document.getElementById("sub").textContent=c.sub;
+  document.getElementById("tabGuide").textContent=c.tabGuide;
+  document.getElementById("tabGlossary").textContent=c.tabGlossary;
+  document.getElementById("gSearch").placeholder=c.gSearch;
+  renderGlossary();
   document.getElementById("intro").textContent=c.intro;
   document.getElementById("toc").innerHTML=c.toc.map(function(x){return '<a href="#'+x[0]+'">'+x[1]+'</a>';}).join("");
   document.getElementById("body").innerHTML=c.sections.map(function(s){
@@ -262,8 +296,67 @@ function markToc(){
   links.forEach(function(a){a.classList.toggle("on",a===cur);});
 }
 window.addEventListener("scroll",markToc,{passive:true});
+
+/* ===== Glossary tab: terms from /glossary.txt ===== */
+var TERMS=null, gQuery="", gFailed=false;
+function parseGlossary(txt){
+  var lines=txt.split(/\r?\n/).filter(function(l){return l.trim().charAt(0)!=="#";});
+  return lines.join("\n").split(/\n\s*---+\s*\n/).map(function(b){return b.trim();}).filter(Boolean).map(function(b){
+    var ls=b.split("\n"), names=ls[0].split("/").map(function(x){return x.trim();});
+    var en="", nl="";
+    ls.slice(1).forEach(function(l){
+      if(/^EN:/i.test(l)) en=l.replace(/^EN:\s*/i,"").trim();
+      else if(/^NL:/i.test(l)) nl=l.replace(/^NL:\s*/i,"").trim();
+    });
+    return {en:names[0], nl:names[1]||names[0], defEn:en, defNl:nl};
+  }).filter(function(e){return e.en&&(e.defEn||e.defNl);});
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function renderGlossary(){
+  var c=C[lang], list=document.getElementById("gList"), count=document.getElementById("gCount");
+  if(gFailed){list.innerHTML='<div class="gempty">'+c.gFail+'</div>';count.textContent="";return;}
+  if(!TERMS)return;
+  var items=TERMS.slice().sort(function(a,b){return a[lang].localeCompare(b[lang],lang);});
+  if(gQuery){
+    var q=gQuery.toLowerCase();
+    items=items.filter(function(e){return (e.en+" "+e.nl+" "+e.defEn+" "+e.defNl).toLowerCase().indexOf(q)>-1;});
+  }
+  count.textContent=c.gCount(items.length);
+  if(!items.length){list.innerHTML='<div class="gempty">'+c.gNone+'</div>';return;}
+  list.innerHTML=items.map(function(e){
+    var other=(lang==="en")?e.nl:e.en;
+    var alt=(other&&other!==e[lang])?'<small>'+esc(other)+'</small>':"";
+    var def=(lang==="en")?(e.defEn||e.defNl):(e.defNl||e.defEn);
+    return '<div class="entry"><dt>'+esc(e[lang])+alt+'</dt><dd>'+esc(def)+'</dd></div>';
+  }).join("");
+}
+function loadGlossary(){
+  if(TERMS||gFailed)return;
+  fetch("/glossary.txt",{cache:"no-store"}).then(function(r){
+    if(!r.ok)throw 0; return r.text();
+  }).then(function(txt){TERMS=parseGlossary(txt);renderGlossary();
+  }).catch(function(){gFailed=true;renderGlossary();});
+}
+document.getElementById("gSearch").addEventListener("input",function(e){gQuery=e.target.value.trim();renderGlossary();});
+
+/* ===== tabs: #glossary opens the glossary, any other hash is a guide section ===== */
+function showTab(){
+  var gl=location.hash==="#glossary";
+  document.getElementById("paneGuide").hidden=gl;
+  document.getElementById("paneGlossary").hidden=!gl;
+  document.querySelectorAll("#tabs a").forEach(function(a){a.classList.toggle("on",(a.dataset.tab==="glossary")===gl);});
+  if(gl)loadGlossary();
+}
+document.getElementById("tabGuide").addEventListener("click",function(e){
+  e.preventDefault();
+  if(location.hash){history.pushState(null,"",location.pathname);showTab();}
+  window.scrollTo(0,0);
+});
+window.addEventListener("hashchange",showTab);
+window.addEventListener("popstate",showTab);
 window.addEventListener("swclang",function(e){lang=e.detail;render();markToc();});
 render();
+showTab();
 markToc();
 </script>
 </body>

@@ -8,7 +8,6 @@
     { title: "Home",          url: "/" },
     { title: "Rate Meter",    url: "/watchrate/" },
     { title: "Power Reserve", url: "/powerreserve/" },
-    { title: "Glossary",      url: "/glossary/" },
     { title: "Guide",         url: "/guide/" },
     { title: "Watch Café",    url: "/cafe/" }
   ];
