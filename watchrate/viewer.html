@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Watch Rate Meter — Viewer · watchcafe.eu</title>
+<title>Backup Viewer — watchcafe.eu</title>
   <link rel="stylesheet" href="/theme.css">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
@@ -81,7 +81,14 @@
   .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#8f8c96;transition:transform .15s,background .15s}
   .switch input:checked + .track{background:var(--banner);border-color:var(--accent)}
   .switch input:checked + .track::after{transform:translateX(16px);background:#fff}
-  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  /* bar in two layers: the loaded files (what the page shows), then view controls and the report */
+  .bar{flex-direction:column;align-items:stretch;gap:12px}
+  .bfiles{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .bctrls{display:flex;align-items:center;gap:18px;flex-wrap:wrap;border-top:1px dashed var(--border);padding-top:12px}
+  .pillbtn.report{margin-left:auto;display:inline-flex;align-items:center;gap:7px}
+  .pillbtn.report svg{width:15px;height:15px;flex:none}
+  @media(max-width:560px){.pillbtn.report{margin-left:0}}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
   .fchip{font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:999px;padding:4px 10px;display:inline-flex;align-items:center;gap:8px}
   .fchip b{color:var(--ink);font-weight:600}
   .fchip .x{cursor:pointer;color:#777}
@@ -156,7 +163,7 @@
   <div class="card">
     <div class="head">
       <div>
-        <h1 id="t-title">Watch Rate Meter — Viewer</h1>
+        <h1 id="t-title">Backup Viewer</h1>
         <p class="sub" id="t-sub"></p>
       </div>
       <div class="head-tools">
@@ -182,17 +189,19 @@
     </div>
 
     <div class="bar hide" id="bar">
-      <label class="switch grp" id="mergeLbl">
-        <input type="checkbox" id="merge"><span class="track"></span><span id="t-merge"></span>
-      </label>
-      <div class="grp"><span id="t-sort"></span>
-        <select id="sort">
-          <option value="name"></option><option value="rate"></option>
-          <option value="count"></option><option value="recent"></option>
-        </select>
+      <div class="bfiles"><span id="t-loaded"></span><div class="chips" id="chips"></div></div>
+      <div class="bctrls">
+        <label class="switch grp" id="mergeLbl">
+          <input type="checkbox" id="merge"><span class="track"></span><span id="t-merge"></span>
+        </label>
+        <div class="grp"><span id="t-sort"></span>
+          <select id="sort">
+            <option value="name"></option><option value="rate"></option>
+            <option value="count"></option><option value="recent"></option>
+          </select>
+        </div>
+        <a class="pillbtn solid report" id="reportBtn" href="report.html?src=viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 17v-3M12 17v-6M15 17v-4"/></svg><span id="t-report"></span></a>
       </div>
-      <a class="pillbtn" id="reportBtn" href="report.html?src=viewer"></a>
-      <div class="chips" id="chips"></div>
     </div>
 
     <div class="summary hide" id="summary"></div>
@@ -216,7 +225,7 @@ const T={
     dBig:"Drop one or more .json backups here",
     dSmall:"or click to choose — everything stays local in your browser, nothing is uploaded",
     pick:"Choose file", sample:"Show example",
-    report:"Report", merge:"Merge watches", mergeTip:"Combine watches with the same id/name across different files",
+    report:"Report of these backups", loaded:"Loaded:", merge:"Merge watches", mergeTip:"Combine watches with the same id/name across different files",
     sort:"Sort", sName:"by name", sRate:"largest deviation first", sCount:"most measurements", sRecent:"most recent",
     rate:"Rate", sday:"s/day", noRate:"too few measurements for a rate",
     posHead:"Position", n:"n", spread:"Spread between positions",
@@ -225,7 +234,7 @@ const T={
     watches:w=>w+(w===1?" watch":" watches"),
     meas:m=>m+(m===1?" measurement":" measurements"),
     empty:"No watches found in the loaded backup(s).",
-    foot:"Watch Rate Meter · viewer · rate via linear regression (s/day)",
+    foot:"Backup Viewer · rate via linear regression (s/day)",
     gTitle:"How it works",
     gSteps:[
       "Open a backup — drag your .json backup file(s) onto the page, or click to choose.",
@@ -241,7 +250,7 @@ const T={
     dBig:"Sleep een of meer .json-backups hierheen",
     dSmall:"of klik om te kiezen — alles blijft lokaal in je browser, er wordt niets verstuurd",
     pick:"Bestand kiezen", sample:"Toon voorbeeld",
-    report:"Rapport", merge:"Horloges samenvoegen", mergeTip:"Voeg horloges met hetzelfde id/naam uit verschillende bestanden samen",
+    report:"Rapport van deze back-ups", loaded:"Geladen:", merge:"Horloges samenvoegen", mergeTip:"Voeg horloges met hetzelfde id/naam uit verschillende bestanden samen",
     sort:"Sorteer", sName:"op naam", sRate:"grootste afwijking eerst", sCount:"meeste metingen", sRecent:"recentst gemeten",
     rate:"Gang", sday:"s/dag", noRate:"te weinig metingen voor een gang",
     posHead:"Positie", n:"n", spread:"Spreiding tussen posities",
@@ -250,7 +259,7 @@ const T={
     watches:w=>w+(w===1?" horloge":" horloges"),
     meas:m=>m+(m===1?" meting":" metingen"),
     empty:"Geen horloges gevonden in de geladen backup(s).",
-    foot:"Watch Rate Meter · viewer · gang via lineaire regressie (s/dag)",
+    foot:"Backup Viewer · gang via lineaire regressie (s/dag)",
     gTitle:"Zo werkt het",
     gSteps:[
       "Open een backup — sleep je .json-backup(s) op de pagina, of klik om te kiezen.",
@@ -618,7 +627,8 @@ function applyChrome(){
   document.getElementById("pickBtn").textContent=t().pick;
   document.getElementById("sampleBtn").textContent=t().sample;
   document.getElementById("t-merge").textContent=t().merge;
-  document.getElementById("reportBtn").textContent=t().report;
+  document.getElementById("t-report").textContent=t().report;
+  document.getElementById("t-loaded").textContent=t().loaded;
   document.getElementById("mergeLbl").title=t().mergeTip;
   document.getElementById("t-sort").textContent=t().sort;
   const so=document.getElementById("sort").options;
@@ -693,7 +703,7 @@ fileInput.onchange=()=>{readFiles(fileInput.files);fileInput.value="";};
 drop.addEventListener("drop",e=>{if(e.dataTransfer?.files?.length)readFiles(e.dataTransfer.files);});
 document.getElementById("merge").onchange=e=>{merge=e.target.checked;render();};
 document.getElementById("sort").onchange=e=>{sortBy=e.target.value;render();};
-document.getElementById("sampleBtn").onclick=e=>{e.stopPropagation();loadJSON("voorbeeld-backup.json",SAMPLE);};
+document.getElementById("sampleBtn").onclick=e=>{e.stopPropagation();loadJSON("sample-backup.json",SAMPLE);};
 document.getElementById("qbtn").onclick=()=>{guideOpen=!guideOpen;render();}; // toggles, like on the Rate Meter
 document.getElementById("gx").onclick=()=>{guideOpen=false;render();};
 window.addEventListener("swclang",e=>{lang=e.detail;render();});

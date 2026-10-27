@@ -121,7 +121,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 ## Rapport
 
 - Tegel "Report"/"Rapport" in het blok "Your data" in de Collection, opent `watchrate/report.html` (terugknop naar de Collection). Leest `siouxWatchRateMeter`; zonder horloges toont hij de voorbeeldhorloges (met "sample data" in de kop).
-- Ook een knop "Report" in de balk van de Viewer: opent `report.html?src=viewer` (plus `&merge=1` als "Merge watches" aan staat). Het rapport leest dan de geladen back-ups uit `swcViewerFiles`, samengevoegd op id (anders naam) zoals de Viewer, of per bestand met apparaat en datum onder de naam. Bovenaan staan de bronbestanden in plaats van het apparaat; de terugknop gaat naar de Viewer.
+- Ook een knop "Report of these backups" ("Rapport van deze back-ups") in de balk van de Viewer, bewust: zo maak je een rapport van een horloge dat alleen in een back-up staat (ander apparaat, oude back-up, een vriend). Die knop opent `report.html?src=viewer` (plus `&merge=1` als "Merge watches" aan staat). Het rapport leest dan de geladen back-ups uit `swcViewerFiles`, samengevoegd op id (anders naam) zoals de Viewer, of per bestand met apparaat en datum onder de naam. Bovenaan staan de bronbestanden in plaats van het apparaat; de terugknop gaat naar de Viewer.
 - Horlogekeuze: rij chips boven het papier (niet geprint), met "N of M" en All/None. Lege horloges (geen metingen, timegrapher of gangreserve) staan standaard uit. Geen horloges gekozen = melding in plaats van pagina's.
   - Vanaf de Rate Meter: één rij; keuze onthouden in `siouxWatchReportPick` (`{ watchId: bool }`, alleen expliciete keuzes, dus nieuwe horloges staan vanzelf aan).
   - Vanaf de Viewer: de live Rate Meter-data doet mee als bron "This device · now", standaard uit (staat vaak al in een back-up). Per bestand: een rij per bron met eigen All/None. Met merge: bronnen als chips aan/uit, daaronder de samengevoegde horloges (op id, anders naam). Keuze wordt hier niet onthouden.
@@ -132,6 +132,9 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Datums met maand in letters en 24-uurs tijd, zodat ze internationaal eenduidig zijn.
 
 ## Backup Viewer
+
+- Heet overal "Backup Viewer" (titel, kop, voet). Het voorbeeldbestand heet `sample-backup.json`.
+- Balk in twee lagen: bovenaan "Loaded:" met de bestandschips; onder een stippellijn Merge en Sort links, de rapportknop (getint, met rapporticoon) rechts. Geen aparte "+ Add file": het sleepvak blijft altijd zichtbaar.
 
 - Laadt één of meer JSON-backups; geladen bestanden blijven in localStorage.
 - LED-gangweergave in DSEG7 Bold (base64 ingebed uit npm `dseg`).
