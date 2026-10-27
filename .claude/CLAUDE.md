@@ -100,7 +100,11 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Verkocht of weggegeven (laatste van purchase/sold is sold) = eerder horloge: label bij de naam, kaart in een ingeklapte lijst "Former watches". Ze staan nog wel in de pulldowns van Rate Meter en Power Reserve.
 - De voorbeeldhorloges hebben `info` (alleen gegevens die zeker kloppen) en een paar logboekregels (fictieve prijzen); de Tudor staat bewust op "service due".
 - `[hidden]{display:none!important}`: zonder die regel blijven elementen met een eigen `display` (grid, pill) zichtbaar.
-- Gepland, in losse commits (mockup `_mockup/collection.html`): Worn-tab + "Wearing today", rapport.
+- "Wearing today" (NL "Vandaag om") bovenaan het overzicht, boven de kaarten, zodat het vanaf de homepage-tegel één tik is: chips met de huidige horloges (niet de eerdere), nog eens tikken = ongedaan, meerdere per dag mag. Daaronder een strook van 7 dagen om een vergeten dag te kiezen (smal scherm: alleen een stip per dag). Kaarten tonen "worn today"/"worn N d ago"; onder de kaarten de rotatie over 12 maanden.
+- `w.worn = [{id, t}]`, `t` = de dag om 00:00 UTC; in `LISTS`, dus samenvoegen op id. Twee apparaten kunnen dezelfde dag met een ander id loggen: dagen tellen één keer, en ongedaan maken verwijdert (met tombstones) alle regels van die dag.
+- Tab Worn: dagen gedragen (12 maanden), aandeel van de vastgelegde dagen, laatst gedragen, langste reeks, en een kalender van 53 weken (ma–zo) die op mobiel bij de huidige week begint.
+- Voorbeeldhorloges krijgen draagdagen voor de 150 dagen vóór vandaag (vandaag zelf niet), afgeleid van het dagnummer (`withWorn` in `sample.js`).
+- Gepland (mockup `_mockup/collection.html`): logboek en gegevens in het rapport.
 
 ## Watch Rate Meter
 

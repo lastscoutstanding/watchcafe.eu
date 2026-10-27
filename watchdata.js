@@ -67,11 +67,13 @@ var WatchData=(function(){
       (w.timegrapher||[]).forEach(function(s){if(s.id==null)s.id="g"+s.t;});
       (w.powerReserve||[]).forEach(function(p){if(p.id==null)p.id="p"+p.start;});
       (w.log||[]).forEach(function(e){if(e.id==null)e.id="l"+e.t+"_"+e.type;});
+      (w.worn||[]).forEach(function(x){if(x.id==null)x.id="n"+x.t;});
     });
   }
 
-  // log = logbook entries from the Collection (purchase, service, event ...)
-  var LISTS=[["measurements","t"],["timegrapher","t"],["powerReserve","start"],["log","t"]];
+  // log = logbook entries from the Collection (purchase, service, event ...);
+  // worn = days the watch was worn ({id, t} with t = the day at 00:00 UTC)
+  var LISTS=[["measurements","t"],["timegrapher","t"],["powerReserve","start"],["log","t"],["worn","t"]];
 
   /* Merge an incoming backup into the local state. Everything new is added,
      everything only present locally is kept, and deletions on either side win.
@@ -133,7 +135,7 @@ var WatchData=(function(){
       LISTS.forEach(function(L){if(w[L[0]])w[L[0]]=w[L[0]].filter(function(x){return !gone(x.id);});});
       if(w.prCurrent&&gone("pr:"+w.prCurrent.start))delete w.prCurrent;
       out.push(w);
-      rows.push({name:w.name,status:"new",added:(w.measurements||[]).length+(w.timegrapher||[]).length+(w.powerReserve||[]).length+(w.log||[]).length});
+      rows.push({name:w.name,status:"new",added:(w.measurements||[]).length+(w.timegrapher||[]).length+(w.powerReserve||[]).length+(w.log||[]).length+(w.worn||[]).length});
     });
 
     loc.watches=out;

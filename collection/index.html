@@ -10,8 +10,8 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=4"></script>
-<script src="/watchrate/sample.js?v=4"></script>
+<script src="/watchdata.js?v=5"></script>
+<script src="/watchrate/sample.js?v=5"></script>
 <style>
   :root{
     --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -76,6 +76,7 @@
   .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-top:20px;overflow-x:auto}
   .tabs button{background:none;border:none;border-bottom:2px solid transparent;border-radius:0;color:var(--muted);padding:10px 14px;margin-bottom:-1px;font-weight:600;white-space:nowrap}
   .tabs button:hover{color:var(--ink);background:none}
+  @media(max-width:480px){.tabs{gap:0}.tabs button{padding:10px 9px;font-size:14px}}
   .tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
   .pane{padding-top:20px}
   .meas{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
@@ -136,6 +137,48 @@
   .recent .lab{display:flex;justify-content:space-between;align-items:center}
   .recent .lab a{color:var(--accent);text-decoration:none;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600;cursor:pointer}
 
+  /* wearing today */
+  .wear{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:24px}
+  .wear .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .wear h2{font-size:17px;margin:0}
+  .wear .hint{font-size:13px;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips .chip{font-size:14px;padding:7px 14px}
+  .chips .chip.on::before{content:"\2713  ";}
+  .week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:14px}
+  .week button{border:1px solid var(--border);border-radius:8px;padding:6px 4px;font-size:12px;color:var(--muted);text-align:center;background:transparent;min-width:0}
+  .week button b{display:block;color:var(--ink);font-weight:600;font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .week button b.none{color:#6d6a73;font-weight:400}
+  /* narrow screens: no names in the strip (the chips show the chosen day), just a dot */
+  @media(max-width:560px){
+    .week button b{display:none}
+    .week button::after{content:"";display:block;width:6px;height:6px;border-radius:50%;margin:5px auto 1px;background:#3a3a44}
+    .week button.has::after{background:var(--accent)}
+  }
+  .week button.sel{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .f.worn{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+  .rot{margin-top:24px}
+  .rotbar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:4px 0 10px}
+  .rotbar span{display:block}
+  .rleg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+  .rleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+  /* worn tab */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:700px){.stats{grid-template-columns:1fr 1fr}}
+  .stat{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+  .stat .n{font-size:24px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat .t{font-size:12px;color:var(--muted)}
+  .heatwrap{overflow-x:auto;margin-top:16px;padding-bottom:4px}
+  .heat,.hmon{display:grid;grid-template-columns:repeat(53,11px);gap:3px}
+  .heat{grid-template-rows:repeat(7,11px);grid-auto-flow:column}
+  .heat i{width:11px;height:11px;border-radius:2px;background:#2a2a31}
+  .heat i.w{background:var(--accent)}
+  .heat i.o{background:color-mix(in srgb,var(--accent) 28%,#2a2a31)}
+  .heat i.x{background:transparent}
+  .hmon{font-size:11px;color:var(--muted);margin-top:4px;white-space:nowrap}
+  .legend{font-size:12px;color:var(--muted);margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
   .gears{margin-top:20px;text-align:center;font-size:12.5px;color:#8f8c96}
   .gears a{color:var(--accent);text-decoration:none}
   .gears a:hover{text-decoration:underline}
@@ -169,10 +212,12 @@
       <div class="tabs" id="tabs">
         <button data-tab="ov" id="tabOv"></button>
         <button data-tab="log" id="tabLog"></button>
+        <button data-tab="worn" id="tabWorn"></button>
         <button data-tab="det" id="tabDet"></button>
       </div>
       <div class="pane" id="paneOv"></div>
       <div class="pane" id="paneLog" hidden></div>
+      <div class="pane" id="paneWorn" hidden></div>
       <div class="pane" id="paneDet" hidden></div>
     </div>
   </div>
@@ -191,7 +236,13 @@ var I18N={
   loadSample:"Show sample watches",
   noMeas:"no measurements yet", perDay:"s/day", reserveF:function(h){return h+" h reserve";},
   back:"← Collection", tabOv:"Overview", tabDet:"Details",
-  tabLog:"Logbook",
+  tabLog:"Logbook", tabWorn:"Worn",
+  wearToday:"Wearing today", wearOn:function(d){return "Worn on "+d;}, wearHint:"Tap to log, tap again to undo",
+  today:"Today", wornToday:"worn today", wornAgo:function(n){return n===1?"worn yesterday":"worn "+n+" d ago";},
+  rotation:"Rotation, last 12 months", daysLogged:function(n){return n+(n===1?" day":" days")+" logged";},
+  stDays:"days worn, last 12 months", stShare:"of the days you logged", stLast:"last worn", stStreak:"longest streak (days)",
+  never:"never", wornEmpty:"Not logged yet. Tap this watch under \u201cWearing today\u201d in the collection overview.",
+  lgThis:"this watch", lgOther:"another watch", lgNone:"nothing logged",
   types:{purchase:"Purchase",service:"Service",repair:"Repair",strap:"Strap / bracelet",event:"Event",sold:"Sold or gifted",note:"Note"},
   whereLbl:{purchase:"Bought from",service:"Done by",repair:"Done by",strap:"Strap",event:"Event",sold:"To"},
   wherePh:{purchase:"e.g. a dealer, a boutique, a friend",service:"e.g. a watchmaker",repair:"e.g. a watchmaker",strap:"e.g. brown leather",event:"e.g. a watch meetup, a fair, a boutique visit",sold:"e.g. a friend"},
@@ -234,7 +285,13 @@ var I18N={
   loadSample:"Toon voorbeeldhorloges",
   noMeas:"nog geen metingen", perDay:"s/dag", reserveF:function(h){return h+" u reserve";},
   back:"← Collectie", tabOv:"Overzicht", tabDet:"Gegevens",
-  tabLog:"Logboek",
+  tabLog:"Logboek", tabWorn:"Gedragen",
+  wearToday:"Vandaag om", wearOn:function(d){return "Gedragen op "+d;}, wearHint:"Tik om vast te leggen, nog eens om ongedaan te maken",
+  today:"Vandaag", wornToday:"vandaag om", wornAgo:function(n){return n===1?"gisteren om":n+" d geleden om";},
+  rotation:"Rotatie, afgelopen 12 maanden", daysLogged:function(n){return n+(n===1?" dag":" dagen")+" vastgelegd";},
+  stDays:"dagen gedragen, afgelopen 12 maanden", stShare:"van de vastgelegde dagen", stLast:"laatst gedragen", stStreak:"langste reeks (dagen)",
+  never:"nooit", wornEmpty:"Nog niets vastgelegd. Tik dit horloge aan bij \u201cVandaag om\u201d in het collectie-overzicht.",
+  lgThis:"dit horloge", lgOther:"een ander horloge", lgNone:"niets vastgelegd",
   types:{purchase:"Aankoop",service:"Onderhoud",repair:"Reparatie",strap:"Band",event:"Evenement",sold:"Verkocht of weggegeven",note:"Notitie"},
   whereLbl:{purchase:"Gekocht bij",service:"Gedaan door",repair:"Gedaan door",strap:"Band",event:"Evenement",sold:"Aan"},
   wherePh:{purchase:"bijv. een dealer, boutique, vriend",service:"bijv. een horlogemaker",repair:"bijv. een horlogemaker",strap:"bijv. bruin leer",event:"bijv. een horlogemeetup, beurs, boutiquebezoek",sold:"bijv. een vriend"},
@@ -379,6 +436,26 @@ function loadSuggest(){
   return SUGGEST;
 }
 
+/* ===== worn: w.worn = [{id, t}], t = the day at 00:00 UTC =====
+   Two devices can log the same day under different ids; days are counted once. */
+var DAY=864e5,PALETTE=["#d96a41","#5b9bff","#48c777","#d4af52","#b07cff","#4fc3c7","#ff7a9c","#a09da6"];
+function todayT(){return parseDay(todayStr());}
+function wornDays(w){var o={};(w.worn||[]).forEach(function(x){o[x.t]=1;});return o;}
+function wornOn(w,day){return (w.worn||[]).some(function(x){return x.t===day;});}
+function lastWorn(w){return (w.worn||[]).reduce(function(m,x){return Math.max(m,x.t);},0)||null;}
+function toggleWorn(w,day){
+  if(wornOn(w,day)){
+    // undo: drop every entry for that day, also ones merged in from another device
+    (w.worn||[]).forEach(function(x){if(x.t===day)WatchData.markDeleted(state,x.id);});
+    w.worn=w.worn.filter(function(x){return x.t!==day;});
+  }else{
+    if(!Array.isArray(w.worn))w.worn=[];
+    w.worn.push({id:uid(),t:day});w.worn.sort(function(a,b){return a.t-b.t;});
+  }
+  save();
+}
+function fmtWeekday(t,long){return new Date(t).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",long?{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}:{weekday:"short",timeZone:"UTC"});}
+
 /* ===== routing: #<watch id> shows one watch, no hash the overview ===== */
 var tab="ov",editing=false;
 function currentId(){return decodeURIComponent(location.hash.slice(1));}
@@ -391,7 +468,37 @@ function render(){
 }
 
 /* ===== overview ===== */
-var showFormer=false;
+// "Wearing today": one tap per watch, with the last seven days to fix a forgotten day
+function wearHTML(now){
+  if(!now.length)return "";
+  var t=T(),today=todayT(),day=wearDay||today,days=[];
+  for(var i=6;i>=0;i--)days.push(today-i*DAY);
+  return '<div class="wear"><div class="hd"><h2>'+esc(day===today?t.wearToday:t.wearOn(fmtWeekday(day,true)))+'</h2>'
+    +'<span class="hint">'+esc(t.wearHint)+'</span></div>'
+    +'<div class="chips">'+now.map(function(w){
+      return '<button class="chip'+(wornOn(w,day)?' on':'')+'" data-wear="'+esc(w.id)+'">'+esc(w.name)+'</button>';
+    }).join("")+'</div>'
+    +'<div class="week">'+days.map(function(d){
+      var names=now.filter(function(w){return wornOn(w,d);}).map(function(w){return w.name;});
+      return '<button class="'+(d===day?'sel':'')+(names.length?' has':'')+'" data-day="'+d+'">'+esc(d===today?t.today:fmtWeekday(d))
+        +(names.length?'<b title="'+esc(names.join(", "))+'">'+esc(names.join(", "))+'</b>':'<b class="none">—</b>')+'</button>';
+    }).join("")+'</div></div>';
+}
+// share of worn days per watch over the last 12 months
+function rotationHTML(){
+  var t=T(),from=todayT()-364*DAY,rows=[],total=0;
+  state.watches.forEach(function(w,i){
+    var n=Object.keys(wornDays(w)).filter(function(d){return +d>=from;}).length;
+    if(n){rows.push({w:w,n:n,c:PALETTE[i%PALETTE.length]});total+=n;}
+  });
+  if(!total)return "";
+  rows.sort(function(a,b){return b.n-a.n;});
+  var logged={};state.watches.forEach(function(w){Object.keys(wornDays(w)).forEach(function(d){if(+d>=from)logged[d]=1;});});
+  return '<div class="rot"><p class="lab">'+esc(t.rotation)+' · '+esc(t.daysLogged(Object.keys(logged).length))+'</p>'
+    +'<div class="rotbar">'+rows.map(function(r){return '<span style="width:'+(r.n/total*100)+'%;background:'+r.c+'"></span>';}).join("")+'</div>'
+    +'<div class="rleg">'+rows.map(function(r){return '<span><i style="background:'+r.c+'"></i>'+esc(r.w.name)+' '+r.n+'</span>';}).join("")+'</div></div>';
+}
+var showFormer=false,wearDay=null; // wearDay: the day the chips apply to (null = today)
 function renderOverview(){
   var t=T(),el=document.getElementById("overview");
   if(!state.watches.length){
@@ -408,17 +515,26 @@ function renderOverview(){
     facts.push(r?'<span class="f"><b>'+fmtRate(r)+'</b> '+t.perDay+'</span>':'<span class="f">'+esc(t.noMeas)+'</span>');
     if(pr)facts.push('<span class="f">'+esc(t.reserveF(pr.h))+'</span>');
     if(sv&&sv.overdue)facts.push('<span class="f warn">'+esc(t.svcPill)+'</span>');
+    var lw=lastWorn(w);
+    if(lw&&!isFormer(w)){var ago=Math.round((todayT()-lw)/DAY);if(ago>=0)facts.push('<span class="f'+(ago===0?' worn':'')+'">'+esc(ago===0?t.wornToday:t.wornAgo(ago))+'</span>');}
     var md=modelLine(w)+(info(w).ref?" · "+info(w).ref:"");
     return '<a class="wc" href="#'+encodeURIComponent(w.id)+'"><span class="nm">'+esc(w.name)+'</span>'
       +(md?'<span class="md">'+esc(md)+'</span>':'')
       +'<span class="facts">'+facts.join("")+'</span></a>';
   }
   var now=state.watches.filter(function(w){return !isFormer(w);}),former=state.watches.filter(isFormer);
-  el.innerHTML='<p class="lab">'+esc(t.count(now.length))+'</p><div class="wgrid">'
+  el.innerHTML=wearHTML(now)+'<p class="lab">'+esc(t.count(now.length))+'</p><div class="wgrid">'
     +now.map(card).join("")
     +'<button class="wc add" id="cardAdd"><span class="plus">+</span>'+esc(t.addWatch)+'</button></div>'
     +(former.length?'<div class="former"><button class="sm dash" id="formerBtn">'+esc(t.formerN(former.length))+'</button>'
-      +'<div class="wgrid" id="formerGrid"'+(showFormer?'':' hidden')+'>'+former.map(card).join("")+'</div></div>':'');
+      +'<div class="wgrid" id="formerGrid"'+(showFormer?'':' hidden')+'>'+former.map(card).join("")+'</div></div>':'')
+    +rotationHTML();
+  el.querySelectorAll("[data-wear]").forEach(function(b){
+    b.onclick=function(){toggleWorn(byId(b.dataset.wear),wearDay||todayT());renderOverview();};
+  });
+  el.querySelectorAll("[data-day]").forEach(function(b){
+    b.onclick=function(){var d=+b.dataset.day;wearDay=d===todayT()?null:d;renderOverview();};
+  });
   document.getElementById("cardAdd").onclick=openAdd;
   var fb=document.getElementById("formerBtn");
   if(fb)fb.onclick=function(){showFormer=!showFormer;document.getElementById("formerGrid").hidden=!showFormer;};
@@ -458,12 +574,13 @@ function renderDetail(id){
   document.getElementById("tabOv").textContent=t.tabOv;
   document.getElementById("tabDet").textContent=t.tabDet;
   document.getElementById("tabLog").textContent=t.tabLog;
+  document.getElementById("tabWorn").textContent=t.tabWorn;
   if(!w){
     document.getElementById("dPill").hidden=true;
     document.getElementById("dName").textContent="";
     document.getElementById("dRef").textContent=t.notFound;
     document.getElementById("tabs").hidden=true;
-    ["paneOv","paneLog","paneDet"].forEach(function(p){document.getElementById(p).hidden=true;});
+    ["paneOv","paneLog","paneWorn","paneDet"].forEach(function(p){document.getElementById(p).hidden=true;});
     return;
   }
   document.getElementById("tabs").hidden=false;
@@ -473,8 +590,9 @@ function renderDetail(id){
   document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.dataset.tab===tab);});
   document.getElementById("paneOv").hidden=tab!=="ov";
   document.getElementById("paneLog").hidden=tab!=="log";
+  document.getElementById("paneWorn").hidden=tab!=="worn";
   document.getElementById("paneDet").hidden=tab!=="det";
-  if(tab==="ov")renderOv(w);else if(tab==="log")renderLog(w);else renderDet(w);
+  if(tab==="ov")renderOv(w);else if(tab==="log")renderLog(w);else if(tab==="worn")renderWorn(w);else renderDet(w);
 }
 function renderOv(w){
   var t=T(),r=WatchData.currentRate(w),pr=reserveHours(w),tg=(w.timegrapher||[]).slice().sort(function(a,b){return b.t-a.t;});
@@ -545,6 +663,46 @@ function renderDet(w){
   document.getElementById("editBtn").onclick=function(){editing=true;disarm();render();};
   document.getElementById("delBtn").onclick=function(){deleteWatch(w,this);};
 }
+/* ===== worn tab: stats and a year of days, one square per day (weeks start on Monday) ===== */
+function renderWorn(w){
+  var t=T(),el=document.getElementById("paneWorn"),today=todayT(),from=today-364*DAY;
+  var mine=wornDays(w),any={};
+  state.watches.forEach(function(x){Object.keys(wornDays(x)).forEach(function(d){any[d]=1;});});
+  var days=Object.keys(mine).map(Number).sort(function(a,b){return a-b;});
+  if(!days.length){el.innerHTML='<p class="empty">'+esc(t.wornEmpty)+'</p>';return;}
+  var inYear=days.filter(function(d){return d>=from;}).length;
+  var logged=Object.keys(any).filter(function(d){return +d>=from;}).length;
+  var streak=0,run=0,prev=null;
+  days.forEach(function(d){run=prev!==null&&d-prev===DAY?run+1:1;streak=Math.max(streak,run);prev=d;});
+  var last=days[days.length-1],ago=Math.round((today-last)/DAY);
+  var lastTxt=ago===0?t.today:ago===1?(lang==="nl"?"Gisteren":"Yesterday"):fmtDay(last);
+  function stat(n,txt){return '<div class="stat"><div class="n">'+esc(n)+'</div><div class="t">'+esc(txt)+'</div></div>';}
+  // 53 columns of Monday..Sunday, ending with the current week
+  var dow=(new Date(today).getUTCDay()+6)%7,start=today-dow*DAY-52*7*DAY,cells="",mons="",lastMon=-1,lastLbl=-9;
+  for(var c=0;c<53;c++){
+    var colStart=start+c*7*DAY,m=new Date(colStart).getUTCMonth();
+    // label a column where a new month starts, unless the previous label is too close
+    var lbl=m!==lastMon&&c-lastLbl>=3&&c<51;if(lbl)lastLbl=c;
+    mons+='<span>'+(lbl?esc(new Date(colStart).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",{month:"short",timeZone:"UTC"})):"")+'</span>';
+    lastMon=m;
+    for(var r=0;r<7;r++){
+      var d=colStart+r*DAY;
+      cells+='<i class="'+(d>today?'x':mine[d]?'w':any[d]?'o':'')+'" title="'+esc(fmtDay(d))+'"></i>';
+    }
+  }
+  el.innerHTML='<div class="stats">'
+    +stat(inYear,t.stDays)
+    +stat(logged?Math.round(inYear/logged*100)+"%":"—",t.stShare)
+    +stat(lastTxt,t.stLast)
+    +stat(streak,t.stStreak)+'</div>'
+    +'<div class="heatwrap"><div class="heat">'+cells+'</div><div class="hmon">'+mons+'</div></div>'
+    +'<div class="legend"><span><i style="background:var(--accent)"></i>'+esc(t.lgThis)+'</span>'
+    +'<span><i style="background:color-mix(in srgb,var(--accent) 28%,#2a2a31)"></i>'+esc(t.lgOther)+'</span>'
+    +'<span><i style="background:#2a2a31"></i>'+esc(t.lgNone)+'</span></div>';
+  // on a narrow screen, start at the current week
+  var hw=el.querySelector(".heatwrap");hw.scrollLeft=hw.scrollWidth;
+}
+
 /* ===== logbook tab ===== */
 var logForm=null,logArmed=false,logArmTimer=null; // logForm = {id (null = new), type, vals}
 function renderLog(w){

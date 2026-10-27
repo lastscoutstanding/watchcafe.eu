@@ -12,5 +12,22 @@ var WatchSample=(function(){
     {name:"Ancre 17 Jewels (vintage)",info:{caliber:"Manual wind, 17 jewels"},log:[{t:1783814400000,type:"purchase",where:"Flea market",cost:"€ 25",note:"Ran, but needed setting"}],measurements:[{t:1784527200000,offset:0,position:"dial_up",note:"flea-market find, set to time"},{t:1784571360000,offset:9.2,position:"dial_up"},{t:1784614140000,offset:18.3,position:"dial_up"},{t:1784657340000,offset:27.0,position:"dial_up"},{t:1784701320000,offset:36.4,position:"dial_up"},{t:1784744460000,offset:48.2,position:"dial_down"},{t:1784786400000,offset:59.8,position:"dial_down"},{t:1784830980000,offset:72.3,position:"dial_down"},{t:1784873760000,offset:84.3,position:"dial_down"},{t:1784917200000,offset:80.3,position:"crown_down"},{t:1784960580000,offset:76.1,position:"crown_down"},{t:1785003420000,offset:72.0,position:"crown_down"},{t:1785047100000,offset:68.3,position:"crown_down"},{t:1785089040000,offset:69.7,position:"crown_left"},{t:1785133020000,offset:71.1,position:"crown_left"},{t:1785176460000,offset:72.5,position:"crown_left"},{t:1785219420000,offset:74.0,position:"crown_left"},{t:1785262920000,offset:79.2,position:"worn"},{t:1785305340000,offset:84.0,position:"worn"},{t:1785348960000,offset:89.3,position:"worn"},{t:1785392100000,offset:94.2,position:"worn"}],timegrapher:[{t:1785000600000,note:"",readings:[{position:"dial_up",rate:17,amplitude:232,beatError:0.9},{position:"dial_down",rate:25,amplitude:238,beatError:0.8},{position:"crown_down",rate:-9,amplitude:196,beatError:1.1},{position:"crown_left",rate:2,amplitude:201,beatError:1.2}]}],powerReserve:[{start:1785564900000,stop:1785704940000,offset:0,reserveMs:140040000,note:""}]},
     {name:"Casio A300U",info:{brand:"Casio",caliber:"Quartz"},measurements:[{t:1781589600000,offset:0,position:"dial_up"},{t:1781848800000,offset:0.3,position:"dial_up"},{t:1782108000000,offset:0.6,position:"dial_up"},{t:1782367200000,offset:0.9,position:"dial_up"},{t:1782626400000,offset:1.2,position:"dial_up"},{t:1782885600000,offset:1.5,position:"dial_up"},{t:1783144800000,offset:1.8,position:"dial_up"},{t:1783404000000,offset:2.1,position:"dial_up"}]}
   ];}
-  return {watches:watches};
+  // Worn days for the Collection: the last 150 days before today (today is left
+  // for the visitor to tap), about one day in seven skipped. Picked from the day
+  // number, so every device gets the same days.
+  function withWorn(ws){
+    var DAY=864e5,n=new Date(),today=Date.UTC(n.getFullYear(),n.getMonth(),n.getDate());
+    var weights=[30,25,22,13,10],sum=100;
+    ws.forEach(function(w){w.worn=[];});
+    for(var i=1;i<=150;i++){
+      var day=today-i*DAY,h=(Math.floor(day/DAY)*2654435761)%4294967296;
+      if(h%7===0)continue;
+      var r=Math.floor(h/7)%sum,k=0;
+      while(r>=weights[k]){r-=weights[k];k++;}
+      if(ws[k])ws[k].worn.push({t:day});
+    }
+    ws.forEach(function(w){w.worn.reverse();});
+    return ws;
+  }
+  return {watches:function(){return withWorn(watches());}};
 })();
