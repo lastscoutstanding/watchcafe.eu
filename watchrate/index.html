@@ -138,6 +138,7 @@
   .bknudge .txt b{color:var(--ink);font-weight:600}
   .bknudge .ok{color:#3be35b;font-weight:700;margin-right:4px}
   .bknudge .x{background:none;border:none;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1}
+  #recordBtn.done{color:#3be35b;border-color:color-mix(in srgb,#3be35b 55%,transparent);background:color-mix(in srgb,#3be35b 18%,transparent)}
   .bknudge .x:hover{color:var(--ink);background:none}
   .imppanel{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
   .imppanel h3{margin:0;font-size:18px;color:var(--accent)}
@@ -406,7 +407,7 @@ var I18N={
   offsetNow:"Offset now",
   rate:"Rate",
   perDay:"s/day",
-  position:"Position", note:"Note", optional:"optional", record:"Record measurement",
+  position:"Position", note:"Note", optional:"optional", record:"Record measurement", recSaved:"Saved",
   newStart:"New start",
   measurements:"Measurements", measLog:"Measurement log", noMeasurements:"No measurements recorded yet.", needTwo:"Record at least 2 measurements to calculate the rate.",
   sinceStart:"since the last new start",
@@ -471,7 +472,7 @@ var I18N={
   offsetNow:"Offset nu",
   rate:"Gang",
   perDay:"s/dag",
-  position:"Positie", note:"Notitie", optional:"optioneel", record:"Meting vastleggen",
+  position:"Positie", note:"Notitie", optional:"optioneel", record:"Meting vastleggen", recSaved:"Opgeslagen",
   newStart:"Nieuwe start",
   measurements:"Metingen", measLog:"Meetlog", noMeasurements:"Nog geen metingen vastgelegd.", needTwo:"Leg minstens 2 metingen vast om de gang te berekenen.",
   sinceStart:"sinds de laatste nieuwe start",
@@ -1084,8 +1085,19 @@ document.getElementById("recordBtn").onclick=function(){
   if(chk.checked)m.newStart=true;
   w.measurements.push(m);
   document.getElementById("noteIn").value="";chk.checked=false;
-  save();renderAll();showNudge();
+  save();renderAll();showNudge();flashRecorded();
 };
+// Brief "✓ Saved" on the button as confirmation, width kept so nothing shifts
+var recFlashTimer=null;
+function flashRecorded(){
+  var b=document.getElementById("recordBtn");
+  if(!recFlashTimer)b.style.minWidth=b.offsetWidth+"px";
+  clearTimeout(recFlashTimer);
+  b.classList.add("done");b.textContent="\u2713 "+I18N[lang].recSaved;
+  recFlashTimer=setTimeout(function(){
+    recFlashTimer=null;b.classList.remove("done");b.style.minWidth="";b.textContent=I18N[lang].record;
+  },1600);
+}
 
 function renderDevLine(){
   var t=I18N[lang];
