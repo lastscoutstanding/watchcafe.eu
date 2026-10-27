@@ -179,6 +179,50 @@
   .legend{font-size:12px;color:var(--muted);margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 
+  /* Your data (moved here from the Rate Meter) */
+  .block{border-top:1px solid var(--border);margin-top:30px;padding-top:22px}
+  .block h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:0 0 12px;font-weight:700}
+  .bkstatus{display:flex;align-items:baseline;gap:10px;font-size:14px;margin-bottom:14px}
+  .bkdot{width:10px;height:10px;border-radius:50%;flex:none;align-self:center;background:#5a5a66}
+  .bkdot.ok{background:#3be35b;box-shadow:0 0 6px rgba(59,227,91,.6)}
+  .bkdot.due{background:#ffb02e;box-shadow:0 0 6px rgba(255,176,46,.6)}
+  .bkstatus .mut,.bkstatus.idle{color:var(--muted)}
+  .bkmain{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .devline{margin-left:auto;font-size:12.5px;color:var(--muted)}
+  .devline button{font:inherit;color:var(--ink);background:none;border:none;border-bottom:1px dashed #5a5a66;border-radius:0;padding:0;cursor:pointer}
+  .devline button:hover{color:var(--accent);border-color:var(--accent);background:none}
+  @media(max-width:520px){.devline{margin-left:0;flex-basis:100%}}
+  .bkmore{margin-top:18px;padding-top:16px;border-top:1px dashed var(--border)}
+  .bktools{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.bktools{grid-template-columns:1fr}}
+  .bktool{background:#1a1a20;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .bktool .btn{align-self:flex-start;text-decoration:none;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+  .bktool .btn:hover{background:#30303a}
+  .bktool .btn svg{width:17px;height:17px;flex:none}
+  .bktool p{margin:0;font-size:13px;line-height:1.5;color:var(--muted)}
+  .bkrestore{display:flex;justify-content:flex-end;margin-top:12px}
+  .bkrestore button{background:transparent;border-style:dashed;color:var(--muted)}
+  /* reminder under "Record measurement" when a backup is due */
+  .bknudge{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--muted);background:#0e0e12;border:1px solid var(--border)}
+  .bknudge .txt{flex:1 1 220px}
+  .bknudge .txt b{color:var(--ink);font-weight:600}
+  .bknudge .ok{color:#3be35b;font-weight:700;margin-right:4px}
+  .bknudge .x{background:none;border:none;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1}
+  #recordBtn.done{color:#3be35b;border-color:color-mix(in srgb,#3be35b 55%,transparent);background:color-mix(in srgb,#3be35b 18%,transparent)}
+  .bknudge .x:hover{color:var(--ink);background:none}
+  .imppanel{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .imppanel h3{margin:0;font-size:18px;color:var(--accent)}
+  .imppanel .from{font-size:13px;color:var(--muted);margin:2px 0 12px}
+  .imppanel .from b{color:var(--ink);font-weight:600}
+  .improw{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--border);font-size:14px}
+  .improw:last-of-type{border-bottom:1px solid var(--border)}
+  .improw .st{color:var(--muted);text-align:right}
+  .improw .st.add{color:#3be35b}
+  .improw .st.del{color:#ff6b5e}
+  .impbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .impbtns .replace{margin-left:auto;background:transparent;border-style:dashed;color:var(--muted)}
+  .imppanel .hint2{font-size:12px;color:var(--muted);margin-top:10px}
+  .wear .bknudge{margin-top:14px}
   .gears{margin-top:20px;text-align:center;font-size:12.5px;color:#8f8c96}
   .gears a{color:var(--accent);text-decoration:none}
   .gears a:hover{text-decoration:underline}
@@ -203,6 +247,31 @@
         <div class="formbtns"><button class="sm" id="addCancel"></button><button class="sm primary" id="addSave"></button></div>
       </div>
       <p class="note" id="ovNote"></p>
+
+      <div class="block" id="dataBlock">
+        <h2 id="dataH2"></h2>
+        <div class="bkstatus" id="bkStatus"><span class="bkdot" id="bkDot"></span><span id="bkText"></span></div>
+        <div class="bkmain">
+          <button class="primary" id="exportBtn"></button>
+          <button id="shareBtn" hidden></button>
+          <span class="devline" id="devLine"></span>
+        </div>
+        <div class="bkmore">
+          <div class="bktools">
+            <div class="bktool">
+              <a class="btn" id="reportBtn" href="/watchrate/report.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 17v-3M12 17v-6M15 17v-4"/></svg><span id="reportLbl"></span></a>
+              <p id="reportTxt"></p>
+            </div>
+            <div class="bktool">
+              <a class="btn" id="viewerBtn" href="/watchrate/viewer.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3"/></svg><span id="viewerLbl"></span></a>
+              <p id="viewerTxt"></p>
+            </div>
+          </div>
+          <div class="bkrestore"><button class="sm" id="importBtn"></button></div>
+        </div>
+        <input type="file" id="importFile" accept="application/json" hidden>
+        <div class="imppanel" id="impPanel" hidden></div>
+      </div>
     </div>
 
     <!-- ===== one watch ===== -->
@@ -236,6 +305,25 @@ var I18N={
   loadSample:"Show sample watches",
   noMeas:"no measurements yet", perDay:"s/day", reserveF:function(h){return h+" h reserve";},
   back:"← Collection", tabOv:"Overview", tabDet:"Details",
+  dataH2:"Your data", exportBtn:"Back up now", importBtn:"Restore from backup…", shareBtn:"Share…",
+  bkIdle:"Your watch data is stored in this browser only. Back up now and then to keep it safe.",
+  bkNever:"Never backed up", bkOnlyHere:function(n){return n+(n===1?" item lives":" items live")+" only in this browser";},
+  bkDone:"Backed up", bkLast:"Last backup", bkNewSince:function(n){return n+" new item"+(n===1?"":"s")+" since";},
+  bkToday:"today", bkYesterday:"yesterday", bkDaysAgo:function(n){return n+" days ago";},
+  bkSaved:"Saved.", bkItems:function(n){return n+" item"+(n===1?"":"s");},
+  bkNudgeSince:function(m,ago){return "<b>"+m+"</b> since your last backup "+ago+".";},
+  bkNudgeNever:function(m,n){return "<b>"+m+"</b> "+(n===1?"lives":"live")+" only in this browser.";}, bkDismiss:"Dismiss",
+  reportLbl:"Report", viewerLbl:"Browse backups",
+  reportTxt:"All your watches on paper: rate, charts, positions and timegrapher results. Save it as a PDF to keep or print.",
+  viewerTxt:"Open backups from your phone, laptop or a friend side by side and compare watches. Your own data here stays untouched.",
+  impTitle:"Restore backup", impFrom:"From", impNoDevice:"backup without device label",
+  impNew:function(n){return "new watch, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" new";}, impRemoved:function(n){return n+" removed";}, impUpdated:"details updated",
+  impSame:"no changes", impLocalOnly:"only on this device, kept", impWatchRemoved:"deleted on the other device",
+  impMerge:"Merge", impCancel:"Cancel", impReplace:"Replace everything",
+  impHint:"Merge adds what’s new in the backup and keeps everything that’s only on this device. Deletions on either side carry over.",
+  impReplaceConfirm:"Replace all data in this browser with this backup? Anything not in the backup is lost.",
+  impBad:"Could not read this file as a valid backup.",
+  devLbl:"This device:", devPrompt:"Name for this device (shown in backup files):",
   tabLog:"Logbook", tabWorn:"Worn",
   wearToday:"Wearing today", wearOn:function(d){return "Worn on "+d;}, wearHint:"Tap to log, tap again to undo",
   today:"Today", wornToday:"worn today", wornAgo:function(n){return n===1?"worn yesterday":"worn "+n+" d ago";},
@@ -285,6 +373,25 @@ var I18N={
   loadSample:"Toon voorbeeldhorloges",
   noMeas:"nog geen metingen", perDay:"s/dag", reserveF:function(h){return h+" u reserve";},
   back:"← Collectie", tabOv:"Overzicht", tabDet:"Gegevens",
+  dataH2:"Je gegevens", exportBtn:"Back-up maken", importBtn:"Herstellen uit back-up…", shareBtn:"Delen…",
+  bkIdle:"Je horlogedata staat alleen in deze browser. Maak af en toe een back-up, dan is hij veilig.",
+  bkNever:"Nog nooit een back-up gemaakt", bkOnlyHere:function(n){return n+(n===1?" item staat":" items staan")+" alleen in deze browser";},
+  bkDone:"Back-up gemaakt", bkLast:"Laatste back-up", bkNewSince:function(n){return n+(n===1?" nieuw item":" nieuwe items")+" sindsdien";},
+  bkToday:"vandaag", bkYesterday:"gisteren", bkDaysAgo:function(n){return n+" dagen geleden";},
+  bkSaved:"Opgeslagen.", bkItems:function(n){return n+(n===1?" item":" items");},
+  bkNudgeSince:function(m,ago){return "<b>"+m+"</b> sinds je laatste back-up van "+ago+".";},
+  bkNudgeNever:function(m,n){return "<b>"+m+"</b> "+(n===1?"staat":"staan")+" alleen in deze browser.";}, bkDismiss:"Sluiten",
+  reportLbl:"Rapport", viewerLbl:"Back-ups bekijken",
+  reportTxt:"Al je horloges op papier: gang, grafieken, posities en timegrapher-resultaten. Bewaar het als PDF of print het.",
+  viewerTxt:"Open back-ups van je telefoon, laptop of een vriend naast elkaar en vergelijk horloges. Je eigen gegevens hier blijven ongemoeid.",
+  impTitle:"Back-up herstellen", impFrom:"Van", impNoDevice:"back-up zonder apparaatlabel",
+  impNew:function(n){return "nieuw horloge, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" nieuw";}, impRemoved:function(n){return n+" verwijderd";}, impUpdated:"gegevens bijgewerkt",
+  impSame:"geen wijzigingen", impLocalOnly:"alleen op dit apparaat, blijft staan", impWatchRemoved:"verwijderd op het andere apparaat",
+  impMerge:"Samenvoegen", impCancel:"Annuleren", impReplace:"Alles vervangen",
+  impHint:"Samenvoegen voegt toe wat nieuw is in de back-up en houdt alles wat alleen op dit apparaat staat. Verwijderingen aan beide kanten worden overgenomen.",
+  impReplaceConfirm:"Alle gegevens in deze browser vervangen door deze back-up? Wat niet in de back-up staat, ben je kwijt.",
+  impBad:"Kon dit bestand niet lezen als geldige back-up.",
+  devLbl:"Dit apparaat:", devPrompt:"Naam voor dit apparaat (komt in de back-upbestanden):",
   tabLog:"Logboek", tabWorn:"Gedragen",
   wearToday:"Vandaag om", wearOn:function(d){return "Gedragen op "+d;}, wearHint:"Tik om vast te leggen, nog eens om ongedaan te maken",
   today:"Vandaag", wornToday:"vandaag om", wornAgo:function(n){return n===1?"gisteren om":n+" d geleden om";},
@@ -482,7 +589,7 @@ function wearHTML(now){
       var names=now.filter(function(w){return wornOn(w,d);}).map(function(w){return w.name;});
       return '<button class="'+(d===day?'sel':'')+(names.length?' has':'')+'" data-day="'+d+'">'+esc(d===today?t.today:fmtWeekday(d))
         +(names.length?'<b title="'+esc(names.join(", "))+'">'+esc(names.join(", "))+'</b>':'<b class="none">—</b>')+'</button>';
-    }).join("")+'</div></div>';
+    }).join("")+'</div>'+(showNudge?nudgeHTML():"")+'</div>';
 }
 // share of worn days per watch over the last 12 months
 function rotationHTML(){
@@ -498,9 +605,10 @@ function rotationHTML(){
     +'<div class="rotbar">'+rows.map(function(r){return '<span style="width:'+(r.n/total*100)+'%;background:'+r.c+'"></span>';}).join("")+'</div>'
     +'<div class="rleg">'+rows.map(function(r){return '<span><i style="background:'+r.c+'"></i>'+esc(r.w.name)+' '+r.n+'</span>';}).join("")+'</div></div>';
 }
-var showFormer=false,wearDay=null; // wearDay: the day the chips apply to (null = today)
+var showFormer=false,showNudge=false,wearDay=null; // wearDay: the day the chips apply to (null = today)
 function renderOverview(){
   var t=T(),el=document.getElementById("overview");
+  renderBackup();
   if(!state.watches.length){
     document.getElementById("addBox").hidden=true;
     el.innerHTML='<div class="empty"><p>'+esc(t.empty)+'</p><div class="row">'
@@ -530,7 +638,10 @@ function renderOverview(){
       +'<div class="wgrid" id="formerGrid"'+(showFormer?'':' hidden')+'>'+former.map(card).join("")+'</div></div>':'')
     +rotationHTML();
   el.querySelectorAll("[data-wear]").forEach(function(b){
-    b.onclick=function(){toggleWorn(byId(b.dataset.wear),wearDay||todayT());renderOverview();};
+    b.onclick=function(){toggleWorn(byId(b.dataset.wear),wearDay||todayT());showNudge=true;renderOverview();};
+  });
+  el.querySelectorAll("[data-bk]").forEach(function(b){
+    b.onclick=function(){if(b.dataset.bk==="go")downloadBackup();else{nudgeOff=true;renderOverview();}};
   });
   el.querySelectorAll("[data-day]").forEach(function(b){
     b.onclick=function(){var d=+b.dataset.day;wearDay=d===todayT()?null:d;renderOverview();};
@@ -834,6 +945,101 @@ function deleteWatch(w,btn){
   document.getElementById("ovNote").textContent=t.deleted(w.name);
 }
 
+/* ===== your data: backup status, backup/share, restore (moved here from the Rate Meter) ===== */
+function renderDevLine(){
+  var t=T();
+  document.getElementById("devLine").innerHTML=esc(t.devLbl)+' <button type="button" id="devName">'+esc(WatchData.getDevice())+'</button>';
+  document.getElementById("devName").onclick=function(){
+    var n=prompt(T().devPrompt,WatchData.getDevice());
+    if(n!==null){WatchData.setDevice(n);renderDevLine();}
+  };
+}
+// "today, 14:32" / "yesterday, 14:32" / "12 days ago", by calendar day
+function backupAgo(ms){
+  var t=T(),a=WatchData.backupAge(ms);
+  return a.days===0?t.bkToday+", "+a.hm:a.days===1?t.bkYesterday+", "+a.hm:t.bkDaysAgo(a.days);
+}
+function renderBackup(){
+  var t=T(),st=WatchData.backupStatus(state),html;
+  document.getElementById("bkDot").className="bkdot "+st.level;
+  document.getElementById("bkStatus").classList.toggle("idle",st.level==="idle");
+  if(st.level==="idle")html=esc(t.bkIdle);
+  else if(!st.last)html=esc(t.bkNever)+' <span class="mut">· '+esc(t.bkOnlyHere(st.count))+'</span>';
+  else if(!st.count)html=esc(t.bkDone)+" "+backupAgo(st.last.at)+(st.last.file?' <span class="mut">· '+esc(st.last.file)+'</span>':"");
+  else html=esc(t.bkLast)+" "+backupAgo(st.last.at)+' <span class="mut">· '+esc(t.bkNewSince(st.count))+'</span>';
+  document.getElementById("bkText").innerHTML=html;
+}
+// Reminder right after "Wearing today", only when a backup is due; × hides it until the next reload
+var nudgeOff=false;
+function nudgeHTML(){
+  var t=T(),st=WatchData.backupStatus(state);
+  if(nudgeOff||st.level!=="due")return "";
+  var m=t.bkItems(st.count);
+  return '<div class="bknudge"><span class="txt"><span class="ok">✓</span>'+esc(t.bkSaved)+" "+(st.last?t.bkNudgeSince(m,backupAgo(st.last.at)):t.bkNudgeNever(m,st.count))+'</span>'
+    +'<button class="primary sm" data-bk="go">'+esc(t.exportBtn)+'</button>'
+    +'<button class="x" data-bk="x" aria-label="'+esc(t.bkDismiss)+'" title="'+esc(t.bkDismiss)+'">×</button></div>';
+}
+function downloadBackup(){WatchData.downloadBackup(state);renderOverview();renderBackup();}
+document.getElementById("exportBtn").onclick=downloadBackup;
+// Share sheet (AirDrop, Messages, Drive, ...) where the browser can share files
+(function(){
+  var btn=document.getElementById("shareBtn");
+  try{
+    if(!navigator.canShare||!navigator.canShare({files:[new File(["{}"],"x.json",{type:"application/json"})]}))return;
+  }catch(e){return;}
+  btn.hidden=false;
+  btn.onclick=function(){
+    var now=Date.now(),name=WatchData.backupName(now);
+    var f=new File([JSON.stringify(WatchData.backupData(state,now),null,2)],name,{type:"application/json"});
+    navigator.share({files:[f],title:name})
+      .then(function(){WatchData.markBackedUp(name,now);renderOverview();renderBackup();})
+      .catch(function(err){if(err&&err.name!=="AbortError")downloadBackup();});
+  };
+})();
+// Backups from before version 2 (users) are converted, as the Rate Meter does on load
+function migrate(d){
+  if(d&&d.watches)return d;
+  if(d&&d.users){var ws=[];d.users.forEach(function(u){(u.watches||[]).forEach(function(w){ws.push({id:w.id||uid(),name:w.name,measurements:w.measurements||[]});});});
+    return {version:2,activeWatch:ws[0]?ws[0].id:null,watches:ws};}
+  return d;
+}
+document.getElementById("importBtn").onclick=function(){document.getElementById("importFile").click();};
+document.getElementById("importFile").onchange=function(e){
+  var file=e.target.files[0];if(!file)return;var r=new FileReader();
+  r.onload=function(){var d;try{d=migrate(JSON.parse(r.result));if(!d.watches)throw 0;}
+    catch(err){alert(T().impBad);return;}
+    showImport(d);};
+  r.readAsText(file);e.target.value="";
+};
+function closeImport(){var p=document.getElementById("impPanel");p.hidden=true;p.innerHTML="";}
+function showImport(d){
+  var t=T(),res=WatchData.merge(state,d),p=document.getElementById("impPanel");
+  var from=d.exportedFrom&&d.exportedFrom.device
+    ?'<b>'+esc(String(d.exportedFrom.device))+'</b>'+(d.exportedFrom.at?' · '+new Date(d.exportedFrom.at).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"")
+    :esc(t.impNoDevice);
+  var rows=res.rows.map(function(r){
+    var st,cls="";
+    if(r.status==="new"){st=t.impNew(r.added);cls="add";}
+    else if(r.status==="changed"){var a=[];if(r.updated)a.push(t.impUpdated);if(r.added)a.push(t.impAdded(r.added));if(r.removed)a.push(t.impRemoved(r.removed));st=a.join(", ");cls=r.added||r.updated?"add":"del";}
+    else if(r.status==="removed"){st=t.impWatchRemoved;cls="del";}
+    else st=r.status==="localOnly"?t.impLocalOnly:t.impSame;
+    return '<div class="improw"><span>'+esc(r.name)+'</span><span class="st '+cls+'">'+esc(st)+'</span></div>';
+  }).join("");
+  p.innerHTML='<h3>'+esc(t.impTitle)+'</h3><div class="from">'+esc(t.impFrom)+' '+from+'</div>'+rows
+    +'<div class="impbtns"><button class="primary" id="impMerge">'+esc(t.impMerge)+'</button><button id="impCancel">'+esc(t.impCancel)+'</button>'
+    +'<button class="replace" id="impReplace">'+esc(t.impReplace)+'</button></div><div class="hint2">'+esc(t.impHint)+'</div>';
+  p.hidden=false;
+  p.scrollIntoView({behavior:"smooth",block:"nearest"});
+  document.getElementById("impCancel").onclick=closeImport;
+  document.getElementById("impMerge").onclick=function(){
+    state=res.state;closeImport();save();render();};
+  document.getElementById("impReplace").onclick=function(){
+    if(!confirm(T().impReplaceConfirm))return;
+    delete d.exportedFrom;state=d;WatchData.ensureIds(state.watches);
+    if(!state.activeWatch&&state.watches[0])state.activeWatch=state.watches[0].id;
+    closeImport();save();render();};
+}
+
 /* ===== static texts ===== */
 function applyLang(){
   var t=T();
@@ -845,6 +1051,8 @@ function applyLang(){
   document.getElementById("lblAddModel").textContent=t.fields.model;
   document.getElementById("addCancel").textContent=t.cancel;
   document.getElementById("addSave").textContent=t.add;
+  ["dataH2","exportBtn","importBtn","shareBtn","reportLbl","viewerLbl","reportTxt","viewerTxt"].forEach(function(k){document.getElementById(k).textContent=t[k];});
+  renderDevLine();
   document.getElementById("gears").innerHTML=esc(t.gears)+'<a href="/privacy/">'+esc(t.gearsLink)+'</a>';
   document.documentElement.lang=lang;
   showNotice();
@@ -868,11 +1076,13 @@ window.addEventListener("hashchange",function(){
 });
 // another tab (Rate Meter, Power Reserve) changed the data
 window.addEventListener("storage",function(e){if(e.key===KEY&&!editing&&!logForm){reload();render();}});
-window.addEventListener("swclang",function(e){lang=e.detail;applyLang();render();});
+window.addEventListener("swclang",function(e){lang=e.detail;closeImport();applyLang();render();});
 
 reload();
 applyLang();
 render();
+// /collection/?backup (from the Rate Meter) jumps to "Your data"
+if(/[?&]backup\b/.test(location.search)&&!currentId())document.getElementById("dataBlock").scrollIntoView();
 </script>
 </body>
 </html>

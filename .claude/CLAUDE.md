@@ -55,10 +55,10 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Verwijderingen: `state.deleted = { id: ms }`. Elke verwijderknop (horloge, meting, timegrapher-sessie, gangreserve-historie, voorbeelden wissen) moet `WatchData.markDeleted`/`markWatchDeleted` aanroepen, anders komt het item terug bij samenvoegen. Lopende gangreservemeting zonder id: `"pr:<start>"` bij opslaan of verwerpen.
 - Items zonder id (oude voorbeelddata) krijgen een id uit hun inhoud (`ensureIds`), zodat ze op elk apparaat gelijk zijn.
 - Delen-knop via Web Share API, alleen zichtbaar als de browser bestanden kan delen; bij een fout (geen annulering) valt hij terug op downloaden.
-- Blok "Your data" onderaan de Rate Meter: statusregel met stip, "Back up now" (getint) + Share + apparaatnaam; onder een stippellijn twee tegels met grijze knop en toelichting (Report, Browse backups); daaronder klein en gestippeld "Restore from backup…".
-- Back-upstatus (`WatchData.backupStatus`): grijs zonder eigen metingen (alleen voorbeelden of leeg), groen na een back-up, oranje als er iets nieuw is en er nooit een back-up was, de laatste ≥ 14 dagen oud is of ≥ 10 nieuwe items wachten. "Nieuw" = metingen, timegrapher-sessies en gangreservemetingen met een `uid()`-id jonger dan de laatste back-up (de aanmaaktijd zit in de eerste 8 tekens van het id; voorbeelddata heeft id's uit de inhoud en telt niet).
+- Blok "Your data" onderaan het Collection-overzicht (verhuisd uit de Rate Meter, want een back-up bevat nu ook gegevens, logboek en draagdagen, en de Collection wordt het vaakst geopend): statusregel met stip, "Back up now" (getint) + Share + apparaatnaam; onder een stippellijn twee tegels met grijze knop en toelichting (Report, Browse backups); daaronder klein en gestippeld "Restore from backup…". De Rate Meter houdt alleen de statusregel met een link "Backup & restore in your Collection →" naar `/collection/?backup` (scrollt naar het blok).
+- Back-upstatus (`WatchData.backupStatus`): grijs zonder eigen metingen (alleen voorbeelden of leeg), groen na een back-up, oranje als er iets nieuw is en er nooit een back-up was, de laatste ≥ 14 dagen oud is of ≥ 10 nieuwe items wachten. "Nieuw" = items (metingen, timegrapher-sessies, gangreservemetingen, logboekregels, draagdagen) met een `uid()`-id jonger dan de laatste back-up (de aanmaaktijd zit in de eerste 8 tekens van het id; voorbeelddata heeft id's uit de inhoud en telt niet).
 - Een download valt niet te bevestigen: de klik telt als back-up, bij Delen alleen een geslaagde share.
-- Herinnering (`bkNudge`) direct na "Record measurement" en na opslaan in Power Reserve, alleen bij oranje, met "Back up now" en ×. Geen pop-up.
+- Herinnering (`bkNudge`) direct na "Record measurement", na opslaan in Power Reserve en na een tik bij "Wearing today" (in dat blok; × verbergt hem tot de volgende paginalading), alleen bij oranje, met "Back up now" en ×. Geen pop-up. Teksten spreken van "items", niet van metingen.
 - `watchdata.js` staat met `?v=N` in Rate Meter en Power Reserve; ophogen bij wijzigingen.
 
 ## Homepage en Live Clock
@@ -120,7 +120,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 
 ## Rapport
 
-- Tegel "Report"/"Rapport" in het blok "Your data" op de Rate Meter, opent `watchrate/report.html`. Leest `siouxWatchRateMeter`; zonder horloges toont hij de voorbeeldhorloges (met "sample data" in de kop).
+- Tegel "Report"/"Rapport" in het blok "Your data" in de Collection, opent `watchrate/report.html` (terugknop naar de Collection). Leest `siouxWatchRateMeter`; zonder horloges toont hij de voorbeeldhorloges (met "sample data" in de kop).
 - Ook een knop "Report" in de balk van de Viewer: opent `report.html?src=viewer` (plus `&merge=1` als "Merge watches" aan staat). Het rapport leest dan de geladen back-ups uit `swcViewerFiles`, samengevoegd op id (anders naam) zoals de Viewer, of per bestand met apparaat en datum onder de naam. Bovenaan staan de bronbestanden in plaats van het apparaat; de terugknop gaat naar de Viewer.
 - Horlogekeuze: rij chips boven het papier (niet geprint), met "N of M" en All/None. Lege horloges (geen metingen, timegrapher of gangreserve) staan standaard uit. Geen horloges gekozen = melding in plaats van pagina's.
   - Vanaf de Rate Meter: één rij; keuze onthouden in `siouxWatchReportPick` (`{ watchId: bool }`, alleen expliciete keuzes, dus nieuwe horloges staan vanzelf aan).
