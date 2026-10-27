@@ -167,8 +167,34 @@
       seg.classList.toggle("on",active.indexOf(cls)>-1);
     });
   }
+  // Real time: device clock corrected by the server clock of watchcafe.eu.
+  // The Date header only has whole seconds, so requests are timed around a
+  // second boundary until the device offset is pinned down to a few ms.
+  var clockCorr=0;
+  function realNow(){return Date.now()+clockCorr;}
+  function syncClock(){
+    var lo=-Infinity,hi=Infinity,n=0;
+    function wait(ms){return new Promise(function(r){setTimeout(r,ms);});}
+    function sample(){
+      var t0=Date.now();
+      return fetch("/favicon.svg?sync="+t0+"-"+n,{method:"HEAD",cache:"no-store"}).then(function(r){
+        var t1=Date.now(),d=Date.parse(r.headers.get("Date"));
+        if(!isFinite(d))throw new Error("no Date header");
+        // server time was in [d, d+1000) somewhere between t0 and t1
+        lo=Math.max(lo,d-t1);hi=Math.min(hi,d+1000-t0);n++;
+        if(lo>hi)throw new Error("inconsistent server time");
+        if(n>=12||hi-lo<=25)return;
+        // aim the next request so the server sees it right at the estimated second boundary
+        var mid=(lo+hi)/2,half=(t1-t0)/2,now=Date.now();
+        var edge=Math.ceil((now+mid+half+60)/1000)*1000;
+        return wait(edge-mid-half-now).then(sample);
+      });
+    }
+    return sample().then(function(){clockCorr=Math.round((lo+hi)/2);},function(){});
+  }
+
   function tick(){
-    var now=new Date();
+    var now=new Date(realNow());
     var s=(String(now.getHours()).padStart(2,"0")+String(now.getMinutes()).padStart(2,"0")+String(now.getSeconds()).padStart(2,"0")).split("");
     for(var i=0;i<6;i++) setDigit("digit"+i,s[i]);
     var d=now.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).replace(/,/g,"").toUpperCase();
@@ -252,7 +278,9 @@
   });
 
   buildWorld(new Date());
-  tick(); setInterval(tick,1000);
+  // redraw just after each (real) second boundary, not on a free-running interval
+  (function loop(){tick();setTimeout(loop,1005-realNow()%1000);})();
+  syncClock(); setInterval(syncClock,3600000);
 
   var T={
     en:{h1:"Watch Tools",sub:"Free browser tools to measure and track your mechanical watches.",

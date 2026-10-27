@@ -74,7 +74,9 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Taalkeuze alleen via de menubalk; pagina's luisteren naar het `swclang`-event.
 - LED-klok: geen achtergrondvlakje per cijfer; onverlichte segmenten blijven zwak zichtbaar (`opacity:.28`).
 - Wereldklok: San Francisco, New York, London, Cluj, Pune, Da Nang, Suzhou, Singapore, Sydney, met UTC-offset op halfuur-precisie.
-- Live Clock staat op de homepage: zeven-segment LED, schaalt mee, lokale systeemtijd. Het paneel is geen link meer.
+- Live Clock staat op de homepage: zeven-segment LED, schaalt mee. Het paneel is geen link meer.
+- De homepage toont de echte tijd: de apparaatklok gecorrigeerd met de `Date`-header van watchcafe.eu zelf (`syncClock()`, HEAD op `/favicon.svg`). Verzoeken worden rond een secondegrens getimed tot de afwijking op ~25 ms bekend is; bij laden en elk uur. Geen melding of icoon; lukt het niet (offline), dan blijft het de apparaattijd. Lokaal is de correctie altijd ~0, want dan is de server de eigen Mac. Klok, wereldklok en tik lopen op deze tijd en verspringen net na elke echte secondegrens.
+- Rate Meter en Power Reserve rekenen bewust op de apparaatklok: een vaste afwijking valt weg in de gang, en de klok daar corrigeren zou lopende metingen laten verspringen.
 - Naast de datum twee knoppen in datumvak-stijl en accentkleur: links de 10-secondentik (bij elke paginalading uit, want browsers staan geluid pas na een klik toe; daarom niet in localStorage), rechts schermvullend via de Fullscreen-API (verborgen waar dat niet kan, zoals op iPhone).
 - De Amsterdam-regel van de oude klokpagina is bewust niet meegenomen.
 
