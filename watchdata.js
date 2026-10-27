@@ -1,5 +1,5 @@
 /* ===== Sioux Watch Café — shared watch-data helpers =====
-   Used by /watchrate/, /watchrate/viewer.html and /powerreserve/.
+   Used by /watchrate/, /watchrate/report.html, /powerreserve/ and /collection/.
    Device label: 'siouxWatchDevice' in localStorage, only stored when the user
    changes it; otherwise derived from the browser. Last backup: see
    backupStatus below. */
@@ -73,6 +73,8 @@ var WatchData=(function(){
 
   /* Merge an incoming backup into the local state. Everything new is added,
      everything only present locally is kept, and deletions on either side win.
+     A watch's name and details (w.info) can be edited in the Collection; w.edited
+     holds the time of that edit, and the most recent edit wins.
      Returns {state, rows}: one row per watch for the import dialog, with
      status "new" | "changed" | "same" | "localOnly" | "removed". */
   function merge(local,incoming){
@@ -91,7 +93,12 @@ var WatchData=(function(){
     (loc.watches||[]).forEach(function(w){
       var iw=incById[w.id];delete incById[w.id];
       if(gone(w.id)){rows.push({name:w.name,status:"removed"});return;}
-      var added=0,removed=0;
+      var added=0,removed=0,updated=false;
+      if(iw&&(+iw.edited||0)>(+w.edited||0)){
+        w.name=iw.name;w.edited=iw.edited;
+        if(iw.info)w.info=iw.info;else delete w.info;
+        updated=true;
+      }
       LISTS.forEach(function(L){
         var key=L[0],have={};
         var mine=(w[key]||[]).filter(function(x){
@@ -110,7 +117,7 @@ var WatchData=(function(){
       if(w.prCurrent&&!run){removed++;delete w.prCurrent;}
       else if(run&&run!==w.prCurrent){added++;w.prCurrent=run;}
       out.push(w);
-      rows.push({name:w.name,status:!iw?"localOnly":(added||removed)?"changed":"same",added:added,removed:removed});
+      rows.push({name:w.name,status:!iw?"localOnly":(added||removed||updated)?"changed":"same",added:added,removed:removed,updated:updated});
     });
 
     (inc.watches||[]).forEach(function(w){
@@ -181,8 +188,25 @@ var WatchData=(function(){
     return name;
   }
 
+  /* ----- rate -----
+     Sessions start at measurements flagged newStart; the current rate is the
+     least-squares slope of the last session, in s/day (same as the Rate Meter). */
+  function lastSession(w){
+    var pts=((w&&w.measurements)||[]).slice().sort(function(a,b){return a.t-b.t;}),cur=[];
+    pts.forEach(function(p){if(p.newStart&&cur.length)cur=[];cur.push(p);});
+    return cur;
+  }
+  function currentRate(w){
+    var pts=lastSession(w),n=pts.length;if(n<2)return null;
+    var sT=0,sO=0,sTT=0,sTO=0;
+    pts.forEach(function(p){sT+=p.t;sO+=p.offset;sTT+=p.t*p.t;sTO+=p.t*p.offset;});
+    var den=n*sTT-sT*sT;if(den===0)return null;
+    return {rate:(n*sTO-sT*sO)/den*DAY,n:n,span:pts[n-1].t-pts[0].t};
+  }
+
   return {getDevice:getDevice,setDevice:setDevice,guessDevice:guessDevice,
     backupName:backupName,backupData:backupData,
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
-    markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,ensureIds:ensureIds,merge:merge};
+    markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,ensureIds:ensureIds,merge:merge,
+    currentRate:currentRate};
 })();

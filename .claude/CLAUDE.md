@@ -22,6 +22,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | --- | --- |
 | `index.html` | Homepage "Watch Tools": hub met live klok en wereldklok-strip |
 | `clock/index.html` | Alleen doorverwijzing naar `/` (oude bladwijzers); de klok staat op de homepage |
+| `collection/index.html` | Collection: overzicht van alle horloges, aanmaken, gegevens, hernoemen, verwijderen |
 | `watchrate/index.html` | Watch Rate Meter |
 | `watchrate/viewer.html` | Backup Viewer |
 | `watchrate/report.html` | Printbaar rapport (PDF via printvenster) |
@@ -32,12 +33,12 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
 | `cafe/index.html` + `meetings.txt`, `meetings.js`, `events.txt`, `events.js`, `cafe-log.txt` | Café-pagina |
 | `nav.js` | Gedeelde menubalk, taal-toggle, thema-keuze |
-| `watchdata.js` | Gedeeld: apparaatnaam, back-upnaam, verwijder-tombstones, samenvoegen (Rate Meter + Power Reserve) |
+| `watchdata.js` | Gedeeld: apparaatnaam, back-upnaam, verwijder-tombstones, samenvoegen, `currentRate(w)` (Rate Meter, Power Reserve, Collection, rapport) |
 | `theme.css` | Alle thema-overrides |
 | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Favicon (klokje op 10:10) |
 
 localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
-- `siouxWatchRateMeter`: alle horlogedata (metingen, timegrapher, gangreserve).
+- `siouxWatchRateMeter`: alle horlogedata (metingen, timegrapher, gangreserve, gegevens).
 - `siouxWatchRateMeterLang`: taal (EN standaard, NL).
 - `siouxWatchTheme`: gekozen thema.
 - `siouxWatchDevice`: apparaatnaam voor back-ups; alleen gezet als de gebruiker hem wijzigt, anders afgeleid uit de browser (iPhone, iPad, Mac, Windows, Android …).
@@ -50,7 +51,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 
 - Bestandsnaam `watchrate-<apparaat>-JJJJ-MM-DD-UUMM.json`, plus `exportedFrom: { device, at }` in de JSON (overleeft hernoemen). Apparaatnaam aanpasbaar naast de back-upknop; de Viewer toont apparaat en tijd op de bestandschip.
 - Herstellen opent een paneel met per horloge wat de back-up toevoegt/verwijdert. Standaard Samenvoegen; "Alles vervangen" is secundair (gestippeld, met bevestiging).
-- Samenvoegen op id. Toevoegen en verwijderen tellen; bewerken bestaat niet in de UI, dus geen "laatst bewerkt wint".
+- Samenvoegen op id. Toevoegen en verwijderen tellen. Bewerken kan alleen voor naam en gegevens (`w.info`, in de Collection); `w.edited` is het tijdstip daarvan en de laatste wijziging wint. Zonder `edited` aan beide kanten blijft de lokale naam. Het herstelpaneel toont dan "details updated".
 - Verwijderingen: `state.deleted = { id: ms }`. Elke verwijderknop (horloge, meting, timegrapher-sessie, gangreserve-historie, voorbeelden wissen) moet `WatchData.markDeleted`/`markWatchDeleted` aanroepen, anders komt het item terug bij samenvoegen. Lopende gangreservemeting zonder id: `"pr:<start>"` bij opslaan of verwerpen.
 - Items zonder id (oude voorbeelddata) krijgen een id uit hun inhoud (`ensureIds`), zodat ze op elk apparaat gelijk zijn.
 - Delen-knop via Web Share API, alleen zichtbaar als de browser bestanden kan delen; bij een fout (geen annulering) valt hij terug op downloaden.
@@ -64,8 +65,8 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 
 - Site is tool-gericht; café-inhoud staat onder `/cafe/`.
 - Merknaam buiten de café-pagina is `watchcafe.eu` (menubalk, paginatitels, footers, rapport); tool-ondertitels zonder achtervoegsel. "Sioux" alleen op `/cafe/` en in de regel onder de homepage-tegels, met uitleg ("a monthly meetup of watch fans at Dutch tech company Sioux"): buiten Sioux zegt de naam niemand iets en het is ook de naam van inheemse Amerikaanse volken.
-- Menuvolgorde: Home, Rate Meter, Power Reserve, Guide, Watch Café (café bewust achteraan). Glossary is een tab van de Guide, om het menu kort te houden.
-- Gepland (mockup `_mockup/collection.html`, akkoord): pagina Collection als eerste menu-item, met overzicht, horloge aanmaken/verwijderen, gegevens, logboek en draaglog. De homepage-tegel Glossary (nu naar `/guide/#glossary`) wordt dan Collection. Bouwvolgorde in losse commits: Collection-basis, Logbook-tab, Worn-tab + "Wearing today", rapport.
+- Menuvolgorde: Home, Collection, Rate Meter, Power Reserve, Guide, Watch Café (café bewust achteraan). Glossary is een tab van de Guide, om het menu kort te houden.
+- Homepage-tegels: Collection, Rate Meter, Power Reserve, Guide.
 - Eén kolom op de breedte van de menubalk (980 px): klokpaneel vult de breedte, wereldklok op één rij van negen (3×3 onder 940 px), vier tegels naast elkaar (2×2 onder 860 px, onder elkaar onder 520 px).
 - Tegeliconen zijn inline SVG-lijniconen in `currentColor` (accentkleur), geen emoji.
 - Kopstijl overal gelijk: titel links, 30 px/800 in accentkleur, subtitel 14 px, 4 px ertussen. Andere pagina's zetten die bovenin hun kaart; de homepage op de linkerrand van de kolom.
@@ -89,11 +90,17 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - Other watch events (`events.js`): `events.txt` met `datum[..einddatum] | naam | plaats | link`. Voorbije evenementen verdwijnen; vier zichtbaar, rest achter gestippelde "Show N more"; jaartal-scheiding vanaf een volgend jaar; "today/tomorrow/in N days" binnen twee weken. Sectie verborgen als er niets komt.
 - Scripts staan met `?v=N` in de pagina; ophogen bij een wijziging zodat bezoekers geen oude versie uit de cache halen.
 
+## Collection
+
+- Eerste menu-item. Overzicht: een kaart per horloge (naam, merk/model/referentie, gang van de laatste sessie, gemiddelde gangreserve) plus kaart "+ Add watch" (naam verplicht, merk en model optioneel). Leeg: uitleg, "Add watch" en "Show sample watches".
+- `/collection/#<id>` toont één horloge met tabs Overview (gang, gangreserve, timegrapher, met links; de link zet `activeWatch`) en Details (merk, model, referentie, kaliber, jaar, serienummer, kastmaat, bandaanzet, doos & papieren in `w.info`; serienummer gemaskeerd tot je erop klikt). Bewerken incl. hernoemen zet `w.edited`. Verwijderen in twee stappen (5 s) met `markWatchDeleted`.
+- De voorbeeldhorloges hebben `info` (alleen gegevens die zeker kloppen).
+- Gepland, in losse commits (mockup `_mockup/collection.html`): Logbook-tab (gebeurtenissen: aankoop, onderhoud, band, Watch Café, verkocht), Worn-tab + "Wearing today", rapport. Verkochte horloges dan naar een dichtgeklapte lijst.
+
 ## Watch Rate Meter
 
-- Gang in s/dag via lineaire regressie over offsetmetingen. Horloges worden hier aangemaakt.
-- Horlogekeuze is een pulldown (zoals Power Reserve) met onderaan "+ Add watch"; die zet een naamveld op de plek van de select (Enter/Escape). Zonder horloges staat het naamveld er meteen. Prullenbak ernaast met bevestiging in twee stappen (rood, 5 s), zoals de profielkeuze van de Rangecard.
-- Bewust geen hernoemknop: samenvoegen houdt de lokale naam, dus een nieuwe naam bereikt andere apparaten nooit en de Viewer toont dan een willekeurige naam.
+- Gang in s/dag via lineaire regressie over offsetmetingen.
+- Horlogekeuze is een pulldown (zoals Power Reserve) met onderaan "+ Add watch" als snelle weg (alleen een naam); die zet een naamveld op de plek van de select (Enter/Escape). Zonder horloges staat het naamveld er meteen. Ernaast een i-knop naar het horloge in de Collection; hernoemen en verwijderen gebeuren daar, niet hier.
 - Meten: groene "jouw horloge"-klok met ▲/▼ gelijkzetten, dan vastleggen. Hele seconden; tik-sync is bewust verwijderd.
 - "Nieuwe start" is een handmatige checkbox. Geen automatische gat-detectie.
 - Sessies worden afgeleid uit nieuwe-start-vlaggen (datastructuur ongewijzigd). Pulldown boven de grafiek bij >1 sessie, standaard de laatste, plus "Alle sessies" en "Alle sessies, zonder tussenpozen" (`allc`: sessies als aaneengesloten blokken op de tijd-as met gestippelde breuklijn).

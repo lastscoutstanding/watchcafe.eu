@@ -140,7 +140,7 @@ var C={
   gSearch:"Search terms\u2026", gCount:function(n){return n+" term"+(n===1?"":"s");},
   gNone:"No terms match your search.", gFail:"Could not load the glossary. It works on the live site (watchcafe.eu).",
   intro:"Everything here runs in your own browser \u2014 nothing is sent anywhere, and your watch data stays on your device. This guide walks through each tool and the few concepts worth knowing. New to measuring watches? Start with \u201cThe two numbers\u201d below.",
-  toc:[["concepts","The two numbers"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Power Reserve"],["viewer","Backup Viewer"],["data","Your data & backups"]],
+  toc:[["concepts","The two numbers"],["clock","Live Clock"],["collection","Collection"],["ratemeter","Rate Meter"],["powerreserve","Power Reserve"],["viewer","Backup Viewer"],["data","Your data & backups"]],
   sections:[
     {id:"concepts",h:"The two numbers",tag:"Offset and rate \u2014 the heart of it all.",html:
       "<p>Two numbers describe how a watch keeps time, and it helps to keep them apart:</p>"+
@@ -152,10 +152,14 @@ var C={
       "<p>The speaker button left of the date plays a gentle tick on every 10th second, handy as an audible beat while you set a watch. The button right of the date shows the clock full screen (not available on iPhone).</p>"+
       "<div class='callout'>The clock shows the <b>real time</b>: it checks your device's clock against the watchcafe.eu server and corrects any difference, so you can set your watch by it even if your device is a few seconds off. Offline, it falls back to your device's own clock.</div>"+
       "<a class='go' href='/'>Open the Live Clock \u2192</a>"},
+    {id:"collection",h:"Collection",tag:"All your watches in one place.",html:
+      "<p>The Collection lists your watches, each on a card with its current rate and power reserve. Tap a card to see that watch: an overview of what you measured, and its details \u2014 brand, model, reference, caliber, year, serial number, case size and box &amp; papers. Only a name is required; fill in the rest whenever you like.</p>"+
+      "<p>This is also where you <b>rename</b> or <b>delete</b> a watch. The serial number stays hidden until you tap it, in case someone is looking over your shoulder. Using more than one device? When backups are merged, the most recent edit of a watch's name and details wins.</p>"+
+      "<a class='go' href='/collection/'>Open the Collection \u2192</a>"},
     {id:"ratemeter",h:"Rate Meter",tag:"Track how many seconds per day your watch gains or loses.",html:
       "<p>This is the main tool. You record how far your watch is off now, come back later and record again, and it works out the rate for you.</p>"+
       "<h3>Getting started</h3>"+
-      "<ol><li><b>Add a watch</b> \u2014 type its name and tap Add. Your watches live in this browser and are shared with the Power Reserve tool.</li>"+
+      "<ol><li><b>Add a watch</b> \u2014 type its name and tap Add. Your watches live in this browser and are shared with the Collection and Power Reserve. The <b>i</b> button next to the watch takes you to its details in the Collection.</li>"+
       "<li><b>Align</b> \u2014 use the <kbd>\u25b2</kbd>/<kbd>\u25bc</kbd> arrows so the green clock matches your watch to the second.</li>"+
       "<li><b>Record</b> the measurement. Add the position (dial up, crown down\u2026) if you like \u2014 it makes the data richer.</li>"+
       "<li><b>Come back later</b> \u2014 after some hours or a day, measure again. The rate appears automatically.</li></ol>"+
@@ -198,7 +202,7 @@ var C={
   gSearch:"Zoek een begrip\u2026", gCount:function(n){return n+" begrip"+(n===1?"":"pen");},
   gNone:"Geen begrippen gevonden voor je zoekopdracht.", gFail:"Kon de begrippenlijst niet laden. Op de live site (watchcafe.eu) werkt dit wel.",
   intro:"Alles hier draait in je eigen browser \u2014 er wordt niets verstuurd, en je horlogedata blijft op je apparaat. Deze handleiding loopt elke tool langs, plus de paar begrippen die het waard zijn om te kennen. Nieuw met het meten van horloges? Begin met \u201cDe twee getallen\u201d hieronder.",
-  toc:[["concepts","De twee getallen"],["clock","Live Clock"],["ratemeter","Rate Meter"],["powerreserve","Gangreserve"],["viewer","Backup Viewer"],["data","Je data & back-ups"]],
+  toc:[["concepts","De twee getallen"],["clock","Live Clock"],["collection","Collectie"],["ratemeter","Rate Meter"],["powerreserve","Gangreserve"],["viewer","Backup Viewer"],["data","Je data & back-ups"]],
   sections:[
     {id:"concepts",h:"De twee getallen",tag:"Offset en gang \u2014 waar alles om draait.",html:
       "<p>Twee getallen beschrijven hoe een horloge de tijd bijhoudt, en het helpt ze uit elkaar te houden:</p>"+
@@ -210,10 +214,14 @@ var C={
       "<p>De luidsprekerknop links van de datum laat elke 10e seconde een zacht tikje horen, handig als hoorbare maat terwijl je een horloge gelijkzet. De knop rechts van de datum zet de klok schermvullend (niet op iPhone).</p>"+
       "<div class='callout'>De klok toont de <b>echte tijd</b>: hij vergelijkt de klok van je apparaat met de server van watchcafe.eu en corrigeert het verschil, zodat je je horloge erop kunt zetten, ook als je apparaat een paar seconden afwijkt. Zonder internet valt hij terug op de klok van je apparaat.</div>"+
       "<a class='go' href='/'>Open de Live Clock \u2192</a>"},
+    {id:"collection",h:"Collectie",tag:"Al je horloges op \u00e9\u00e9n plek.",html:
+      "<p>De Collectie toont je horloges, elk op een kaart met de huidige gang en gangreserve. Tik op een kaart om dat horloge te bekijken: een overzicht van wat je hebt gemeten, en de gegevens \u2014 merk, model, referentie, kaliber, jaar, serienummer, kastmaat en doos &amp; papieren. Alleen een naam is verplicht; de rest vul je in wanneer je wilt.</p>"+
+      "<p>Hier kun je een horloge ook <b>hernoemen</b> of <b>verwijderen</b>. Het serienummer blijft verborgen tot je erop tikt, voor als iemand over je schouder meekijkt. Gebruik je meer dan \u00e9\u00e9n apparaat? Bij het samenvoegen van back-ups wint de laatste wijziging van naam en gegevens.</p>"+
+      "<a class='go' href='/collection/'>Open de Collectie \u2192</a>"},
     {id:"ratemeter",h:"Rate Meter",tag:"Meet hoeveel seconden per dag je horloge voor- of achterloopt.",html:
       "<p>Dit is de hoofdtool. Je legt vast hoe ver je horloge nu afwijkt, komt later terug en legt opnieuw vast, en de gang wordt voor je berekend.</p>"+
       "<h3>Aan de slag</h3>"+
-      "<ol><li><b>Voeg een horloge toe</b> \u2014 typ de naam en tik op Toevoegen. Je horloges leven in deze browser en zijn gedeeld met de Gangreserve-tool.</li>"+
+      "<ol><li><b>Voeg een horloge toe</b> \u2014 typ de naam en tik op Toevoegen. Je horloges leven in deze browser en zijn gedeeld met de Collectie en Gangreserve. De <b>i</b>-knop naast het horloge brengt je naar de gegevens in de Collectie.</li>"+
       "<li><b>Gelijkzetten</b> \u2014 gebruik de <kbd>\u25b2</kbd>/<kbd>\u25bc</kbd> pijltjes zodat de groene klok tot op de seconde gelijkloopt met je horloge.</li>"+
       "<li><b>Leg de meting vast</b>. Voeg eventueel de positie toe (wijzerplaat boven, kroon onder\u2026) \u2014 dat maakt de data rijker.</li>"+
       "<li><b>Kom later terug</b> \u2014 meet na een paar uur of een dag opnieuw. De gang verschijnt vanzelf.</li></ol>"+
@@ -257,6 +265,7 @@ var lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){retur
 var ICONS={
   concepts:'<path d="M12 4v16M8 20h8M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/>',
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  collection:'<circle cx="12" cy="12" r="5.5"/><path d="M9 7.1 9.7 3h4.6l.7 4.1M9 16.9l.7 4.1h4.6l.7-4.1M12 9.5V12l1.6 1.2"/>',
   ratemeter:'<circle cx="12" cy="13.5" r="7.5"/><path d="M10 2.5h4M12 2.5V6M18.2 6.8l1.3-1.3M12 13.5l3-3"/>',
   powerreserve:'<path d="M6.5 3h11M6.5 21h11M7.5 3v3.5L12 12l4.5-5.5V3M7.5 21v-3.5L12 12l4.5 5.5V21"/><path d="M10 19.2h4"/>',
   viewer:'<path d="M4 4v16h16"/><path d="M7.5 15l3.5-4 3 2.5 5-6"/>',

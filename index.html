@@ -123,6 +123,12 @@
   </div>
 
   <div class="tools">
+    <a class="tool" href="/collection/">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5.5"/><path d="M9 7.1 9.7 3h4.6l.7 4.1M9 16.9l.7 4.1h4.6l.7-4.1M12 9.5V12l1.6 1.2"/></svg>
+      <b id="t_co_h">Collection</b>
+      <span id="t_co_d">Keep your watches in one place: details, rate and power reserve per watch.</span>
+      <span class="go" id="t_co_c">Open your collection &rarr;</span>
+    </a>
     <a class="tool" href="/watchrate/">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M10 2.5h4M12 2.5V6M18.2 6.8l1.3-1.3M12 13.5l3-3"/></svg>
       <b id="t_rate_h">Rate Meter</b>
@@ -135,16 +141,10 @@
       <span id="t_pr_d">Measure how long your watch runs on a full wind, reading the stop time straight off the hands.</span>
       <span class="go" id="t_pr_c">Measure reserve &rarr;</span>
     </a>
-    <a class="tool" href="/guide/#glossary">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19M9 7.5h6M9 10.5h4"/></svg>
-      <b id="t_gl_h">Glossary</b>
-      <span id="t_gl_d">Watch and timegrapher terms explained in plain language, in English and Dutch.</span>
-      <span class="go" id="t_gl_c">Browse the terms &rarr;</span>
-    </a>
     <a class="tool" href="/guide/">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>
       <b id="t_gu_h">Guide</b>
-      <span id="t_gu_d">New here? A walkthrough of the site and every tool, plus the key concepts.</span>
+      <span id="t_gu_d">New here? A walkthrough of every tool, plus a glossary of watch terms.</span>
       <span class="go" id="t_gu_c">Read the guide &rarr;</span>
     </a>
   </div>
@@ -289,16 +289,16 @@
         gears:'This site runs on gears, not cookies. Your watch data never leaves your browser — <a href="/privacy/">see for yourself →</a>',
         rate_h:"Rate Meter",rate_d:"Measure how many seconds per day your watch runs fast or slow, with charts and measurement history.",rate_c:"Start measuring \u2192",
         pr_h:"Power Reserve",pr_d:"Measure how long your watch runs on a full wind, reading the stop time straight off the hands.",pr_c:"Measure reserve \u2192",
-        gl_h:"Glossary",gl_d:"Watch and timegrapher terms explained in plain language, in English and Dutch.",gl_c:"Browse the terms \u2192",
-        gu_h:"Guide",gu_d:"New here? A walkthrough of the site and every tool, plus the key concepts.",gu_c:"Read the guide \u2192"},
+        co_h:"Collection",co_d:"Keep your watches in one place: details, rate and power reserve per watch.",co_c:"Open your collection \u2192",
+        gu_h:"Guide",gu_d:"New here? A walkthrough of every tool, plus a glossary of watch terms.",gu_c:"Read the guide \u2192"},
     nl:{h1:"Horloge-tools",sub:"Gratis browsertools om je mechanische horloges te meten en te volgen.",
         tick:"Tik elke 10 seconden",fs:"Schermvullend",
         cafe:'Gemaakt door <a href="/cafe/">het Watch Café</a>, een maandelijkse meetup van horlogeliefhebbers bij het Nederlandse techbedrijf Sioux \u2192',
         gears:'Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — <a href="/privacy/">zie het zelf →</a>',
         rate_h:"Rate Meter",rate_d:"Meet hoeveel seconden per dag je horloge voor- of achterloopt, met grafieken en een meethistorie.",rate_c:"Begin met meten \u2192",
         pr_h:"Gangreserve",pr_d:"Meet hoe lang je horloge loopt op een volledige opwinding, door de stoptijd rechtstreeks van de wijzers af te lezen.",pr_c:"Meet de gangreserve \u2192",
-        gl_h:"Begrippenlijst",gl_d:"Horloge- en timegrapher-begrippen in gewone taal uitgelegd, in het Nederlands en Engels.",gl_c:"Bekijk de begrippen \u2192",
-        gu_h:"Handleiding",gu_d:"Nieuw hier? Een rondleiding door de site en elke tool, plus de kernbegrippen.",gu_c:"Lees de handleiding \u2192"}
+        co_h:"Collectie",co_d:"Al je horloges op \u00e9\u00e9n plek: gegevens, gang en gangreserve per horloge.",co_c:"Open je collectie \u2192",
+        gu_h:"Handleiding",gu_d:"Nieuw hier? Een rondleiding langs elke tool, plus een lijst met horlogebegrippen.",gu_c:"Lees de handleiding \u2192"}
   };
   function applyLang(l){
     var t=T[l]||T.en;
@@ -307,7 +307,7 @@
     [["tickBtn",t.tick],["fsBtn",t.fs]].forEach(function(x){var b=document.getElementById(x[0]);b.title=x[1];b.setAttribute("aria-label",x[1]);});
     document.getElementById("cafeRef").innerHTML=t.cafe;
     document.getElementById("gears").innerHTML=t.gears;
-    var tiles=[["rate",t.rate_h,t.rate_d,t.rate_c],["pr",t.pr_h,t.pr_d,t.pr_c],["gl",t.gl_h,t.gl_d,t.gl_c],["gu",t.gu_h,t.gu_d,t.gu_c]];
+    var tiles=[["rate",t.rate_h,t.rate_d,t.rate_c],["pr",t.pr_h,t.pr_d,t.pr_c],["co",t.co_h,t.co_d,t.co_c],["gu",t.gu_h,t.gu_d,t.gu_c]];
     tiles.forEach(function(x){
       var h=document.getElementById("t_"+x[0]+"_h"),d=document.getElementById("t_"+x[0]+"_d"),c=document.getElementById("t_"+x[0]+"_c");
       if(h)h.textContent=x[1]; if(d)d.textContent=x[2]; if(c)c.innerHTML=x[3];

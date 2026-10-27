@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=2"></script>
+<script src="/watchdata.js?v=3"></script>
 <style>
   :root{
     --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -167,8 +167,8 @@ var I18N={
   start:"Start a measurement for", wound:"Wound \u0026 set",
   greenTxt:"Set your watch to this clock, wind it fully, then tap.",
   greenTxtNoWatch:"Pick a watch above, set it to this clock, wind fully, then tap.",
-  noWatches:"No watches yet. Add one in the ",
-  meterLink:"Rate Meter", noWatchesTail:" first \u2014 the list is shared.",
+  noWatches:"No watches yet. Add one in your ",
+  meterLink:"Collection", noWatchesTail:" first \u2014 the list is shared.",
   allRunning:"All your watches already have a running measurement.",
   running:"Running now", elapsed:"Elapsed since fully wound",
   stillRunning:"Still running", stopped:"Stopped", cancel:"Cancel",
@@ -196,8 +196,8 @@ var I18N={
   start:"Start een meting voor", wound:"Opgewonden \u0026 gelijk",
   greenTxt:"Zet je horloge gelijk aan deze klok, wind volledig op, en tik.",
   greenTxtNoWatch:"Kies hierboven een horloge, zet het gelijk aan deze klok, wind volledig op, en tik.",
-  noWatches:"Nog geen horloges. Voeg er eerst \u00e9\u00e9n toe in de ",
-  meterLink:"Rate Meter", noWatchesTail:" \u2014 de lijst is gedeeld.",
+  noWatches:"Nog geen horloges. Voeg er eerst \u00e9\u00e9n toe in je ",
+  meterLink:"Collectie", noWatchesTail:" \u2014 de lijst is gedeeld.",
   allRunning:"Al je horloges hebben al een lopende meting.",
   running:"Nu lopend", elapsed:"Verstreken sinds volledig opgewonden",
   stillRunning:"Loopt nog", stopped:"Gestopt", cancel:"Annuleren",
@@ -340,7 +340,7 @@ function renderStart(){
   var avail=state.watches.filter(function(w){return !running(w);});
   var startArea=document.getElementById("startArea");
   if(!state.watches.length){
-    startArea.innerHTML='<div class="empty">'+tr("noWatches")+'<a href="/watchrate/">'+tr("meterLink")+'</a>'+tr("noWatchesTail")+'</div>';
+    startArea.innerHTML='<div class="empty">'+tr("noWatches")+'<a href="/collection/">'+tr("meterLink")+'</a>'+tr("noWatchesTail")+'</div>';
     return;
   }
   var rowEl=startArea.querySelector(".row");

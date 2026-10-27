@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collection — watchcafe.eu</title>
+  <link rel="stylesheet" href="/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<script src="/nav.js" defer></script>
+<script src="/watchdata.js?v=3"></script>
+<script src="/watchrate/sample.js?v=3"></script>
+<style>
+  :root{
+    --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
+    --accent:#d96a41; --accent-d:#c25a36; --ink:#e9e7e2; --muted:#a09da6;
+    --nav-bg:#17171b; --nav-border:#2a2a31; --nav-hover:#22222a; --accent-glow:rgba(217,106,65,.7);
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  html,body{margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
+  .wrap{max-width:948px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:30px 30px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  @media(max-width:600px){.card{padding:22px 16px 26px}}
+  h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+
+  input[type=text],select{font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);width:100%}
+  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 5px}
+  label.fld.req::after{content:" *";color:var(--accent)}
+  button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);touch-action:manipulation}
+  button:hover{background:#30303a}
+  button:active{transform:scale(.98)}
+  button.primary{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  button.primary:hover{background:color-mix(in srgb,var(--accent) 30%,transparent);border-color:var(--accent)}
+  button.sm{padding:6px 10px;font-size:13px}
+  button.dash{background:transparent;border-style:dashed;color:var(--muted)}
+  button.dash:hover{color:var(--ink)}
+  button.armed{color:#ff6b5e;border-color:#ff6b5e;border-style:solid}
+  .lab{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+  .notice{background:#2e221c;border:1px solid #45332a;color:#eda57f;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px;display:none}
+  .note{font-size:13px;color:var(--muted);margin:12px 0 0;min-height:1em}
+
+  /* overview: one card per watch */
+  .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:820px){.wgrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.wgrid{grid-template-columns:1fr}}
+  .wc{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;text-align:left;color:var(--ink);text-decoration:none;min-width:0}
+  .wc:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:var(--card2)}
+  .wc .nm{font-weight:700;font-size:16px;overflow-wrap:anywhere}
+  .wc .md{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+  .wc .facts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+  .f{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:2px 9px;color:var(--muted);white-space:nowrap}
+  .f b{color:var(--ink);font-weight:600}
+  .wc.add{border-style:dashed;align-items:center;justify-content:center;color:var(--muted);min-height:110px;background:transparent;cursor:pointer;font:inherit}
+  .wc.add .plus{font-size:26px;line-height:1}
+
+  .box{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-top:14px}
+  .form{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:700px){.form{grid-template-columns:1fr 1fr}}
+  @media(max-width:420px){.form{grid-template-columns:1fr}}
+  .formbtns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+  .empty{color:var(--muted);font-size:14.5px;line-height:1.6;padding:6px 0 4px}
+  .empty p{margin:0 0 14px}
+  .empty .row{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* detail */
+  .back{background:none;border:none;color:var(--muted);padding:0;font-size:14px;margin:0 0 14px}
+  .back:hover{background:none;color:var(--ink)}
+  .ident h2{margin:0;font-size:24px;overflow-wrap:anywhere}
+  .ident .ref{color:var(--muted);font-size:14px;margin-top:3px}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-top:20px;overflow-x:auto}
+  .tabs button{background:none;border:none;border-bottom:2px solid transparent;border-radius:0;color:var(--muted);padding:10px 14px;margin-bottom:-1px;font-weight:600;white-space:nowrap}
+  .tabs button:hover{color:var(--ink);background:none}
+  .tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+  .pane{padding-top:20px}
+  .meas{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:700px){.meas{grid-template-columns:1fr}}
+  .ms{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+  .ms .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .ms .n{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+  .ms .n.none{color:var(--muted);font-weight:400;font-size:16px;padding:5px 0}
+  .ms .d{font-size:13px;color:var(--muted)}
+  .ms a{font-size:13px;margin-top:auto;padding-top:8px;color:var(--accent);text-decoration:none;font-weight:600}
+  .ms a:hover{text-decoration:underline}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  @media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
+  .grid>div{background:var(--card2);padding:10px 14px;min-width:0}
+  .grid .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .grid .v{font-size:15px;margin-top:3px;overflow-wrap:anywhere}
+  .grid .v.none{color:#6d6a73}
+  .serial{background:none;border:none;padding:0;color:var(--ink);font-size:15px}
+  .serial:hover{background:none;color:var(--accent)}
+  .detbtns{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+  .gears{margin-top:20px;text-align:center;font-size:12.5px;color:#8f8c96}
+  .gears a{color:var(--accent);text-decoration:none}
+  .gears a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="notice" id="notice"></div>
+
+    <!-- ===== overview ===== -->
+    <div id="vOverview">
+      <h1 id="title">Collection</h1>
+      <p class="sub" id="sub"></p>
+      <div id="overview"></div>
+      <div class="box" id="addBox" hidden>
+        <div class="form">
+          <div><label class="fld req" for="addName" id="lblAddName"></label><input type="text" id="addName" autocomplete="off"></div>
+          <div><label class="fld" for="addBrand" id="lblAddBrand"></label><input type="text" id="addBrand" autocomplete="off"></div>
+          <div><label class="fld" for="addModel" id="lblAddModel"></label><input type="text" id="addModel" autocomplete="off"></div>
+        </div>
+        <div class="formbtns"><button class="sm" id="addCancel"></button><button class="sm primary" id="addSave"></button></div>
+      </div>
+      <p class="note" id="ovNote"></p>
+    </div>
+
+    <!-- ===== one watch ===== -->
+    <div id="vDetail" hidden>
+      <button class="back" id="backBtn"></button>
+      <div class="ident"><h2 id="dName"></h2><div class="ref" id="dRef"></div></div>
+      <div class="tabs" id="tabs">
+        <button data-tab="ov" id="tabOv"></button>
+        <button data-tab="det" id="tabDet"></button>
+      </div>
+      <div class="pane" id="paneOv"></div>
+      <div class="pane" id="paneDet" hidden></div>
+    </div>
+  </div>
+  <div class="gears" id="gears"></div>
+</div>
+
+<script>
+/* ===== texts ===== */
+var I18N={
+ en:{
+  title:"Collection", sub:"Your watches, with their details and what you measured.",
+  count:function(n){return n+(n===1?" watch":" watches");},
+  addWatch:"Add watch", add:"Add", cancel:"Cancel", save:"Save",
+  name:"Name", namePh:"e.g. Speedy",
+  empty:"No watches yet. Add your first one: a short name is all it needs, the details can wait.",
+  loadSample:"Show sample watches",
+  noMeas:"no measurements yet", perDay:"s/day", reserveF:function(h){return h+" h reserve";},
+  back:"← Collection", tabOv:"Overview", tabDet:"Details",
+  rate:"Rate", reserve:"Power reserve", tg:"Timegrapher",
+  rateD:function(n,span){return "Last session, "+n+" measurements over "+span;},
+  rateNone:"No measurements yet", oneMeas:"One measurement so far; the rate needs two.",
+  reserveD:function(n){return n===1?"From 1 measurement":"Average of "+n+" measurements";},
+  reserveNone:"Not measured yet", tgD:function(d){return "Last session "+d;},
+  tgN:function(n){return n+(n===1?" session":" sessions");}, tgNone:"No sessions yet",
+  openRM:"Open in Rate Meter →", openPR:"Open in Power Reserve →",
+  fields:{brand:"Brand",model:"Model",ref:"Reference",caliber:"Caliber / movement",year:"Year",serial:"Serial number",caseSize:"Case size",lugWidth:"Lug width",boxPapers:"Box & papers"},
+  ph:{caliber:"e.g. 861, manual wind",year:"e.g. 1969",caseSize:"e.g. 42 mm",lugWidth:"e.g. 20 mm"},
+  bp:{"":"—",full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},
+  refPfx:"Ref. ", calPfx:"Cal. ",
+  showSerial:"Click to show", edit:"Edit details", del:"Delete watch…",
+  delArmed:function(n){return "Click again within 5 seconds to delete “"+n+"” and all its measurements.";},
+  delAgain:"Click again to delete",
+  deleted:function(n){return "“"+n+"” deleted.";},
+  needName:"A watch needs a name.",
+  notFound:"This watch isn't in this browser (any more).",
+  notice:"Your browser blocks local storage, so changes here can't be saved.",
+  gears:"This site runs on gears, not cookies. Your watch data never leaves your browser — ", gearsLink:"see for yourself →"
+ },
+ nl:{
+  title:"Collectie", sub:"Je horloges, met hun gegevens en wat je hebt gemeten.",
+  count:function(n){return n+(n===1?" horloge":" horloges");},
+  addWatch:"Horloge toevoegen", add:"Toevoegen", cancel:"Annuleren", save:"Opslaan",
+  name:"Naam", namePh:"bijv. Speedy",
+  empty:"Nog geen horloges. Voeg je eerste toe: een korte naam is genoeg, de gegevens kunnen later.",
+  loadSample:"Toon voorbeeldhorloges",
+  noMeas:"nog geen metingen", perDay:"s/dag", reserveF:function(h){return h+" u reserve";},
+  back:"← Collectie", tabOv:"Overzicht", tabDet:"Gegevens",
+  rate:"Gang", reserve:"Gangreserve", tg:"Timegrapher",
+  rateD:function(n,span){return "Laatste sessie, "+n+" metingen over "+span;},
+  rateNone:"Nog geen metingen", oneMeas:"Nog maar één meting; voor de gang zijn er twee nodig.",
+  reserveD:function(n){return n===1?"Uit 1 meting":"Gemiddelde van "+n+" metingen";},
+  reserveNone:"Nog niet gemeten", tgD:function(d){return "Laatste sessie "+d;},
+  tgN:function(n){return n+(n===1?" sessie":" sessies");}, tgNone:"Nog geen sessies",
+  openRM:"Open in Rate Meter →", openPR:"Open in Gangreserve →",
+  fields:{brand:"Merk",model:"Model",ref:"Referentie",caliber:"Kaliber / uurwerk",year:"Jaar",serial:"Serienummer",caseSize:"Kastmaat",lugWidth:"Bandaanzet",boxPapers:"Doos & papieren"},
+  ph:{caliber:"bijv. 861, handopwind",year:"bijv. 1969",caseSize:"bijv. 42 mm",lugWidth:"bijv. 20 mm"},
+  bp:{"":"—",full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},
+  refPfx:"Ref. ", calPfx:"Kal. ",
+  showSerial:"Klik om te tonen", edit:"Gegevens bewerken", del:"Horloge verwijderen…",
+  delArmed:function(n){return "Klik binnen 5 seconden nogmaals om “"+n+"” en al zijn metingen te verwijderen.";},
+  delAgain:"Klik nogmaals om te verwijderen",
+  deleted:function(n){return "“"+n+"” verwijderd.";},
+  needName:"Een horloge heeft een naam nodig.",
+  notFound:"Dit horloge staat (niet meer) in deze browser.",
+  notice:"Je browser blokkeert lokale opslag, dus wijzigingen hier kunnen niet worden bewaard.",
+  gears:"Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — ", gearsLink:"zie het zelf →"
+ }
+};
+var FIELDS=["brand","model","ref","caliber","year","serial","caseSize","lugWidth","boxPapers"];
+var lang=(function(){try{return localStorage.getItem("siouxWatchRateMeterLang")||"en";}catch(e){return "en";}})();
+function T(){return I18N[lang]||I18N.en;}
+
+/* ===== storage: the same data as the Rate Meter and Power Reserve ===== */
+var KEY="siouxWatchRateMeter",memOnly=false,state;
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw){var d=JSON.parse(raw);if(d&&Array.isArray(d.watches))return d;}}
+  catch(e){memOnly=true;}
+  return null;
+}
+// Data from before version 2 (users) is converted by the Rate Meter; never overwrite it here.
+function legacy(){try{var d=JSON.parse(localStorage.getItem(KEY));return !!(d&&!Array.isArray(d.watches));}catch(e){return false;}}
+function save(){
+  if(memOnly||legacy())return;
+  try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){memOnly=true;showNotice();}
+}
+function reload(){state=load()||{version:2,activeWatch:null,watches:[]};WatchData.ensureIds(state.watches);}
+function showNotice(){var n=document.getElementById("notice");n.style.display=memOnly?"block":"none";n.textContent=T().notice;}
+
+/* ===== helpers ===== */
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function byId(id){return state.watches.find(function(w){return String(w.id)===String(id);})||null;}
+function info(w){return w.info||{};}
+function modelLine(w){var i=info(w);return [i.brand,i.model].filter(Boolean).join(" ");}
+function refLine(w){
+  var i=info(w),t=T(),parts=[];
+  var m=modelLine(w);if(m)parts.push(m);
+  if(i.ref)parts.push(t.refPfx+i.ref);
+  if(i.caliber)parts.push(/^\d/.test(i.caliber)?t.calPfx+i.caliber:i.caliber);
+  if(i.year)parts.push(i.year);
+  return parts.join(" · ");
+}
+function fmtRate(r){var v=r.rate;return (v>0?"+":v<0?"−":"±")+Math.abs(v).toFixed(1);}
+function humanSpan(ms){var d=ms/864e5,h=ms/36e5,nl=lang==="nl";
+  if(d>=1)return d.toFixed(1)+(nl?" dagen":" days");if(h>=1)return h.toFixed(1)+(nl?" uur":" hours");return Math.round(ms/6e4)+" min";}
+function fmtDate(ms){return new Date(ms).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",{day:"numeric",month:"short",year:"numeric"});}
+function reserveHours(w){
+  var l=(w.powerReserve||[]).filter(function(p){return p.reserveMs>0;});
+  if(!l.length)return null;
+  var avg=l.reduce(function(a,p){return a+p.reserveMs;},0)/l.length;
+  return {h:Math.round(avg/36e5),n:l.length};
+}
+
+/* ===== routing: #<watch id> shows one watch, no hash the overview ===== */
+var tab="ov",editing=false;
+function currentId(){return decodeURIComponent(location.hash.slice(1));}
+function render(){
+  var t=T(),id=currentId();
+  document.title=(id?((byId(id)||{}).name||t.title):t.title)+" — watchcafe.eu";
+  document.getElementById("vOverview").hidden=!!id;
+  document.getElementById("vDetail").hidden=!id;
+  if(id)renderDetail(id);else renderOverview();
+}
+
+/* ===== overview ===== */
+function renderOverview(){
+  var t=T(),el=document.getElementById("overview");
+  if(!state.watches.length){
+    document.getElementById("addBox").hidden=true;
+    el.innerHTML='<div class="empty"><p>'+esc(t.empty)+'</p><div class="row">'
+      +'<button class="primary" id="emptyAdd">'+esc(t.addWatch)+'</button>'
+      +'<button class="dash" id="emptySample">'+esc(t.loadSample)+'</button></div></div>';
+    document.getElementById("emptyAdd").onclick=openAdd;
+    document.getElementById("emptySample").onclick=loadSample;
+    return;
+  }
+  el.innerHTML='<p class="lab">'+esc(t.count(state.watches.length))+'</p><div class="wgrid">'
+    +state.watches.map(function(w){
+      var r=WatchData.currentRate(w),pr=reserveHours(w),facts=[];
+      facts.push(r?'<span class="f"><b>'+fmtRate(r)+'</b> '+t.perDay+'</span>':'<span class="f">'+esc(t.noMeas)+'</span>');
+      if(pr)facts.push('<span class="f">'+esc(t.reserveF(pr.h))+'</span>');
+      var md=modelLine(w)+(info(w).ref?" · "+info(w).ref:"");
+      return '<a class="wc" href="#'+encodeURIComponent(w.id)+'"><span class="nm">'+esc(w.name)+'</span>'
+        +(md?'<span class="md">'+esc(md)+'</span>':'')
+        +'<span class="facts">'+facts.join("")+'</span></a>';
+    }).join("")
+    +'<button class="wc add" id="cardAdd"><span class="plus">+</span>'+esc(t.addWatch)+'</button></div>';
+  document.getElementById("cardAdd").onclick=openAdd;
+}
+function openAdd(){
+  var b=document.getElementById("addBox");b.hidden=false;
+  document.getElementById("ovNote").textContent="";
+  document.getElementById("addName").focus();
+}
+function closeAdd(){
+  ["addName","addBrand","addModel"].forEach(function(id){document.getElementById(id).value="";});
+  document.getElementById("addBox").hidden=true;
+}
+function addWatch(){
+  var name=document.getElementById("addName").value.trim();
+  if(!name){document.getElementById("ovNote").textContent=T().needName;document.getElementById("addName").focus();return;}
+  var w={id:uid(),name:name,measurements:[]},i={};
+  var brand=document.getElementById("addBrand").value.trim(),model=document.getElementById("addModel").value.trim();
+  if(brand)i.brand=brand;if(model)i.model=model;
+  if(brand||model){w.info=i;w.edited=Date.now();}
+  state.watches.push(w);
+  if(!state.activeWatch)state.activeWatch=w.id;
+  save();closeAdd();
+  location.hash=encodeURIComponent(w.id);
+}
+function loadSample(){
+  state.watches=WatchSample.watches().map(function(w){w.id=uid();return w;});
+  WatchData.ensureIds(state.watches);
+  state.activeWatch=state.watches[0].id;
+  save();render();
+}
+
+/* ===== one watch ===== */
+function renderDetail(id){
+  var t=T(),w=byId(id);
+  document.getElementById("backBtn").textContent=t.back;
+  document.getElementById("tabOv").textContent=t.tabOv;
+  document.getElementById("tabDet").textContent=t.tabDet;
+  if(!w){
+    document.getElementById("dName").textContent="";
+    document.getElementById("dRef").textContent=t.notFound;
+    document.getElementById("tabs").hidden=true;
+    document.getElementById("paneOv").hidden=document.getElementById("paneDet").hidden=true;
+    return;
+  }
+  document.getElementById("tabs").hidden=false;
+  document.getElementById("dName").textContent=w.name;
+  document.getElementById("dRef").textContent=refLine(w);
+  document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.dataset.tab===tab);});
+  document.getElementById("paneOv").hidden=tab!=="ov";
+  document.getElementById("paneDet").hidden=tab!=="det";
+  if(tab==="ov")renderOv(w);else renderDet(w);
+}
+function renderOv(w){
+  var t=T(),r=WatchData.currentRate(w),pr=reserveHours(w),tg=(w.timegrapher||[]).slice().sort(function(a,b){return b.t-a.t;});
+  var nMeas=(w.measurements||[]).length;
+  function tile(k,n,d,link,linkTxt){
+    return '<div class="ms"><span class="k">'+esc(k)+'</span>'+n+'<span class="d">'+esc(d)+'</span>'
+      +(link?'<a href="'+link+'" data-open="'+link+'">'+esc(linkTxt)+'</a>':'')+'</div>';
+  }
+  document.getElementById("paneOv").innerHTML='<div class="meas">'
+    +tile(t.rate,r?'<span class="n">'+fmtRate(r)+' '+t.perDay+'</span>':'<span class="n none">'+esc(t.rateNone)+'</span>',
+      r?t.rateD(r.n,humanSpan(r.span)):(nMeas===1?t.oneMeas:""),"/watchrate/",t.openRM)
+    +tile(t.reserve,pr?'<span class="n">~ '+pr.h+(lang==="nl"?" u":" h")+'</span>':'<span class="n none">'+esc(t.reserveNone)+'</span>',
+      pr?t.reserveD(pr.n):"","/powerreserve/",t.openPR)
+    +tile(t.tg,tg.length?'<span class="n">'+esc(t.tgN(tg.length))+'</span>':'<span class="n none">'+esc(t.tgNone)+'</span>',
+      tg.length?t.tgD(fmtDate(tg[0].t)):"","/watchrate/",t.openRM)
+    +'</div>';
+  // the Rate Meter opens on the active watch
+  document.querySelectorAll("#paneOv a[data-open]").forEach(function(a){
+    a.onclick=function(){state.activeWatch=w.id;save();};
+  });
+}
+var serialShown=false;
+function renderDet(w){
+  var t=T(),i=info(w),el=document.getElementById("paneDet");
+  if(editing){
+    el.innerHTML='<div class="form">'
+      +'<div><label class="fld req" for="eName">'+esc(t.name)+'</label><input type="text" id="eName" value="'+esc(w.name)+'"></div>'
+      +FIELDS.map(function(f){
+        if(f==="boxPapers")return '<div><label class="fld" for="e_'+f+'">'+esc(t.fields[f])+'</label><select id="e_'+f+'">'
+          +Object.keys(t.bp).map(function(k){return '<option value="'+k+'"'+((i[f]||"")===k?" selected":"")+'>'+esc(t.bp[k])+'</option>';}).join("")+'</select></div>';
+        return '<div><label class="fld" for="e_'+f+'">'+esc(t.fields[f])+'</label><input type="text" id="e_'+f+'" value="'+esc(i[f]||"")+'"'
+          +(t.ph[f]?' placeholder="'+esc(t.ph[f])+'"':'')+' autocomplete="off"></div>';
+      }).join("")
+      +'</div><p class="note" id="detNote"></p>'
+      +'<div class="formbtns"><button class="sm" id="eCancel">'+esc(t.cancel)+'</button><button class="sm primary" id="eSave">'+esc(t.save)+'</button></div>';
+    document.getElementById("eCancel").onclick=function(){editing=false;render();};
+    document.getElementById("eSave").onclick=function(){saveEdit(w);};
+    el.querySelectorAll("input").forEach(function(inp){inp.addEventListener("keydown",function(e){if(e.key==="Enter")saveEdit(w);else if(e.key==="Escape"){editing=false;render();}});});
+    document.getElementById("eName").focus();
+    return;
+  }
+  el.innerHTML='<div class="grid">'+FIELDS.map(function(f){
+      var v=i[f]||"",html;
+      if(!v)html='<div class="v none">—</div>';
+      else if(f==="boxPapers")html='<div class="v">'+esc(t.bp[v]||v)+'</div>';
+      else if(f==="serial"&&!serialShown)html='<div class="v"><button class="serial" id="serialBtn" title="'+esc(t.showSerial)+'">•••• '+esc(v.slice(-4))+'</button></div>';
+      else html='<div class="v">'+esc(v)+'</div>';
+      return '<div><div class="k">'+esc(t.fields[f])+'</div>'+html+'</div>';
+    }).join("")+'</div>'
+    +'<div class="detbtns"><button class="sm dash" id="delBtn">'+esc(t.del)+'</button><button class="sm primary" id="editBtn">'+esc(t.edit)+'</button></div>'
+    +'<p class="note" id="detNote"></p>';
+  var sb=document.getElementById("serialBtn");if(sb)sb.onclick=function(){serialShown=true;render();};
+  document.getElementById("editBtn").onclick=function(){editing=true;disarm();render();};
+  document.getElementById("delBtn").onclick=function(){deleteWatch(w,this);};
+}
+function saveEdit(w){
+  var t=T(),name=document.getElementById("eName").value.trim();
+  if(!name){document.getElementById("detNote").textContent=t.needName;document.getElementById("eName").focus();return;}
+  var i={};
+  FIELDS.forEach(function(f){var v=document.getElementById("e_"+f).value.trim();if(v)i[f]=v;});
+  if(name!==w.name||JSON.stringify(i)!==JSON.stringify(info(w))){
+    w.name=name;
+    if(Object.keys(i).length)w.info=i;else delete w.info;
+    w.edited=Date.now();
+    save();
+  }
+  editing=false;render();
+}
+/* two-step delete, like the Rate Meter used to have: arm, then confirm within 5 s */
+var armed=null,armTimer=null;
+function disarm(){armed=null;clearTimeout(armTimer);}
+function deleteWatch(w,btn){
+  var t=T();
+  if(armed!==w.id){
+    armed=w.id;btn.classList.add("armed");btn.textContent=t.delAgain;
+    document.getElementById("detNote").textContent=t.delArmed(w.name);
+    armTimer=setTimeout(function(){disarm();if(currentId()===String(w.id)&&!editing)render();},5000);
+    return;
+  }
+  disarm();
+  WatchData.markWatchDeleted(state,w);
+  state.watches=state.watches.filter(function(x){return x.id!==w.id;});
+  if(state.activeWatch===w.id)state.activeWatch=state.watches.length?state.watches[0].id:null;
+  save();
+  history.replaceState(null,"",location.pathname);
+  tab="ov";render();
+  document.getElementById("ovNote").textContent=t.deleted(w.name);
+}
+
+/* ===== static texts ===== */
+function applyLang(){
+  var t=T();
+  document.getElementById("title").textContent=t.title;
+  document.getElementById("sub").textContent=t.sub;
+  document.getElementById("lblAddName").textContent=t.name;
+  document.getElementById("addName").placeholder=t.namePh;
+  document.getElementById("lblAddBrand").textContent=t.fields.brand;
+  document.getElementById("lblAddModel").textContent=t.fields.model;
+  document.getElementById("addCancel").textContent=t.cancel;
+  document.getElementById("addSave").textContent=t.add;
+  document.getElementById("gears").innerHTML=esc(t.gears)+'<a href="/privacy/">'+esc(t.gearsLink)+'</a>';
+  document.documentElement.lang=lang;
+  showNotice();
+}
+
+/* ===== events ===== */
+document.getElementById("addSave").onclick=addWatch;
+document.getElementById("addCancel").onclick=function(){closeAdd();document.getElementById("ovNote").textContent="";};
+["addName","addBrand","addModel"].forEach(function(id){
+  document.getElementById(id).addEventListener("keydown",function(e){if(e.key==="Enter")addWatch();else if(e.key==="Escape")closeAdd();});
+});
+document.getElementById("backBtn").onclick=function(){location.hash="";};
+document.querySelectorAll("#tabs button").forEach(function(b){
+  b.onclick=function(){tab=b.dataset.tab;editing=false;disarm();render();};
+});
+window.addEventListener("hashchange",function(){
+  if(!location.hash)history.replaceState(null,"",location.pathname);
+  tab="ov";editing=false;serialShown=false;disarm();
+  document.getElementById("ovNote").textContent="";
+  render();window.scrollTo(0,0);
+});
+// another tab (Rate Meter, Power Reserve) changed the data
+window.addEventListener("storage",function(e){if(e.key===KEY&&!editing){reload();render();}});
+window.addEventListener("swclang",function(e){lang=e.detail;applyLang();render();});
+
+reload();
+applyLang();
+render();
+</script>
+</body>
+</html>
