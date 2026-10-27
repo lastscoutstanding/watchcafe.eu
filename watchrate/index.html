@@ -1042,11 +1042,14 @@ function openTG(){
   var prev=(w.timegrapher&&w.timegrapher.length)?w.timegrapher[w.timegrapher.length-1].readings.map(function(r){return {position:r.position};}):TG_DEFAULT.map(function(c){return {position:c};});
   buildTGRows(prev);
   document.getElementById("tgForm").style.display="block";
+  document.getElementById("tgToggle").textContent=I18N[lang].tgToggleClose;
 }
-function closeTG(){document.getElementById("tgForm").style.display="none";}
+function closeTG(){
+  document.getElementById("tgForm").style.display="none";
+  document.getElementById("tgToggle").textContent=I18N[lang].tgToggle;
+}
 document.getElementById("tgToggle").onclick=function(){
   if(document.getElementById("tgForm").style.display==="none")openTG();else closeTG();
-  document.getElementById("tgToggle").textContent=document.getElementById("tgForm").style.display==="none"?I18N[lang].tgToggle:I18N[lang].tgToggleClose;
 };
 document.getElementById("tgAddRow").onclick=function(){
   var tb=document.getElementById("tgRows");
