@@ -94,8 +94,13 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 
 - Eerste menu-item. Overzicht: een kaart per horloge (naam, merk/model/referentie, gang van de laatste sessie, gemiddelde gangreserve) plus kaart "+ Add watch" (naam verplicht, merk en model optioneel). Leeg: uitleg, "Add watch" en "Show sample watches".
 - `/collection/#<id>` toont één horloge met tabs Overview (gang, gangreserve, timegrapher, met links; de link zet `activeWatch`) en Details (merk, model, referentie, kaliber, jaar, serienummer, kastmaat, bandaanzet, doos & papieren in `w.info`; serienummer gemaskeerd tot je erop klikt). Bewerken incl. hernoemen zet `w.edited`. Verwijderen in twee stappen (5 s) met `markWatchDeleted`.
-- De voorbeeldhorloges hebben `info` (alleen gegevens die zeker kloppen).
-- Gepland, in losse commits (mockup `_mockup/collection.html`): Logbook-tab (gebeurtenissen: aankoop, onderhoud, band, Watch Café, verkocht), Worn-tab + "Wearing today", rapport. Verkochte horloges dan naar een dichtgeklapte lijst.
+- Tab Logbook: `w.log = [{id, t, type, where?, cost?, note?, edited?}]`, `t` = de dag om 00:00 UTC (datum verschuift nooit met de tijdzone), kosten vrije tekst. Types: purchase, service, repair, strap, event, sold, note; labels van "where" en kosten verschillen per type. Klik op een regel = bewerken (zet `edited`) of verwijderen in twee stappen (`markDeleted`). `log` zit in `LISTS` van `watchdata.js`: samenvoegen op id, en bij hetzelfde id wint de hoogste `edited`.
+- Type "Event" is bewust algemeen (geen "Watch Café"). Valt de datum op een café-datum (`meetings.txt`, titels in `cafe-log.txt`) of een evenement uit `events.txt`, dan verschijnt een suggestie-knop met die naam ("Watch Café, Sioux Labs" of "naam, plaats").
+- Onderhoudsinterval (`info.serviceYears`) bij Details: volgende beurt = laatste service (anders aankoop) + interval; achterstallig geeft een oranje "service due" op de kaart. Aankoopdatum, -plaats en -prijs in Details komen uit het logboek.
+- Verkocht of weggegeven (laatste van purchase/sold is sold) = eerder horloge: label bij de naam, kaart in een ingeklapte lijst "Former watches". Ze staan nog wel in de pulldowns van Rate Meter en Power Reserve.
+- De voorbeeldhorloges hebben `info` (alleen gegevens die zeker kloppen) en een paar logboekregels (fictieve prijzen); de Tudor staat bewust op "service due".
+- `[hidden]{display:none!important}`: zonder die regel blijven elementen met een eigen `display` (grid, pill) zichtbaar.
+- Gepland, in losse commits (mockup `_mockup/collection.html`): Worn-tab + "Wearing today", rapport.
 
 ## Watch Rate Meter
 

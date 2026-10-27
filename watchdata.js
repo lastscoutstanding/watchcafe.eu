@@ -66,15 +66,18 @@ var WatchData=(function(){
       (w.measurements||[]).forEach(function(m){if(m.id==null)m.id="m"+m.t+"_"+m.offset;});
       (w.timegrapher||[]).forEach(function(s){if(s.id==null)s.id="g"+s.t;});
       (w.powerReserve||[]).forEach(function(p){if(p.id==null)p.id="p"+p.start;});
+      (w.log||[]).forEach(function(e){if(e.id==null)e.id="l"+e.t+"_"+e.type;});
     });
   }
 
-  var LISTS=[["measurements","t"],["timegrapher","t"],["powerReserve","start"]];
+  // log = logbook entries from the Collection (purchase, service, event ...)
+  var LISTS=[["measurements","t"],["timegrapher","t"],["powerReserve","start"],["log","t"]];
 
   /* Merge an incoming backup into the local state. Everything new is added,
      everything only present locally is kept, and deletions on either side win.
-     A watch's name and details (w.info) can be edited in the Collection; w.edited
-     holds the time of that edit, and the most recent edit wins.
+     A watch's name and details (w.info) and its logbook entries can be edited
+     in the Collection; their "edited" field holds the time of that edit, and
+     the most recent edit wins.
      Returns {state, rows}: one row per watch for the import dialog, with
      status "new" | "changed" | "same" | "localOnly" | "removed". */
   function merge(local,incoming){
@@ -100,10 +103,15 @@ var WatchData=(function(){
         updated=true;
       }
       LISTS.forEach(function(L){
-        var key=L[0],have={};
+        var key=L[0],have={},theirs={};
+        ((iw&&iw[key])||[]).forEach(function(x){theirs[x.id]=x;});
         var mine=(w[key]||[]).filter(function(x){
           if(gone(x.id)){removed++;return false;}
           have[x.id]=1;return true;
+        }).map(function(x){
+          var o=theirs[x.id];
+          if(o&&(+o.edited||0)>(+x.edited||0)){updated=true;return o;}
+          return x;
         });
         ((iw&&iw[key])||[]).forEach(function(x){
           if(!have[x.id]&&!gone(x.id)){mine.push(x);have[x.id]=1;added++;}
@@ -125,7 +133,7 @@ var WatchData=(function(){
       LISTS.forEach(function(L){if(w[L[0]])w[L[0]]=w[L[0]].filter(function(x){return !gone(x.id);});});
       if(w.prCurrent&&gone("pr:"+w.prCurrent.start))delete w.prCurrent;
       out.push(w);
-      rows.push({name:w.name,status:"new",added:(w.measurements||[]).length+(w.timegrapher||[]).length+(w.powerReserve||[]).length});
+      rows.push({name:w.name,status:"new",added:(w.measurements||[]).length+(w.timegrapher||[]).length+(w.powerReserve||[]).length+(w.log||[]).length});
     });
 
     loc.watches=out;
