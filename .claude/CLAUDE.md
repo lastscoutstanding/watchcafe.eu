@@ -104,7 +104,7 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
 - `w.worn = [{id, t}]`, `t` = de dag om 00:00 UTC; in `LISTS`, dus samenvoegen op id. Twee apparaten kunnen dezelfde dag met een ander id loggen: dagen tellen één keer, en ongedaan maken verwijdert (met tombstones) alle regels van die dag.
 - Tab Worn: dagen gedragen (12 maanden), aandeel van de vastgelegde dagen, laatst gedragen, langste reeks, en een kalender van 53 weken (ma–zo) die op mobiel bij de huidige week begint.
 - Voorbeeldhorloges krijgen draagdagen voor de 150 dagen vóór vandaag (vandaag zelf niet), afgeleid van het dagnummer (`withWorn` in `sample.js`).
-- Gepland (mockup `_mockup/collection.html`): logboek en gegevens in het rapport.
+- Het rapport neemt gegevens, logboek en draagdagen mee (zie Rapport).
 
 ## Watch Rate Meter
 
@@ -127,6 +127,9 @@ Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`
   - Vanaf de Viewer: de live Rate Meter-data doet mee als bron "This device · now", standaard uit (staat vaak al in een back-up). Per bestand: een rij per bron met eigen All/None. Met merge: bronnen als chips aan/uit, daaronder de samengevoegde horloges (op id, anders naam). Keuze wordt hier niet onthouden.
 - Leesbare back-up naast de JSON: PDF via het printvenster ("Opslaan als PDF"), geen PDF-library.
 - Opbouw: overzichtspagina (kerncijfers + tabel per horloge), dan per horloge een nieuwe pagina met kerncijfers, offset- en ganggrafiek (sessies altijd aaneengesloten, zoals `allc`), sessies, gang per positie (laatste sessie), gangreserve, timegrapher en optioneel alle metingen.
+- Opties boven het papier (niet geprint, niet onthouden): "Details, logbook & worn" (aan), "Prices" en "Serial numbers" (uit, want een rapport wordt vaak gedeeld: verzekeraar, koper, horlogemaker; uitgeschakeld als het logboek uit staat), "Include all measurements" (aan).
+- Per horloge onder de naam merk/model/ref/kaliber/jaar; na de timegrapher de blokken Gegevens (twee kolommen, alleen ingevulde velden, aankoop uit het logboek, volgende onderhoudsbeurt met "service due"), Logboek (tabel, kostenkolom alleen met Prices) en Gedragen (dagen in 12 maanden, laatst gedragen, kalender als SVG). Verkochte horloges krijgen een tag. Overzichtstabel: kolom Worn, en met Prices de aankoopprijs.
+- Samenvoegen van Viewer-bestanden neemt nu ook `info` (laatste `edited` wint), `log` en `worn` mee. Een horloge met alleen gegevens, logboek of draagdagen telt niet als leeg.
 - Altijd licht (papier), los van het thema. Grafieken zijn vaste SVG met viewBox; schalen mee in print.
 - Geen vaste papiermaat in `@page`: het printvenster kiest A4 of Letter (VS/Canada). Getest op beide met Chrome headless; Safari/iOS nog niet.
 - Datums met maand in letters en 24-uurs tijd, zodat ze internationaal eenduidig zijn.

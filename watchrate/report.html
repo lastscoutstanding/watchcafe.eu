@@ -97,6 +97,12 @@
   .legend{font-size:8.5pt;color:var(--p-muted);margin:4px 0 0}
   .legend span{margin-right:10px;white-space:nowrap}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .ident{color:var(--p-muted);font-size:9.5pt;margin:-2px 0 8px}
+  .kv{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin:0 0 4px}
+  .kv table{margin:0}
+  .kv td.k{color:var(--p-muted);width:42%}
+  .wornline{font-size:9.5pt;margin:0 0 4px}
+  .heat{display:block;margin:4px 0 2px;max-width:100%;height:auto}
   .foot{margin-top:18px;padding-top:6px;border-top:1px solid var(--p-line);font-size:8pt;color:var(--p-muted);display:flex;justify-content:space-between}
   .empty{color:var(--p-muted);font-style:italic}
 
@@ -104,7 +110,7 @@
   @media screen and (max-width:720px){
     .sheet{padding:18px 14px}
     .kpis{grid-template-columns:repeat(2,1fr)}
-    .charts,.two{grid-template-columns:1fr}
+    .charts,.two,.kv{grid-template-columns:1fr}
     .sheet table{font-size:9pt}
   }
 
@@ -117,7 +123,7 @@
     .sheet{box-shadow:none;border-radius:0;margin:0;padding:0;max-width:none}
     .sheet + .sheet{break-before:page}
     .kpi,.chart{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .dot,.tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .dot,.tag,.heat{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
 </head>
@@ -128,6 +134,9 @@
       <h1 id="t-title"></h1>
       <p class="sub" id="t-sub"></p>
     </div>
+    <label><input type="checkbox" id="optLog" checked> <span id="t-optLog"></span></label>
+    <label><input type="checkbox" id="optPrice"> <span id="t-optPrice"></span></label>
+    <label><input type="checkbox" id="optSerial"> <span id="t-optSerial"></span></label>
     <label><input type="checkbox" id="optRaw" checked> <span id="t-raw"></span></label>
     <a class="btn" href="/collection/" id="t-back"></a>
     <button class="primary" id="printBtn"></button>
@@ -158,7 +167,15 @@ var I18N={
   allMeas:"All measurements",time:"Time",offset:"Offset",newStart:"new start",
   offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
   tgLegend:"◇ timegrapher per position · ╌ session average",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
-  footer:"watchcafe.eu · data from this browser only",sampleTag:"sample data"},
+  footer:"watchcafe.eu · data from this browser only",sampleTag:"sample data",
+  optLog:"Details, logbook & worn",optPrice:"Prices",optSerial:"Serial numbers",
+  details:"Details",logbook:"Logbook",worn:"Worn",type:"Type",whereCol:"Where / by",cost:"Price / cost",
+  f_brand:"Brand",f_model:"Model",f_ref:"Reference",f_caliber:"Caliber / movement",f_year:"Year",f_serial:"Serial number",f_caseSize:"Case size",f_lugWidth:"Lug width",f_boxPapers:"Box & papers",f_serviceYears:"Service interval",
+  purchased:"Purchased",price:"Price",nextService:"Next service",serviceDue:"service due",soldTag:"sold or gifted",
+  bp:{full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},yearsN:function(n){return n+" years";},
+  types:{purchase:"Purchase",service:"Service",repair:"Repair",strap:"Strap / bracelet",event:"Event",sold:"Sold or gifted",note:"Note"},
+  wornDays:function(n){return n+(n===1?" day":" days")+" in the last 12 months";},lastWorn:"last worn",wornCol:"Worn",wornUnit:"days, 12 mo",
+  heatCap:"one square per day, last 12 months"},
  nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van je horloges",print:"Printen / Opslaan als PDF",back:"Terug naar Collectie",backViewer:"Terug naar Viewer",sources:"Bronnen",
   inReport:"Horloges in rapport",of:"van",all:"Alle",noneSel:"Geen",empty:"leeg",thisDevice:"Dit apparaat",now:"nu",
   pickNone:"Geen horloges gekozen. Kies hierboven minstens één horloge.",
@@ -177,7 +194,15 @@ var I18N={
   allMeas:"Alle metingen",time:"Tijdstip",offset:"Offset",newStart:"nieuwe start",
   offsetChart:"Offset in de tijd (s)",rateChart:"Gang in de tijd (s/dag)",gapsRemoved:"sessies aaneengesloten, tijd ertussen weggelaten",
   tgLegend:"◇ timegrapher per positie · ╌ sessiegemiddelde",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
-  footer:"watchcafe.eu · alleen data uit deze browser",sampleTag:"voorbeelddata"}
+  footer:"watchcafe.eu · alleen data uit deze browser",sampleTag:"voorbeelddata",
+  optLog:"Gegevens, logboek & gedragen",optPrice:"Prijzen",optSerial:"Serienummers",
+  details:"Gegevens",logbook:"Logboek",worn:"Gedragen",type:"Soort",whereCol:"Waar / door",cost:"Prijs / kosten",
+  f_brand:"Merk",f_model:"Model",f_ref:"Referentie",f_caliber:"Kaliber / uurwerk",f_year:"Jaar",f_serial:"Serienummer",f_caseSize:"Kastmaat",f_lugWidth:"Bandaanzet",f_boxPapers:"Doos & papieren",f_serviceYears:"Onderhoudsinterval",
+  purchased:"Gekocht",price:"Prijs",nextService:"Volgende onderhoudsbeurt",serviceDue:"onderhoud nodig",soldTag:"verkocht of weggegeven",
+  bp:{full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},yearsN:function(n){return n+" jaar";},
+  types:{purchase:"Aankoop",service:"Onderhoud",repair:"Reparatie",strap:"Band",event:"Evenement",sold:"Verkocht of weggegeven",note:"Notitie"},
+  wornDays:function(n){return n+(n===1?" dag":" dagen")+" in de afgelopen 12 maanden";},lastWorn:"laatst gedragen",wornCol:"Gedragen",wornUnit:"dagen, 12 mnd",
+  heatCap:"een vakje per dag, afgelopen 12 maanden"}
 };
 var POS={
   dial_up:{en:"Dial up",nl:"Wijzerplaat boven",abbr:"DU",color:"#e0921f"},
@@ -224,13 +249,18 @@ function mergeFiles(files){
   function addAll(dst,src,key){(src||[]).forEach(function(x,i){var k=x.id!=null?"id:"+x.id:key(x,i);if(!dst._seen[k]){dst._seen[k]=1;dst.list.push(x);}});}
   files.forEach(function(f){f.watches.forEach(function(w){
     var k=mergeKey(w);
-    if(!by[k]){by[k]={name:w.name,m:{_seen:{},list:[]},g:{_seen:{},list:[]},p:{_seen:{},list:[]}};order.push(k);}
+    if(!by[k]){by[k]={name:w.name,info:w.info,edited:+w.edited||0,m:{_seen:{},list:[]},g:{_seen:{},list:[]},p:{_seen:{},list:[]},l:{_seen:{},list:[]},n:{_seen:{},list:[]}};order.push(k);}
     var a=by[k];
+    // name and details: the most recent edit wins, as when merging backups in the Collection
+    if((+w.edited||0)>a.edited){a.name=w.name;a.info=w.info;a.edited=+w.edited;}
     addAll(a.m,w.measurements,function(m){return "t:"+m.t+"|o:"+m.offset;});
     addAll(a.g,w.timegrapher,function(g){return "t:"+g.t;});
     addAll(a.p,w.powerReserve,function(r){return "s:"+r.start;});
+    (w.log||[]).forEach(function(e){var i=a.l.list.findIndex(function(x){return x.id===e.id;});
+      if(i<0)a.l.list.push(e);else if((+e.edited||0)>(+a.l.list[i].edited||0))a.l.list[i]=e;});
+    addAll(a.n,w.worn,function(x){return "d:"+x.t;});
   });});
-  return order.map(function(k){var a=by[k];return {_key:k,name:a.name,measurements:a.m.list,timegrapher:a.g.list,powerReserve:a.p.list};});
+  return order.map(function(k){var a=by[k];return {_key:k,name:a.name,info:a.info,measurements:a.m.list,timegrapher:a.g.list,powerReserve:a.p.list,log:a.l.list,worn:a.n.list};});
 }
 // SRC.viewer: the report covers backups (and optionally this device); otherwise only this device (or the samples)
 function loadSources(){
@@ -259,7 +289,8 @@ function savePick(){
 function watchId(w){return w.id!=null?String(w.id):"name:"+(w.name||"");}
 function srcLabel(s){return s.dev?{b:t("thisDevice"),d:t("now")}:s.from?{b:s.from.device,d:s.from.at?fShort(s.from.at):""}:{b:s.name,d:""};}
 function srcText(s){var l=srcLabel(s);return l.b+(l.d?" · "+l.d:"");}
-function isEmptyWatch(w){return !(w.measurements||[]).length&&!(w.timegrapher||[]).length&&!(w.powerReserve||[]).length;}
+function isEmptyWatch(w){return !(w.measurements||[]).length&&!(w.timegrapher||[]).length&&!(w.powerReserve||[]).length
+  &&!(w.log||[]).length&&!(w.worn||[]).length&&!(w.info&&Object.keys(w.info).length);}
 function srcOn(i){return i in srcPick?srcPick[i]:!SRC.list[i].dev;}
 // groups of pickable watches: one per source, or a single merged one
 function groups(){
@@ -301,6 +332,72 @@ function analyse(w){
   return {w:w,ms:ms,sess:sess,last:last,positions:positions,spread:rated.length>=2?Math.max.apply(null,rated)-Math.min.apply(null,rated):null,
     tg:tg,pr:pr,prAvg:prAvg,t0:ms.length?ms[0].t:null,t1:ms.length?ms[ms.length-1].t:null,
     current:last&&last.fit?last.fit.rate:null,allRate:sess.length>1?null:(allFit?allFit.rate:null)};
+}
+
+/* ---------- details, logbook and worn days (same rules as the Collection) ---------- */
+// log and worn days use t = the day at 00:00 UTC
+function fDay(ms){return new Date(ms).toLocaleDateString(loc(),{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});}
+function fMonth(ms){return new Date(ms).toLocaleDateString(loc(),{month:"short",year:"numeric",timeZone:"UTC"});}
+function infoOf(w){return w.info||{};}
+function identLine(w){
+  var i=infoOf(w),parts=[[i.brand,i.model].filter(Boolean).join(" ")];
+  if(i.ref)parts.push("Ref. "+i.ref);
+  if(i.caliber)parts.push(/^\d/.test(i.caliber)?(lang==="nl"?"Kal. ":"Cal. ")+i.caliber:i.caliber);
+  if(i.year)parts.push(i.year);
+  return parts.filter(Boolean).join(" · ");
+}
+function logOf(w){return (w.log||[]).slice().sort(function(a,b){return b.t-a.t;});}
+function lastOf(w,types){return logOf(w).find(function(e){return types.indexOf(e.type)>-1;})||null;}
+function isFormer(w){var e=lastOf(w,["purchase","sold"]);return !!(e&&e.type==="sold");}
+function serviceInfo(w){
+  var y=+infoOf(w).serviceYears;if(!y||isFormer(w))return null;
+  var base=lastOf(w,["service"])||lastOf(w,["purchase"]);if(!base)return null;
+  var d=new Date(base.t);d.setUTCFullYear(d.getUTCFullYear()+y);
+  return {due:d.getTime(),overdue:d.getTime()<=Date.now()};
+}
+function todayUTC(){var n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate());}
+function wornInfo(w){
+  var days={};(w.worn||[]).forEach(function(x){days[x.t]=1;});
+  var list=Object.keys(days).map(Number),from=todayUTC()-364*DAY;
+  return {days:days,year:list.filter(function(d){return d>=from;}).length,last:list.length?Math.max.apply(null,list):null};
+}
+// one square per day for the last 53 weeks, Monday on top
+function wornHeat(days){
+  var today=todayUTC(),dow=(new Date(today).getUTCDay()+6)%7,start=today-dow*DAY-52*7*DAY,c=5,g="";
+  for(var col=0;col<53;col++)for(var r=0;r<7;r++){
+    var d=start+(col*7+r)*DAY;if(d>today)continue;
+    g+='<rect x="'+col*c+'" y="'+r*c+'" width="4" height="4" rx=".6" fill="'+(days[d]?"#b8532e":"#ecebef")+'"/>';
+  }
+  return '<svg class="heat" viewBox="0 0 '+(53*c)+' '+(7*c)+'" width="'+(53*c*1.6)+'" xmlns="http://www.w3.org/2000/svg">'+g+'</svg>';
+}
+function detailsBlock(w,opt){
+  var i=infoOf(w),rows=[];
+  function row(k,v){if(v)rows.push('<tr><td class="k">'+esc(k)+'</td><td>'+esc(v)+'</td></tr>');}
+  row(t("f_brand"),i.brand);row(t("f_model"),i.model);row(t("f_ref"),i.ref);row(t("f_caliber"),i.caliber);row(t("f_year"),i.year);
+  if(opt.serial)row(t("f_serial"),i.serial);
+  row(t("f_caseSize"),i.caseSize);row(t("f_lugWidth"),i.lugWidth);row(t("f_boxPapers"),i.boxPapers?(t("bp")[i.boxPapers]||i.boxPapers):"");
+  var p=lastOf(w,["purchase"]);
+  if(p)row(t("purchased"),fDay(p.t)+(p.where?", "+p.where:""));
+  if(p&&opt.price)row(t("price"),p.cost);
+  if(i.serviceYears)row(t("f_serviceYears"),t("yearsN")(+i.serviceYears));
+  var sv=serviceInfo(w);
+  if(sv)rows.push('<tr><td class="k">'+esc(t("nextService"))+'</td><td>~ '+esc(fMonth(sv.due))+(sv.overdue?'<span class="tag">'+esc(t("serviceDue"))+'</span>':'')+'</td></tr>');
+  if(!rows.length)return "";
+  var half=Math.ceil(rows.length/2);
+  return '<h3>'+esc(t("details"))+'</h3><div class="kv"><table><tbody>'+rows.slice(0,half).join("")+'</tbody></table><table><tbody>'+rows.slice(half).join("")+'</tbody></table></div>';
+}
+function logbookBlock(w,opt){
+  var l=logOf(w);if(!l.length)return "";
+  var withCost=opt.price&&l.some(function(e){return e.cost;});
+  return '<h3>'+esc(t("logbook"))+'</h3><table><thead><tr><th>'+t("date")+'</th><th>'+t("type")+'</th><th>'+t("whereCol")+'</th><th>'+t("note2")+'</th>'+(withCost?'<th class="num">'+t("cost")+'</th>':'')+'</tr></thead><tbody>'
+    +l.map(function(e){return '<tr><td class="nw">'+esc(fDay(e.t))+'</td><td class="nw">'+esc(t("types")[e.type]||e.type)+'</td><td>'+esc(e.where||"")+'</td><td class="dim">'+esc(e.note||"")+'</td>'
+      +(withCost?'<td class="num">'+esc(e.cost||"")+'</td>':'')+'</tr>';}).join("")
+    +'</tbody></table>';
+}
+function wornBlock(w){
+  var wi=wornInfo(w);if(wi.last==null)return "";
+  return '<h3>'+esc(t("worn"))+'</h3><p class="wornline"><b>'+esc(t("wornDays")(wi.year))+'</b> · '+esc(t("lastWorn"))+' '+esc(fDay(wi.last))+'</p>'
+    +wornHeat(wi.days)+'<p class="legend">'+esc(t("heatCap"))+'</p>';
 }
 
 /* ---------- charts: sessions back to back, idle time removed ---------- */
@@ -366,16 +463,21 @@ function rateChart(a){
 function kpi(label,val,unit,main){return '<div class="kpi'+(main?' main':'')+'"><div class="l">'+esc(label)+'</div><div class="v">'+val+(unit?' <small>'+esc(unit)+'</small>':'')+'</div></div>';}
 function tgReadings(s){return s.readings.map(function(r){var p=pos(r.position);return '<span style="white-space:nowrap"><span class="tgmark" style="border-color:'+p.color+'"></span>'+p.abbr+' '+sgn(+r.rate,0)+'</span>';}).join(" &nbsp;");}
 
-function overview(list,info,isSample){
+function overview(list,info,isSample,opt){
+  var showWorn=opt.log&&list.some(function(a){return (a.w.worn||[]).length;});
+  var showPrice=opt.log&&opt.price&&list.some(function(a){var p=lastOf(a.w,["purchase"]);return p&&p.cost;});
   var all=[];list.forEach(function(a){if(a.t0!=null){all.push(a.t0,a.t1);}});
   var nMeas=list.reduce(function(x,a){return x+a.ms.length;},0);
   var rows=list.map(function(a){
     var tgL=a.tg[a.tg.length-1];
-    return '<tr><td><b>'+esc(a.w.name)+'</b>'+(a.w._source?'<br><span class="dim" style="font-size:8pt">'+esc(a.w._source)+'</span>':'')+'</td><td class="num">'+a.ms.length+'</td><td class="num">'+a.sess.length+'</td>'
+    var pu=lastOf(a.w,["purchase"]);
+    return '<tr><td><b>'+esc(a.w.name)+'</b>'+(isFormer(a.w)?'<span class="tag">'+esc(t("soldTag"))+'</span>':'')+(a.w._source?'<br><span class="dim" style="font-size:8pt">'+esc(a.w._source)+'</span>':'')+'</td><td class="num">'+a.ms.length+'</td><td class="num">'+a.sess.length+'</td>'
       +'<td style="white-space:nowrap">'+(a.t0!=null?esc(fShort(a.t0))+' – '+esc(fShort(a.t1)):t("none"))+'</td>'
       +'<td class="num"><b>'+sgn(a.current,2)+'</b></td>'
       +'<td class="num">'+(tgL?sgn(tgL.avg):t("none"))+'</td>'
-      +'<td class="num">'+(a.prAvg!=null?fHM(a.prAvg):t("none"))+'</td></tr>';
+      +'<td class="num">'+(a.prAvg!=null?fHM(a.prAvg):t("none"))+'</td>'
+      +(showWorn?'<td class="num">'+wornInfo(a.w).year+'</td>':'')
+      +(showPrice?'<td class="num">'+esc(pu&&pu.cost||t("none"))+'</td>':'')+'</tr>';
   }).join("");
   return '<section class="sheet">'
     +'<div class="cover-head"><div><h2>'+esc(t("rTitle"))+'</h2><p class="meta">'+esc(t("generated"))+' '+esc(fDT(Date.now()))+(isSample?' · <i>'+esc(t("sampleTag"))+'</i>':'')+'</p></div>'
@@ -386,13 +488,16 @@ function overview(list,info,isSample){
     +kpi(t("period"),all.length?esc(fShort(Math.min.apply(null,all)))+' – '+esc(fShort(Math.max.apply(null,all))):t("none"))
     +kpi(t("timegrapher"),list.reduce(function(x,a){return x+a.tg.length;},0))+'</div>'
     +'<h3>'+esc(t("overview"))+'</h3>'
-    +'<table><thead><tr><th>'+t("watch")+'</th><th class="num">'+t("meas")+'</th><th class="num">'+t("sessions")+'</th><th>'+t("period")+'</th><th class="num">'+t("current")+' <span style="text-transform:none">('+t("perDay")+')</span></th><th class="num">'+t("tgLatest")+'</th><th class="num">'+t("pr")+'</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<table><thead><tr><th>'+t("watch")+'</th><th class="num">'+t("meas")+'</th><th class="num">'+t("sessions")+'</th><th>'+t("period")+'</th><th class="num">'+t("current")+' <span style="text-transform:none">('+t("perDay")+')</span></th><th class="num">'+t("tgLatest")+'</th><th class="num">'+t("pr")+'</th>'
+    +(showWorn?'<th class="num">'+t("wornCol")+' <span style="text-transform:none">('+t("wornUnit")+')</span></th>':'')
+    +(showPrice?'<th class="num">'+t("price")+'</th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table>'
     +'</section>';
 }
 
-function watchPage(a,withRaw){
+function watchPage(a,opt){
   var h='<section class="sheet watch">';
-  h+='<div class="watch-head"><h2>'+esc(a.w.name)+'</h2><span class="meta" style="margin:0;text-align:right">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+(a.w._source?'<br>'+esc(a.w._source):'')+'</span></div>';
+  h+='<div class="watch-head"><h2>'+esc(a.w.name)+(isFormer(a.w)?'<span class="tag">'+esc(t("soldTag"))+'</span>':'')+'</h2><span class="meta" style="margin:0;text-align:right">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+(a.w._source?'<br>'+esc(a.w._source):'')+'</span></div>';
+  var idl=identLine(a.w);if(idl)h+='<p class="ident">'+esc(idl)+'</p>';
   var lastTg=a.tg[a.tg.length-1];
   h+='<div class="kpis">'+kpi(t("current"),sgn(a.current,2),t("perDay"),true)
     +kpi(t("sessions"),a.sess.length)+kpi(t("measurements"),a.ms.length)
@@ -437,7 +542,9 @@ function watchPage(a,withRaw){
       +'</tbody></table>';
   }
 
-  if(withRaw&&a.ms.length){
+  if(opt.log)h+=detailsBlock(a.w,opt)+logbookBlock(a.w,opt)+wornBlock(a.w);
+
+  if(opt.raw&&a.ms.length){
     h+='<h3>'+esc(t("allMeas"))+' ('+a.ms.length+')</h3><table><thead><tr><th>'+t("time")+'</th><th class="num">'+t("offset")+' (s)</th><th>'+t("position")+'</th><th>'+t("note2")+'</th></tr></thead><tbody>'
       +a.ms.map(function(m,i){var p=pos(m.position);
         return '<tr'+(m.newStart&&i>0?' class="ns"':'')+'><td class="mono">'+esc(fDT(m.t))+(m.newStart?'<span class="tag">'+esc(t("newStart"))+'</span>':'')+'</td><td class="num mono">'+sgn(m.offset)+'</td><td>'+(m.position?'<span class="dot" style="background:'+p.color+'"></span>'+esc(p.label):t("none"))+'</td><td class="dim">'+esc(m.note||"")+'</td></tr>';}).join("")
@@ -481,11 +588,14 @@ document.getElementById("pick").onclick=function(e){
 
 function render(){
   document.documentElement.lang=lang;
-  ["title","sub","raw","back","note"].forEach(function(k){document.getElementById("t-"+k).textContent=t(k);});
+  ["title","sub","raw","back","note","optLog","optPrice","optSerial"].forEach(function(k){document.getElementById("t-"+k).textContent=t(k);});
   document.getElementById("printBtn").textContent=t("print");
   if(SRC.sample)document.getElementById("t-note").textContent=t("note")+" "+t("sampleNote");
   document.title=t("title")+" — watchcafe.eu";
-  var withRaw=document.getElementById("optRaw").checked;
+  // prices and serial numbers are off by default: a report is often shared (insurer, buyer, watchmaker)
+  var opt={raw:document.getElementById("optRaw").checked,log:document.getElementById("optLog").checked,
+    price:document.getElementById("optPrice").checked,serial:document.getElementById("optSerial").checked};
+  document.getElementById("optPrice").disabled=document.getElementById("optSerial").disabled=!opt.log;
   if(FROM_VIEWER){var bk=document.getElementById("t-back");bk.textContent=t("backViewer");bk.href="viewer.html";}
   var gs=groups(),chosen=[],used=[];
   gs.forEach(function(g){var any=false;g.items.forEach(function(it){if(isOn(it,g)){chosen.push(it.w);any=true;}});if(any&&g.src)used.push(g.src);});
@@ -493,10 +603,10 @@ function render(){
   renderPick(gs);
   var list=chosen.map(analyse);
   document.getElementById("sheets").innerHTML=list.length
-    ?overview(list,{device:WatchData.getDevice(),sources:SRC.viewer?used:null},SRC.sample)+list.map(function(a){return watchPage(a,withRaw);}).join("")
+    ?overview(list,{device:WatchData.getDevice(),sources:SRC.viewer?used:null},SRC.sample,opt)+list.map(function(a){return watchPage(a,opt);}).join("")
     :'<div class="pick-none">'+esc(t("pickNone"))+'</div>';
 }
-document.getElementById("optRaw").onchange=render;
+["optRaw","optLog","optPrice","optSerial"].forEach(function(id){document.getElementById(id).onchange=render;});
 document.getElementById("printBtn").onclick=function(){window.print();};
 window.addEventListener("swclang",function(e){lang=e.detail;render();});
 render();
