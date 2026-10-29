@@ -38,14 +38,19 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Favicon (klokje op 10:10) |
 
 localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
-- `siouxWatchRateMeter`: alle horlogedata (metingen, timegrapher, gangreserve, gegevens).
+- `siouxWatchRateMeter`: alle horlogedata (metingen, timegrapher, gangreserve, gegevens, logboek, draagdagen).
 - `siouxWatchRateMeterLang`: taal (EN standaard, NL).
 - `siouxWatchTheme`: gekozen thema.
 - `siouxWatchDevice`: apparaatnaam voor back-ups; alleen gezet als de gebruiker hem wijzigt, anders afgeleid uit de browser (iPhone, iPad, Mac, Windows, Android …).
 - `siouxWatchLastBackup`: `{ at, file }` van de laatste back-up op dit apparaat, voor de back-upstatus en -herinnering.
 - `siouxWatchReportPick`: welke horloges in het rapport aan/uit staan (alleen expliciete keuzes, alleen Rate Meter-bron).
 
-Backup-JSON: `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`; horloge `{ id, name, measurements, timegrapher?, powerReserve?, prCurrent? }`; meting `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
+Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`): `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`.
+- Horloge: `{ id, name, measurements, timegrapher?, powerReserve?, prCurrent?, info?, edited?, log?, worn? }`.
+- Meting: `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
+- `info`: gegevens uit de Collection (`brand, model, ref, caliber, year, serial, caseSize, lugWidth, boxPapers, serviceYears`, alle vrije tekst, alleen ingevulde velden); `edited` = tijdstip van de laatste wijziging van naam of gegevens.
+- `log`: `[{ id, t, type, where?, cost?, note?, edited? }]`; `worn`: `[{ id, t }]`; bij beide is `t` de dag om 00:00 UTC.
+- Prijzen en serienummers staan dus altijd in de back-up, ook als het rapport ze weglaat. De Backup Viewer toont alleen de meetgegevens; gegevens, logboek en draagdagen alleen via het rapport.
 
 ## Back-ups tussen apparaten
 
