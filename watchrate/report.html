@@ -24,24 +24,33 @@
   body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
   .wrap{max-width:948px;margin:0 auto}
 
-  /* screen toolbar */
-  .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 auto 18px;max-width:210mm}
-  .bar h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
-  .bar .sub{color:var(--muted);font-size:14px;margin:0}
-  .bar .grow{flex:1 1 260px}
-  .bar label{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-  .bar button,.bar a.btn{font:inherit;font-size:14px;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);text-decoration:none}
-  .bar button.primary{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent);font-weight:600}
-  .note{max-width:210mm;margin:0 auto 18px;font-size:13px;color:var(--muted)}
+  /* header and settings: the full page column, like the other pages; the paper below stays A4 wide */
+  .top{max-width:948px;margin:0 auto 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .top h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+  .top .sub{color:var(--muted);font-size:14px;margin:0}
+  .acts{display:flex;gap:8px;flex-wrap:wrap}
+  .acts a,.acts button{font:inherit;font-size:14px;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);text-decoration:none}
+  .acts a:hover,.acts button:hover{background:#30303a}
+  .acts .primary{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent);font-weight:600}
+  .acts .primary:hover{background:color-mix(in srgb,var(--accent) 30%,transparent);border-color:var(--accent)}
+  .panel{max-width:948px;margin:0 auto 10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px}
+  .prow{display:flex;gap:6px 16px;align-items:baseline;flex-wrap:wrap}
+  .plbl{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);min-width:132px;padding-top:2px}
+  .opts{display:flex;flex-wrap:wrap;gap:6px 18px;flex:1;min-width:0}
+  .opts label{font-size:14px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
+  .opts .subgrp{display:inline-flex;gap:6px 14px;flex-wrap:wrap;align-items:center;padding-left:12px;border-left:1px solid var(--border)}
+  .opts .subgrp label{color:var(--muted);font-size:13px}
+  .opts label.dis{opacity:.45;cursor:default}
+  .psep{border-top:1px dashed var(--border);margin:12px 0}
+  .hint{max-width:948px;margin:0 auto 22px;font-size:12.5px;color:var(--muted);text-align:right}
+  .papercap{max-width:210mm;margin:0 auto 6px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6d6a73;text-align:center}
+  @media(max-width:620px){.plbl{min-width:0;flex-basis:100%}.opts .subgrp{border-left:none;padding-left:0}.hint{text-align:left}}
 
-  /* watch picker: which sources and watches go into the report */
-  .pick{max-width:210mm;margin:0 auto 18px;padding-top:12px;border-top:1px dashed var(--border)}
-  .pick-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:8px}
-  .pick-head .lbl{font-size:13px;font-weight:600}
-  .pick-head .cnt{font-size:13px;color:var(--muted)}
-  .pick-head .sp{flex:1}
-  .pick .grp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0 0 8px}
-  .pick .src{font-size:12px;color:var(--muted);min-width:110px}
+  /* watch picker inside the panel: sources (Viewer) and watches */
+  .pick .cnt{font-size:13px;color:var(--muted)}
+  .pick .lnks{margin-left:auto;font-size:13px;color:var(--muted)}
+  .pick .grp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 0 0}
+  .pick .src{font-size:12px;color:var(--muted);min-width:132px}
   .pick .src b{color:var(--ink);font-weight:600}
   .pick .glnk{margin-left:auto;font-size:12px;color:var(--muted)}
   .pick .lnk{font:inherit;font-size:13px;background:none;border:0;padding:0;color:var(--accent);cursor:pointer}
@@ -54,7 +63,7 @@
   .pick .chip.off{background:transparent;border:1px dashed color-mix(in srgb,var(--muted) 50%,transparent);color:var(--muted)}
   .pick .chip.off .nm{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 50%,transparent)}
   .pick .chip .em{font-size:11px;opacity:.75}
-  .pick .foot{font-size:12px;color:var(--muted);margin:2px 0 0;padding:0;border:0;display:block}
+  .pick .foot{font-size:12px;color:var(--muted);margin:10px 0 0;padding:0;border:0;display:block}
   .pick-none{max-width:210mm;margin:0 auto;padding:40px 20px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:10px;font-size:14px}
   @media (max-width:600px){ .pick .src{flex-basis:100%} }
 
@@ -64,11 +73,14 @@
   .sheet h3{font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--p-muted);margin:16px 0 6px;break-after:avoid}
   .sheet .meta{color:var(--p-muted);font-size:9.5pt;margin:0 0 12px}
   .sheet table{width:100%;border-collapse:collapse;font-size:9.5pt;margin:0 0 4px}
-  .sheet th{text-align:left;font-weight:600;color:var(--p-muted);font-size:8.5pt;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--p-ink);padding:4px 6px}
+  .sheet th{text-align:left;font-weight:600;color:var(--p-muted);font-size:8pt;text-transform:uppercase;letter-spacing:.04em;border-bottom:1.5px solid var(--p-ink);padding:4px 5px;vertical-align:bottom;line-height:1.25}
+  .sheet th small{display:block;text-transform:none;letter-spacing:0;font-weight:400}
   .sheet td{border-bottom:1px solid var(--p-line);padding:3.5px 6px;vertical-align:top}
   .sheet tr{break-inside:avoid}
   .sheet thead{display:table-header-group}
-  .sheet .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .sheet .num{text-align:right;font-variant-numeric:tabular-nums}
+  .sheet td.num{white-space:nowrap}
+  .ovt td:first-child{min-width:44mm} /* the overview keeps a watch name on one line where it can */
   .sheet .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:9pt}
   .sheet .dim{color:var(--p-muted)}
   .sheet .nw{white-space:nowrap}
@@ -107,6 +119,8 @@
   .empty{color:var(--p-muted);font-style:italic}
 
   /* screen only: the printable width (~184 mm) is also under 720px */
+  /* a table that still doesn't fit a narrow screen scrolls inside the sheet */
+  @media screen{.sheet{overflow-x:auto}}
   @media screen and (max-width:720px){
     .sheet{padding:18px 14px}
     .kpis{grid-template-columns:repeat(2,1fr)}
@@ -119,7 +133,7 @@
   @media print{
     body{background:#fff;padding:0;min-height:0}
     body > *:not(#report){display:none !important}
-    .bar,.note,.pick{display:none !important}
+    .top,.panel,.hint,.papercap{display:none !important}
     .sheet{box-shadow:none;border-radius:0;margin:0;padding:0;max-width:none}
     .sheet + .sheet{break-before:page}
     .kpi,.chart{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -129,34 +143,48 @@
 </head>
 <body>
 <div id="report">
-  <div class="bar">
-    <div class="grow">
+  <div class="top">
+    <div>
       <h1 id="t-title"></h1>
       <p class="sub" id="t-sub"></p>
     </div>
-    <label><input type="checkbox" id="optLog" checked> <span id="t-optLog"></span></label>
-    <label><input type="checkbox" id="optPrice"> <span id="t-optPrice"></span></label>
-    <label><input type="checkbox" id="optSerial"> <span id="t-optSerial"></span></label>
-    <label><input type="checkbox" id="optRaw" checked> <span id="t-raw"></span></label>
-    <a class="btn" href="/collection/" id="t-back"></a>
-    <button class="primary" id="printBtn"></button>
+    <div class="acts">
+      <a href="/collection/" id="t-back"></a>
+      <button class="primary" id="printBtn"></button>
+    </div>
   </div>
-  <p class="note" id="t-note"></p>
-  <div class="pick" id="pick"></div>
+  <div class="panel">
+    <div class="prow">
+      <span class="plbl" id="t-include"></span>
+      <div class="opts">
+        <label><input type="checkbox" id="optRaw" checked> <span id="t-raw"></span></label>
+        <label><input type="checkbox" id="optLog" checked> <span id="t-optLog"></span></label>
+        <span class="subgrp">
+          <label id="lblPrice"><input type="checkbox" id="optPrice"> <span id="t-optPrice"></span></label>
+          <label id="lblSerial"><input type="checkbox" id="optSerial"> <span id="t-optSerial"></span></label>
+        </span>
+      </div>
+    </div>
+    <div class="psep"></div>
+    <div class="pick" id="pick"></div>
+  </div>
+  <p class="hint" id="t-note"></p>
+  <p class="papercap" id="t-papercap"></p>
   <div id="sheets"></div>
 </div>
 
 <script>
 "use strict";
 var I18N={
- en:{title:"Watch Report",sub:"A readable, printable copy of your watches",print:"Print / Save as PDF",back:"Back to Collection",backViewer:"Back to Viewer",sources:"Sources",
-  inReport:"Watches in report",of:"of",all:"All",noneSel:"None",empty:"empty",thisDevice:"This device",now:"now",
+ en:{title:"Watch Report",sub:"A readable, printable copy of your watches",subViewer:"A readable, printable copy of your backups",print:"Print / Save as PDF",back:"← Collection",backViewer:"← Backup Viewer",sources:"Sources",
+  include:"Include",papercap:"Preview · same width as the PDF page",
+  inReport:"Watches",of:"of",all:"All",noneSel:"None",empty:"empty",thisDevice:"This device",now:"now",
   pickNone:"No watches selected. Pick at least one watch above.",
   pickRemember:"Your choice is remembered on this device. Watches you add later are included automatically.",
   pickMerged:"Watches with the same id are merged across the sources you tick.",
   pickDevice:"“This device” is off by default: its watches are often in a backup already.",
-  raw:"Include all measurements",
-  note:"Use your browser’s print dialog and choose “Save as PDF”. On iPhone/iPad: Print, then Share → Save to Files.",
+  raw:"All measurements",
+  note:"Print, then choose “Save as PDF”. On iPhone/iPad: Print, then Share → Save to Files.",
   sampleNote:"No watches in this browser yet — showing the sample watches.",
   rTitle:"Watch Report",generated:"Generated",device:"Device",period:"Period",watches:"Watches",measurements:"Measurements",
   overview:"Overview",watch:"Watch",meas:"Meas.",current:"Current rate",allSessions:"All sessions",tgLatest:"Timegrapher",pr:"Power reserve",
@@ -168,7 +196,7 @@ var I18N={
   offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
   tgLegend:"◇ timegrapher per position · ╌ session average",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
   footer:"watchcafe.eu · data from this browser only",sampleTag:"sample data",
-  optLog:"Details, logbook & worn",optPrice:"Prices",optSerial:"Serial numbers",
+  optLog:"Details, logbook & worn",sessShort:"Sess.",tgShort:"Time&shy;grapher",optPrice:"Prices",optSerial:"Serial numbers",
   details:"Details",logbook:"Logbook",worn:"Worn",type:"Type",whereCol:"Where / by",cost:"Price / cost",
   f_brand:"Brand",f_model:"Model",f_ref:"Reference",f_caliber:"Caliber / movement",f_year:"Year",f_serial:"Serial number",f_caseSize:"Case size",f_lugWidth:"Lug width",f_boxPapers:"Box & papers",f_serviceYears:"Service interval",
   purchased:"Purchased",price:"Price",nextService:"Next service",serviceDue:"service due",soldTag:"sold or gifted",
@@ -176,14 +204,15 @@ var I18N={
   types:{purchase:"Purchase",service:"Service",repair:"Repair",strap:"Strap / bracelet",event:"Event",sold:"Sold or gifted",note:"Note"},
   wornDays:function(n){return n+(n===1?" day":" days")+" in the last 12 months";},lastWorn:"last worn",wornCol:"Worn",wornUnit:"days, 12 mo",
   heatCap:"one square per day, last 12 months"},
- nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van je horloges",print:"Printen / Opslaan als PDF",back:"Terug naar Collectie",backViewer:"Terug naar Viewer",sources:"Bronnen",
-  inReport:"Horloges in rapport",of:"van",all:"Alle",noneSel:"Geen",empty:"leeg",thisDevice:"Dit apparaat",now:"nu",
+ nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van je horloges",subViewer:"Een leesbare, printbare kopie van je back-ups",print:"Printen / Opslaan als PDF",back:"← Collectie",backViewer:"← Backup Viewer",sources:"Bronnen",
+  include:"Opnemen",papercap:"Voorbeeld · even breed als de PDF-pagina",
+  inReport:"Horloges",of:"van",all:"Alle",noneSel:"Geen",empty:"leeg",thisDevice:"Dit apparaat",now:"nu",
   pickNone:"Geen horloges gekozen. Kies hierboven minstens één horloge.",
   pickRemember:"Je keuze wordt op dit apparaat onthouden. Horloges die je later toevoegt, gaan er vanzelf in.",
   pickMerged:"Horloges met hetzelfde id worden samengevoegd over de bronnen die je aanvinkt.",
   pickDevice:"“Dit apparaat” staat standaard uit: de horloges staan vaak al in een back-up.",
-  raw:"Alle metingen opnemen",
-  note:"Gebruik het printvenster van je browser en kies “Opslaan als PDF”. Op iPhone/iPad: Print, dan Deel → Bewaar in Bestanden.",
+  raw:"Alle metingen",
+  note:"Print en kies “Opslaan als PDF”. Op iPhone/iPad: Print, dan Deel → Bewaar in Bestanden.",
   sampleNote:"Nog geen horloges in deze browser — je ziet de voorbeeldhorloges.",
   rTitle:"Horlogerapport",generated:"Gemaakt",device:"Apparaat",period:"Periode",watches:"Horloges",measurements:"Metingen",
   overview:"Overzicht",watch:"Horloge",meas:"Met.",current:"Huidige gang",allSessions:"Alle sessies",tgLatest:"Timegrapher",pr:"Gangreserve",
@@ -195,7 +224,7 @@ var I18N={
   offsetChart:"Offset in de tijd (s)",rateChart:"Gang in de tijd (s/dag)",gapsRemoved:"sessies aaneengesloten, tijd ertussen weggelaten",
   tgLegend:"◇ timegrapher per positie · ╌ sessiegemiddelde",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
   footer:"watchcafe.eu · alleen data uit deze browser",sampleTag:"voorbeelddata",
-  optLog:"Gegevens, logboek & gedragen",optPrice:"Prijzen",optSerial:"Serienummers",
+  optLog:"Gegevens, logboek & gedragen",sessShort:"Sess.",tgShort:"Time&shy;grapher",optPrice:"Prijzen",optSerial:"Serienummers",
   details:"Gegevens",logbook:"Logboek",worn:"Gedragen",type:"Soort",whereCol:"Waar / door",cost:"Prijs / kosten",
   f_brand:"Merk",f_model:"Model",f_ref:"Referentie",f_caliber:"Kaliber / uurwerk",f_year:"Jaar",f_serial:"Serienummer",f_caseSize:"Kastmaat",f_lugWidth:"Bandaanzet",f_boxPapers:"Doos & papieren",f_serviceYears:"Onderhoudsinterval",
   purchased:"Gekocht",price:"Prijs",nextService:"Volgende onderhoudsbeurt",serviceDue:"onderhoud nodig",soldTag:"verkocht of weggegeven",
@@ -488,8 +517,9 @@ function overview(list,info,isSample,opt){
     +kpi(t("period"),all.length?esc(fShort(Math.min.apply(null,all)))+' – '+esc(fShort(Math.max.apply(null,all))):t("none"))
     +kpi(t("timegrapher"),list.reduce(function(x,a){return x+a.tg.length;},0))+'</div>'
     +'<h3>'+esc(t("overview"))+'</h3>'
-    +'<table><thead><tr><th>'+t("watch")+'</th><th class="num">'+t("meas")+'</th><th class="num">'+t("sessions")+'</th><th>'+t("period")+'</th><th class="num">'+t("current")+' <span style="text-transform:none">('+t("perDay")+')</span></th><th class="num">'+t("tgLatest")+'</th><th class="num">'+t("pr")+'</th>'
-    +(showWorn?'<th class="num">'+t("wornCol")+' <span style="text-transform:none">('+t("wornUnit")+')</span></th>':'')
+    // short headings with the unit small underneath, so the watch name gets the room
+    +'<table class="ovt"><thead><tr><th>'+t("watch")+'</th><th class="num">'+t("meas")+'</th><th class="num">'+t("sessShort")+'</th><th>'+t("period")+'</th><th class="num">'+t("rate")+'<small>'+t("perDay")+'</small></th><th class="num">'+t("tgShort")+'<small>'+t("perDay")+'</small></th><th class="num">'+t("pr")+'</th>'
+    +(showWorn?'<th class="num">'+t("wornCol")+'<small>'+t("wornUnit")+'</small></th>':'')
     +(showPrice?'<th class="num">'+t("price")+'</th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table>'
     +'</section>';
 }
@@ -561,16 +591,16 @@ function renderPick(gs){
   var chip=function(on,label,attr,extra){return '<button class="chip'+(on?'':' off')+'" '+attr+' aria-pressed="'+on+'"><span class="ck">'+(on?'✓':'')+'</span><span class="nm">'+label+'</span>'+(extra||'')+'</button>';};
   var lbl=function(s){var l=srcLabel(s);return '<b>'+esc(l.b)+'</b>'+(l.d?' · '+esc(l.d):'');};
   if(SRC.viewer&&MERGE&&SRC.list.length>1){
-    h+='<div class="grp"><span class="src"><b>'+esc(t("sources"))+'</b></span>'+SRC.list.map(function(s,i){return chip(srcOn(i),lbl(s),'data-src="'+i+'"');}).join("")+'</div>';
+    h+='<div class="prow"><span class="plbl">'+esc(t("sources"))+'</span><div class="grp" style="margin:0">'+SRC.list.map(function(s,i){return chip(srcOn(i),lbl(s),'data-src="'+i+'"');}).join("")+'</div></div><div class="psep"></div>';
   }
-  h+='<div class="pick-head"><span class="lbl">'+esc(t("inReport"))+'</span><span class="cnt">'+sel+' '+esc(t("of"))+' '+tot+'</span><span class="sp"></span>'+allNone(null)+'</div>';
+  h+='<div class="prow"><span class="plbl">'+esc(t("inReport"))+'</span><span class="cnt">'+sel+' '+esc(t("of"))+' '+tot+'</span><span class="lnks">'+allNone(null)+'</span></div>';
   gs.forEach(function(g,gi){
     h+='<div class="grp">'+(g.src&&gs.length>1?'<span class="src">'+lbl(g.src)+'</span>':'');
     h+=g.items.map(function(it,ii){return chip(isOn(it,g),esc(it.w.name||"?"),'data-g="'+gi+'" data-i="'+ii+'"',isEmptyWatch(it.w)?'<span class="em">'+esc(t("empty"))+'</span>':'');}).join("");
     if(g.src&&gs.length>1)h+='<span class="glnk">'+allNone(gi)+'</span>';
     h+='</div>';
   });
-  var foot=!SRC.viewer?(SRC.sample?"":t("pickRemember")):MERGE?t("pickMerged"):SRC.list[0].dev?t("pickDevice"):"";
+  var foot=!SRC.viewer?(SRC.sample?t("sampleNote"):t("pickRemember")):MERGE?t("pickMerged"):SRC.list[0].dev?t("pickDevice"):"";
   if(MERGE&&SRC.viewer&&SRC.list[0].dev)foot+=" "+t("pickDevice");
   if(foot)h+='<p class="foot">'+esc(foot)+'</p>';
   document.getElementById("pick").innerHTML=h;
@@ -588,14 +618,16 @@ document.getElementById("pick").onclick=function(e){
 
 function render(){
   document.documentElement.lang=lang;
-  ["title","sub","raw","back","note","optLog","optPrice","optSerial"].forEach(function(k){document.getElementById("t-"+k).textContent=t(k);});
+  ["title","sub","raw","back","note","optLog","optPrice","optSerial","include","papercap"].forEach(function(k){document.getElementById("t-"+k).textContent=t(k);});
+  if(FROM_VIEWER)document.getElementById("t-sub").textContent=t("subViewer");
   document.getElementById("printBtn").textContent=t("print");
-  if(SRC.sample)document.getElementById("t-note").textContent=t("note")+" "+t("sampleNote");
   document.title=t("title")+" — watchcafe.eu";
   // prices and serial numbers are off by default: a report is often shared (insurer, buyer, watchmaker)
   var opt={raw:document.getElementById("optRaw").checked,log:document.getElementById("optLog").checked,
     price:document.getElementById("optPrice").checked,serial:document.getElementById("optSerial").checked};
   document.getElementById("optPrice").disabled=document.getElementById("optSerial").disabled=!opt.log;
+  document.getElementById("lblPrice").classList.toggle("dis",!opt.log);
+  document.getElementById("lblSerial").classList.toggle("dis",!opt.log);
   if(FROM_VIEWER){var bk=document.getElementById("t-back");bk.textContent=t("backViewer");bk.href="viewer.html";}
   var gs=groups(),chosen=[],used=[];
   gs.forEach(function(g){var any=false;g.items.forEach(function(it){if(isOn(it,g)){chosen.push(it.w);any=true;}});if(any&&g.src)used.push(g.src);});
