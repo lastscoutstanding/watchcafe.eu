@@ -41,6 +41,8 @@
   .opts .subgrp{display:inline-flex;gap:6px 14px;flex-wrap:wrap;align-items:center;padding-left:12px;border-left:1px solid var(--border)}
   .opts .subgrp label{color:var(--muted);font-size:13px}
   .opts label.dis{opacity:.45;cursor:default}
+  .opts .nofill{font-size:12px;color:#ffb02e;margin-left:2px}
+  .opts .nofill::before{content:"· "}
   .psep{border-top:1px dashed var(--border);margin:12px 0}
   .hint{max-width:948px;margin:0 auto 22px;font-size:12.5px;color:var(--muted);text-align:right}
   .papercap{max-width:210mm;margin:0 auto 6px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6d6a73;text-align:center}
@@ -113,8 +115,11 @@
   .kv{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin:0 0 4px}
   .kv table{margin:0}
   .kv td.k{color:var(--p-muted);width:42%}
-  .wornline{font-size:9.5pt;margin:0 0 4px}
-  .heat{display:block;margin:4px 0 2px;max-width:100%;height:auto}
+  .detbox{border-top:1.5px solid var(--p-ink);break-inside:avoid}
+  .wornrow{display:flex;gap:16px;align-items:flex-start;padding:7px 6px 6px;border-bottom:1px solid var(--p-line)}
+  .wtxt{flex:1 1 auto;font-size:9.5pt;line-height:1.45;min-width:0}
+  .wtxt .wl{display:block;font-size:7.5pt;text-transform:uppercase;letter-spacing:.06em;color:var(--p-muted);margin-bottom:1px}
+  .heat{display:block;flex:none;max-width:62%;height:auto}
   .foot{margin-top:18px;padding-top:6px;border-top:1px solid var(--p-line);font-size:8pt;color:var(--p-muted);display:flex;justify-content:space-between}
   .empty{color:var(--p-muted);font-style:italic}
 
@@ -125,6 +130,7 @@
     .sheet{padding:18px 14px}
     .kpis{grid-template-columns:repeat(2,1fr)}
     .charts,.two,.kv{grid-template-columns:1fr}
+    .wornrow{flex-direction:column}.heat{max-width:100%}
     .sheet table{font-size:9pt}
   }
 
@@ -160,8 +166,8 @@
         <label><input type="checkbox" id="optRaw" checked> <span id="t-raw"></span></label>
         <label><input type="checkbox" id="optLog" checked> <span id="t-optLog"></span></label>
         <span class="subgrp">
-          <label id="lblPrice"><input type="checkbox" id="optPrice"> <span id="t-optPrice"></span></label>
-          <label id="lblSerial"><input type="checkbox" id="optSerial"> <span id="t-optSerial"></span></label>
+          <label id="lblPrice"><input type="checkbox" id="optPrice"> <span id="t-optPrice"></span><span class="nofill" id="noPrice" hidden></span></label>
+          <label id="lblSerial"><input type="checkbox" id="optSerial"> <span id="t-optSerial"></span><span class="nofill" id="noSerial" hidden></span></label>
         </span>
       </div>
     </div>
@@ -202,8 +208,7 @@ var I18N={
   purchased:"Purchased",price:"Price",nextService:"Next service",serviceDue:"service due",soldTag:"sold or gifted",
   bp:{full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},yearsN:function(n){return n+" years";},
   types:{purchase:"Purchase",service:"Service",repair:"Repair",strap:"Strap / bracelet",event:"Event",sold:"Sold or gifted",note:"Note"},
-  wornDays:function(n){return n+(n===1?" day":" days")+" in the last 12 months";},lastWorn:"last worn",wornCol:"Worn",wornUnit:"days, 12 mo",
-  heatCap:"one square per day, last 12 months"},
+  wornN:function(n){return n+(n===1?" day":" days");},lastWorn:"last worn",serialPfx:"Serial ",noneFilled:"none filled in",wornCol:"Worn",wornUnit:"days, 12 mo"},
  nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van je horloges",subViewer:"Een leesbare, printbare kopie van je back-ups",print:"Printen / Opslaan als PDF",back:"← Collectie",backViewer:"← Backup Viewer",sources:"Bronnen",
   include:"Opnemen",papercap:"Voorbeeld · even breed als de PDF-pagina",
   inReport:"Horloges",of:"van",all:"Alle",noneSel:"Geen",empty:"leeg",thisDevice:"Dit apparaat",now:"nu",
@@ -230,8 +235,7 @@ var I18N={
   purchased:"Gekocht",price:"Prijs",nextService:"Volgende onderhoudsbeurt",serviceDue:"onderhoud nodig",soldTag:"verkocht of weggegeven",
   bp:{full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},yearsN:function(n){return n+" jaar";},
   types:{purchase:"Aankoop",service:"Onderhoud",repair:"Reparatie",strap:"Band",event:"Evenement",sold:"Verkocht of weggegeven",note:"Notitie"},
-  wornDays:function(n){return n+(n===1?" dag":" dagen")+" in de afgelopen 12 maanden";},lastWorn:"laatst gedragen",wornCol:"Gedragen",wornUnit:"dagen, 12 mnd",
-  heatCap:"een vakje per dag, afgelopen 12 maanden"}
+  wornN:function(n){return n+(n===1?" dag":" dagen");},lastWorn:"laatst gedragen",serialPfx:"Serienr. ",noneFilled:"nergens ingevuld",wornCol:"Gedragen",wornUnit:"dagen, 12 mnd"}
 };
 var POS={
   dial_up:{en:"Dial up",nl:"Wijzerplaat boven",abbr:"DU",color:"#e0921f"},
@@ -368,11 +372,12 @@ function analyse(w){
 function fDay(ms){return new Date(ms).toLocaleDateString(loc(),{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});}
 function fMonth(ms){return new Date(ms).toLocaleDateString(loc(),{month:"short",year:"numeric",timeZone:"UTC"});}
 function infoOf(w){return w.info||{};}
-function identLine(w){
+function identLine(w,opt){
   var i=infoOf(w),parts=[[i.brand,i.model].filter(Boolean).join(" ")];
   if(i.ref)parts.push("Ref. "+i.ref);
   if(i.caliber)parts.push(/^\d/.test(i.caliber)?(lang==="nl"?"Kal. ":"Cal. ")+i.caliber:i.caliber);
   if(i.year)parts.push(i.year);
+  if(opt&&opt.log&&opt.serial&&i.serial)parts.push(t("serialPfx")+i.serial);
   return parts.filter(Boolean).join(" · ");
 }
 function logOf(w){return (w.log||[]).slice().sort(function(a,b){return b.t-a.t;});}
@@ -385,19 +390,31 @@ function serviceInfo(w){
   return {due:d.getTime(),overdue:d.getTime()<=Date.now()};
 }
 function todayUTC(){var n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate());}
+// the 12 months up to today, or up to the sale for a sold or gifted watch (otherwise it would just run empty)
+function wornEnd(w){var sold=isFormer(w)&&lastOf(w,["sold"]);return sold?Math.min(sold.t,todayUTC()):todayUTC();}
 function wornInfo(w){
   var days={};(w.worn||[]).forEach(function(x){days[x.t]=1;});
-  var list=Object.keys(days).map(Number),from=todayUTC()-364*DAY;
-  return {days:days,year:list.filter(function(d){return d>=from;}).length,last:list.length?Math.max.apply(null,list):null};
+  var end=wornEnd(w),from=end-364*DAY,list=Object.keys(days).map(Number);
+  return {days:days,end:end,from:from,year:list.filter(function(d){return d>=from&&d<=end;}).length,last:list.length?Math.max.apply(null,list):null};
 }
-// one square per day for the last 53 weeks, Monday on top
-function wornHeat(days){
-  var today=todayUTC(),dow=(new Date(today).getUTCDay()+6)%7,start=today-dow*DAY-52*7*DAY,c=5,g="";
-  for(var col=0;col<53;col++)for(var r=0;r<7;r++){
-    var d=start+(col*7+r)*DAY;if(d>today)continue;
-    g+='<rect x="'+col*c+'" y="'+r*c+'" width="4" height="4" rx=".6" fill="'+(days[d]?"#b8532e":"#ecebef")+'"/>';
+// one square per day for the 53 weeks up to the end, Monday on top, months underneath
+function wornHeat(days,end){
+  var dow=(new Date(end).getUTCDay()+6)%7,start=end-dow*DAY-52*7*DAY,c=5,g="",lastMon=-1,lastLbl=-9,gap=4;
+  for(var col=0;col<53;col++){
+    var c0=new Date(start+col*7*DAY),m=c0.getUTCMonth();
+    // label a column where a month starts, unless the previous label is too close; the year with January and the first label
+    if(m!==lastMon&&col-lastLbl>=gap&&col<50){
+      var yr=m===0||lastLbl<0,lbl=c0.toLocaleDateString(loc(),{month:"short",timeZone:"UTC"})+(yr?" "+c0.getUTCFullYear():"");
+      g+='<text x="'+col*c+'" y="'+(7*c+5.5)+'" font-size="4.6" fill="#6b6872">'+esc(lbl)+'</text>';lastLbl=col;
+      gap=yr?6:4; // a label with a year is wider
+    }
+    lastMon=m;
+    for(var r=0;r<7;r++){
+      var d=start+(col*7+r)*DAY;if(d>end)continue;
+      g+='<rect x="'+col*c+'" y="'+r*c+'" width="4" height="4" rx=".6" fill="'+(days[d]?"#b8532e":"#ecebef")+'"/>';
+    }
   }
-  return '<svg class="heat" viewBox="0 0 '+(53*c)+' '+(7*c)+'" width="'+(53*c*1.6)+'" xmlns="http://www.w3.org/2000/svg">'+g+'</svg>';
+  return '<svg class="heat" viewBox="0 0 '+(53*c)+' '+(7*c+7)+'" width="'+(53*c*1.6)+'" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">'+g+'</svg>';
 }
 function detailsBlock(w,opt){
   var i=infoOf(w),rows=[];
@@ -411,9 +428,15 @@ function detailsBlock(w,opt){
   if(i.serviceYears)row(t("f_serviceYears"),t("yearsN")(+i.serviceYears));
   var sv=serviceInfo(w);
   if(sv)rows.push('<tr><td class="k">'+esc(t("nextService"))+'</td><td>~ '+esc(fMonth(sv.due))+(sv.overdue?'<span class="tag">'+esc(t("serviceDue"))+'</span>':'')+'</td></tr>');
-  if(!rows.length)return "";
+  var wi=wornInfo(w),worn="";
+  if(wi.last!=null)worn='<div class="wornrow"><div class="wtxt"><span class="wl">'+esc(t("worn"))+'</span>'
+    +'<b>'+esc(t("wornN")(wi.year))+'</b><br>'+esc(fDay(wi.from))+' – '+esc(fDay(wi.end))
+    +'<br><span class="dim">'+esc(t("lastWorn"))+' '+esc(fDay(wi.last))+'</span></div>'+wornHeat(wi.days,wi.end)+'</div>';
+  if(!rows.length&&!worn)return "";
   var half=Math.ceil(rows.length/2);
-  return '<h3>'+esc(t("details"))+'</h3><div class="kv"><table><tbody>'+rows.slice(0,half).join("")+'</tbody></table><table><tbody>'+rows.slice(half).join("")+'</tbody></table></div>';
+  return '<h3>'+esc(t("details"))+'</h3><div class="detbox">'
+    +(rows.length?'<div class="kv"><table><tbody>'+rows.slice(0,half).join("")+'</tbody></table><table><tbody>'+rows.slice(half).join("")+'</tbody></table></div>':'')
+    +worn+'</div>';
 }
 function logbookBlock(w,opt){
   var l=logOf(w);if(!l.length)return "";
@@ -422,11 +445,6 @@ function logbookBlock(w,opt){
     +l.map(function(e){return '<tr><td class="nw">'+esc(fDay(e.t))+'</td><td class="nw">'+esc(t("types")[e.type]||e.type)+'</td><td>'+esc(e.where||"")+'</td><td class="dim">'+esc(e.note||"")+'</td>'
       +(withCost?'<td class="num">'+esc(e.cost||"")+'</td>':'')+'</tr>';}).join("")
     +'</tbody></table>';
-}
-function wornBlock(w){
-  var wi=wornInfo(w);if(wi.last==null)return "";
-  return '<h3>'+esc(t("worn"))+'</h3><p class="wornline"><b>'+esc(t("wornDays")(wi.year))+'</b> · '+esc(t("lastWorn"))+' '+esc(fDay(wi.last))+'</p>'
-    +wornHeat(wi.days)+'<p class="legend">'+esc(t("heatCap"))+'</p>';
 }
 
 /* ---------- charts: sessions back to back, idle time removed ---------- */
@@ -527,7 +545,7 @@ function overview(list,info,isSample,opt){
 function watchPage(a,opt){
   var h='<section class="sheet watch">';
   h+='<div class="watch-head"><h2>'+esc(a.w.name)+(isFormer(a.w)?'<span class="tag">'+esc(t("soldTag"))+'</span>':'')+'</h2><span class="meta" style="margin:0;text-align:right">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+(a.w._source?'<br>'+esc(a.w._source):'')+'</span></div>';
-  var idl=identLine(a.w);if(idl)h+='<p class="ident">'+esc(idl)+'</p>';
+  var idl=identLine(a.w,opt);if(idl)h+='<p class="ident">'+esc(idl)+'</p>';
   var lastTg=a.tg[a.tg.length-1];
   h+='<div class="kpis">'+kpi(t("current"),sgn(a.current,2),t("perDay"),true)
     +kpi(t("sessions"),a.sess.length)+kpi(t("measurements"),a.ms.length)
@@ -572,7 +590,7 @@ function watchPage(a,opt){
       +'</tbody></table>';
   }
 
-  if(opt.log)h+=detailsBlock(a.w,opt)+logbookBlock(a.w,opt)+wornBlock(a.w);
+  if(opt.log)h+=detailsBlock(a.w,opt)+logbookBlock(a.w,opt);
 
   if(opt.raw&&a.ms.length){
     h+='<h3>'+esc(t("allMeas"))+' ('+a.ms.length+')</h3><table><thead><tr><th>'+t("time")+'</th><th class="num">'+t("offset")+' (s)</th><th>'+t("position")+'</th><th>'+t("note2")+'</th></tr></thead><tbody>'
@@ -634,6 +652,11 @@ function render(){
   if(SRC.viewer&&MERGE)used=SRC.list.filter(function(s,i){return srcOn(i);});
   renderPick(gs);
   var list=chosen.map(analyse);
+  // ticked but nothing to show: say so, otherwise the box looks broken
+  var anyPrice=chosen.some(function(w){return (w.log||[]).some(function(e){return e.cost;});});
+  var anySerial=chosen.some(function(w){return infoOf(w).serial;});
+  [["noPrice",opt.price&&!anyPrice],["noSerial",opt.serial&&!anySerial]].forEach(function(x){
+    var el=document.getElementById(x[0]);el.hidden=!(opt.log&&x[1]&&chosen.length);el.textContent=t("noneFilled");});
   document.getElementById("sheets").innerHTML=list.length
     ?overview(list,{device:WatchData.getDevice(),sources:SRC.viewer?used:null},SRC.sample,opt)+list.map(function(a){return watchPage(a,opt);}).join("")
     :'<div class="pick-none">'+esc(t("pickNone"))+'</div>';
