@@ -924,6 +924,12 @@ tick();setInterval(tick,200);
 
 /* ===== events ===== */
 window.addEventListener("swclang",function(e){lang=e.detail;if(!window.__rmReady)return;hideNudge();applyLang();renderAll();});
+// back/forward restores the page from the browser cache with the data as it was
+// then; read it again, or the next save would overwrite changes made elsewhere
+window.addEventListener("pageshow",function(e){
+  if(!e.persisted)return;
+  state=load()||seed();WatchData.ensureIds(state.watches);endArmed=false;renderAll();
+});
 
 document.getElementById("helpBtn").onclick=function(){guideOpen=!guideOpen;renderGuide();if(guideOpen)document.getElementById("guide").scrollIntoView({behavior:"smooth",block:"nearest"});};
 document.getElementById("guideClose").onclick=function(){guideOpen=false;renderGuide();};

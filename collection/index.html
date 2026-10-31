@@ -1234,6 +1234,9 @@ window.addEventListener("hashchange",function(){
 });
 // another tab (Rate Meter, Power Reserve) changed the data
 window.addEventListener("storage",function(e){if(e.key===KEY&&!editing&&!logForm){reload();render();}});
+// back/forward restores the page from the browser cache with the data as it was
+// then; read it again, or the next save would overwrite changes made elsewhere
+window.addEventListener("pageshow",function(e){if(e.persisted&&!editing&&!logForm){reload();render();}});
 window.addEventListener("swcbrands",function(){if(!currentId())renderOverview();});
 window.addEventListener("swclang",function(e){lang=e.detail;closeImport();applyLang();render();});
 

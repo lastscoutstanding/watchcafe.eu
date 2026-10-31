@@ -189,6 +189,7 @@ Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowfla
 - Liever expliciete, door de gebruiker gezette vlaggen dan automatische detectie.
 - Geen volledige DOM-rebuild op input-events (sloot de iOS-tijdkiezer).
 - `applyStatic()` niet laten draaien nadat `renderStart()` elementen heeft vervangen.
+- Terugknop: browsers (vooral Safari/iOS) zetten een pagina uit de back-forward cache terug met de oude data in het geheugen. Collection, Rate Meter en Power Reserve lezen daarom bij `pageshow` met `persisted` de data opnieuw in; anders toont de pagina oude data en overschrijft de volgende `save()` wijzigingen van een andere pagina. Nieuwe pagina's die data opslaan hebben dit ook nodig.
 - Eerdere bugs om op te letten: segment-dimming-CSS, viewer die reset-vlaggen negeerde, klok buiten beeld op mobiel.
 
 ## Open punten
