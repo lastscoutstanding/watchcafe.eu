@@ -122,6 +122,7 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 
 - Gang in s/dag via lineaire regressie over offsetmetingen.
 - Horlogekeuze is een pulldown (zoals Power Reserve) met onderaan "+ Add watch" als snelle weg (alleen een naam); die zet een naamveld op de plek van de select (Enter/Escape). Zonder horloges staat het naamveld er meteen. Ernaast een i-knop naar het horloge in de Collection; hernoemen en verwijderen gebeuren daar, niet hier.
+- Een ● achter de naam in de pulldown = lopende rate-sessie (niet afgerond en niet stil, dezelfde definitie als de accentrand in de Collection). Power Reserve doet hetzelfde voor een lopende gangreservemeting. Een `<option>` is niet op te maken, dus het is een teken (`LIVE_MARK`, en-spatie + U+25CF).
 - Meten: groene "jouw horloge"-klok met ▲/▼ gelijkzetten, dan vastleggen. Hele seconden; tik-sync is bewust verwijderd.
 - "Nieuwe start" is een handmatige checkbox. Geen automatische gat-detectie.
 - "End session" / "Sessie afronden" onder de gangsamenvatting: expliciete vlag `w.rateEnd`, in twee stappen (5 s), daarna een melding met Undo. Een sessie is afgerond zolang de laatste meting niet na `rateEnd.at` ligt; tot dan staat "Nieuwe start" aangevinkt en vast, dus de volgende meting start een nieuwe sessie. Bedoeld voor de Collection (actief/niet actief); bewust geen automatisch afronden.
@@ -167,9 +168,11 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 
 ## Power Reserve
 
-- Opwinden, gelijkzetten op de siteklok (systeemtijd), "Opgewonden & gelijk". "Loopt nog" legt een ondergrens vast en lost de 12-uurs-ambiguïteit op. "Gestopt" + afgelezen wijzertijd. "Terug" herstelt een per ongeluk gestopte meting.
+- Zelfde opzet als de Rate Meter: één horlogekeuze bovenaan (pulldown met "+ Add watch", i-knop naar de Collection, gedeelde `activeWatch`), dan een blok "Measuring — <horloge>" en de historie van datzelfde horloge. "?"-gids (staat open zonder horloges) en de back-upstatusregel zoals op de Rate Meter.
+- Het meetblok toont één genummerde stapgroep voor de stand van het gekozen horloge: 1 Opwinden en gelijkzetten (groene siteklok) + 2 Starten ("Opgewonden & gelijk"); 3 Loopt (LED-teller, "Loopt nog", "Gestopt"); 4 Gestopt (wijzertijd + dag, Opslaan/Terug/Verwerpen).
+- "Loopt nog" legt een ondergrens vast en lost de 12-uurs-ambiguïteit op. "Terug" herstelt een per ongeluk gestopte meting.
 - Bewust losgekoppeld van de Rate Meter-offset; opgeslagen metingen houden `offset: 0`.
-- Meerdere horloges tegelijk, elk een kaart met live teller en historie.
+- Meerdere horloges tegelijk meten kan: elk horloge met een lopende meting krijgt een ● achter de naam in de pulldown. Bewust geen looptijd in de pulldown en geen lijst met alle lopende metingen; dat overzicht staat in de Collection.
 
 ## Thema's
 
