@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=5"></script>
+<script src="/watchdata.js?v=6"></script>
 <script src="/watchrate/sample.js?v=5"></script>
 <script src="/brands.js?v=1"></script>
 <style>
@@ -100,6 +100,24 @@
   .serial:hover{background:none;color:var(--accent)}
   .detbtns{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
 
+  /* running measurements: accent edge plus a pill; a quiet rate session gets a dashed pill and no edge */
+  .wc{position:relative;overflow:hidden}
+  .wc.act::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+  .actrow{display:flex;gap:6px;flex-wrap:wrap}
+  .ap{display:inline-flex;align-items:center;gap:5px;font-size:12px;border:1px solid;border-radius:999px;padding:2px 9px;white-space:nowrap}
+  .ap.live{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  .ap.live i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:appulse 2s infinite}
+  .ap.quiet{border-style:dashed;border-color:#4a4a55;color:var(--muted)}
+  @keyframes appulse{50%{opacity:.35}}
+  @media(prefers-reduced-motion:reduce){.ap.live i{animation:none}}
+  .listhd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px}
+  .listhd .lab{margin:0}
+  .sortpill{position:relative;display:inline-flex;align-items:center;gap:6px;border:1px dashed var(--border);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .sortpill:hover,.sortpill:focus-within{color:var(--ink)}
+  .sortpill b{color:var(--ink);font-weight:600}
+  .sortpill select{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;font-size:16px;padding:0;border:0}
+  .divider{grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6d6a73;margin:4px 0 -2px}
+  .divider::after{content:"";flex:1;border-top:1px dashed var(--border)}
   .f.warn{color:#ff9f43;border-color:color-mix(in srgb,#ff9f43 45%,transparent)}
   .pill{display:inline-block;font-size:12px;border:1px solid var(--border);border-radius:999px;padding:2px 10px;color:var(--muted);vertical-align:middle;margin-left:8px;font-weight:400}
   .former{margin-top:16px}
@@ -362,6 +380,11 @@ var I18N={
   suggest:"Suggestion:", needDate:"Pick a date.",
   svcNext:function(d,y){return "Next service around <b>"+d+"</b> (every "+y+" years)";},
   svcDue:function(d){return "<b>Service due</b> since around "+d;},
+  sortLbl:"Sort", others:"Others",
+  sorts:{smart:"Smart",worn:"Last worn",most:"Most worn",bought:"Purchase date",price:"Price",brand:"Brand",name:"Name",service:"Service due",added:"Added"},
+  apRate:function(a){return "Rate · "+a;}, apRateQuiet:function(a){return "Rate · last "+a+" ago";},
+  apReserve:function(a){return "Reserve · "+a;}, apStopped:"Reserve · stopped",
+  ageDay:function(n){return "day "+n;}, unitH:"h", unitD:"d", unitW:"wk", unitM:"mo",
   svcPill:"service due", soldPill:"sold or gifted", formerN:function(n){return "Former watches ("+n+")";},
   recent:"Recent", seeAll:"See all →", purchased:"Purchased", price:"Price",
   svc:{"":"—","3":"3 years","4":"4 years","5":"5 years","6":"6 years","7":"7 years","8":"8 years","10":"10 years"},
@@ -430,6 +453,11 @@ var I18N={
   suggest:"Suggestie:", needDate:"Kies een datum.",
   svcNext:function(d,y){return "Volgende onderhoudsbeurt rond <b>"+d+"</b> (elke "+y+" jaar)";},
   svcDue:function(d){return "<b>Onderhoud nodig</b> sinds ongeveer "+d;},
+  sortLbl:"Sorteer", others:"Overige",
+  sorts:{smart:"Slim",worn:"Laatst gedragen",most:"Meest gedragen",bought:"Aankoopdatum",price:"Prijs",brand:"Merk",name:"Naam",service:"Onderhoud",added:"Toegevoegd"},
+  apRate:function(a){return "Gang · "+a;}, apRateQuiet:function(a){return "Gang · laatste "+a+" geleden";},
+  apReserve:function(a){return "Reserve · "+a;}, apStopped:"Reserve · gestopt",
+  ageDay:function(n){return "dag "+n;}, unitH:"u", unitD:"d", unitW:"wk", unitM:"mnd",
   svcPill:"onderhoud nodig", soldPill:"verkocht of weggegeven", formerN:function(n){return "Eerdere horloges ("+n+")";},
   recent:"Recent", seeAll:"Alles bekijken →", purchased:"Gekocht", price:"Prijs",
   svc:{"":"—","3":"3 jaar","4":"4 jaar","5":"5 jaar","6":"6 jaar","7":"7 jaar","8":"8 jaar","10":"10 jaar"},
@@ -624,6 +652,75 @@ function wearHTML(now){
         +(names.length?'<b title="'+esc(names.join(", "))+'">'+esc(names.join(", "))+'</b>':'<b class="none">—</b>')+'</button>';
     }).join("")+'</div>'+(showNudge?nudgeHTML():"")+'</div>';
 }
+/* ===== running measurements and sorting =====
+   A watch is active while a power-reserve measurement runs, or while its rate
+   session is neither ended ("End session" in the Rate Meter) nor quiet (see
+   WatchData.rateSession). Smart puts active watches first, the most recently
+   measured on top; the rest follow by last worn. Other orders keep the pills
+   but don't pull active watches up. */
+var SORTKEY="siouxWatchCollectionSort",SORTS=["smart","worn","most","bought","price","brand","name","service","added"];
+var sortBy=(function(){try{var v=localStorage.getItem(SORTKEY);return SORTS.indexOf(v)>-1?v:"smart";}catch(e){return "smart";}})();
+function activity(w){
+  var s=WatchData.rateSession(w),pr=w.prCurrent&&w.prCurrent.start?w.prCurrent:null;
+  var rate=s&&!s.ended?(s.quiet?"quiet":"live"):null;
+  return {s:s,rate:rate,pr:pr,live:rate==="live"||!!pr,
+    last:Math.max(rate==="live"?s.last:0,pr?(pr.lastRunning||pr.start):0)};
+}
+// "3 d", "5 wk", "7 mo"; hours below three days when asked
+function ageStr(ms,hours){
+  var t=T(),d=Math.floor(ms/DAY);
+  if(hours&&ms<3*DAY)return Math.max(0,Math.floor(ms/36e5))+" "+t.unitH;
+  return d<14?d+" "+t.unitD:d<60?Math.round(d/7)+" "+t.unitW:Math.round(d/30.4)+" "+t.unitM;
+}
+function activityHTML(a){
+  var t=T(),now=Date.now(),out=[];
+  if(a.rate==="live"){var d=Math.floor((now-a.s.start)/DAY);out.push('<span class="ap live"><i></i>'+esc(t.apRate(d<14?t.ageDay(d+1):ageStr(now-a.s.start)))+'</span>');}
+  else if(a.rate==="quiet")out.push('<span class="ap quiet">'+esc(t.apRateQuiet(ageStr(now-a.s.last)))+'</span>');
+  if(a.pr)out.push('<span class="ap live"><i></i>'+esc(a.pr.stopped?t.apStopped:t.apReserve(ageStr(now-a.pr.start,true)))+'</span>');
+  return out.length?'<span class="actrow">'+out.join("")+'</span>':"";
+}
+// first amount in a free-text price: "€ 3.200" and "3,200" are 3200, "12,50" is 12.5
+function priceOf(w){
+  var e=lastOf(w,["purchase"]),m=e&&e.cost&&String(e.cost).replace(/\s/g,"").match(/\d[\d.,]*/);
+  if(!m)return null;
+  var v=m[0].replace(/[.,]$/,""),dec=v.match(/[.,](\d{1,2})$/);
+  return +(dec?v.slice(0,-dec[0].length):v).replace(/[.,]/g,"")+(dec?+("0."+dec[1]):0);
+}
+function wornYear(w){var from=todayT()-364*DAY;return Object.keys(wornDays(w)).filter(function(d){return +d>=from;}).length;}
+function brandName(w){var b=window.Brands&&Brands.loaded?Brands.forWatch(w):null;return b?(b.brand?b.brand.name:b.raw||""):(info(w).brand||"");}
+// list = watches in stored order; returns [{w, a}] plus the index where the "Others" divider goes (-1 = none)
+function sortWatches(list){
+  var rows=list.map(function(w,i){return {w:w,a:activity(w),i:i};});
+  function byName(x,y){return x.w.name.localeCompare(y.w.name);}
+  // ascending on key, missing keys (null) last, then by name
+  function on(key,desc){return function(x,y){var a=key(x),b=key(y);
+    if(a==null||b==null)return (a==null)-(b==null)||byName(x,y);
+    return (desc?b-a:a-b)||byName(x,y);};}
+  var byWorn=on(function(r){return lastWorn(r.w);},true),cut=-1;
+  if(sortBy==="smart"){
+    var live=rows.filter(function(r){return r.a.live;}).sort(function(x,y){return y.a.last-x.a.last||byName(x,y);});
+    var rest=rows.filter(function(r){return !r.a.live;}).sort(byWorn);
+    if(live.length&&rest.length)cut=live.length;
+    rows=live.concat(rest);
+  }else rows.sort({
+    worn:byWorn,
+    most:on(function(r){return wornYear(r.w)||null;},true),
+    bought:on(function(r){var e=lastOf(r.w,["purchase"]);return e?e.t:null;},true),
+    price:on(function(r){return priceOf(r.w);},true),
+    brand:function(x,y){var a=brandName(x.w),b=brandName(y.w);return (!a)-(!b)||a.localeCompare(b)||byName(x,y);},
+    name:byName,
+    service:on(function(r){var sv=serviceInfo(r.w);return sv?sv.due:null;}),
+    added:function(x,y){return x.i-y.i;}
+  }[sortBy]);
+  return {rows:rows,cut:cut};
+}
+function sortHTML(){
+  var t=T();
+  return '<label class="sortpill">'+esc(t.sortLbl)+': <b>'+esc(t.sorts[sortBy])+'</b> ▾'
+    +'<select id="sortSel" aria-label="'+esc(t.sortLbl)+'">'+SORTS.map(function(k){
+      return '<option value="'+k+'"'+(k===sortBy?' selected':'')+'>'+esc(t.sorts[k])+'</option>';}).join("")+'</select></label>';
+}
+
 // share of worn days per watch over the last 12 months
 function rotationHTML(){
   var t=T(),from=todayT()-364*DAY,rows=[],total=0;
@@ -653,7 +750,7 @@ function renderOverview(){
     document.getElementById("emptySample").onclick=loadSample;
     return;
   }
-  function card(w){
+  function card(w,a){
     var r=WatchData.currentRate(w),pr=reserveHours(w),sv=serviceInfo(w),facts=[];
     facts.push(r?'<span class="f"><b>'+fmtRate(r)+'</b> '+t.perDay+'</span>':'<span class="f">'+esc(t.noMeas)+'</span>');
     if(pr)facts.push('<span class="f">'+esc(t.reserveF(pr.h))+'</span>');
@@ -663,9 +760,11 @@ function renderOverview(){
     // the wordmark carries the brand, so the line below shows model and reference only
     var bw=window.Brands&&Brands.loaded?Brands.forWatch(w):null;
     var md=(bw&&(bw.brand||bw.raw)?[info(w).model,info(w).ref]:[modelLine(w),info(w).ref]).filter(Boolean).join(" · ");
-    return '<a class="wc" href="#'+encodeURIComponent(w.id)+'"><span class="brand">'+(bw?Brands.wordmark(bw.brand,bw.raw):'')+'</span>'
+    a=a||activity(w);
+    return '<a class="wc'+(a.live?' act':'')+'" href="#'+encodeURIComponent(w.id)+'"><span class="brand">'+(bw?Brands.wordmark(bw.brand,bw.raw):'')+'</span>'
       +'<span class="nm">'+esc(w.name)+'</span>'
       +(md?'<span class="md">'+esc(md)+'</span>':'')
+      +activityHTML(a)
       +'<span class="facts">'+facts.join("")+'</span></a>';
   }
   var now=state.watches.filter(function(w){return !isFormer(w);}),former=state.watches.filter(isFormer);
@@ -673,11 +772,13 @@ function renderOverview(){
   var wp=document.getElementById("wearToggle");
   if(wp)wp.onclick=function(){wearShow=!wearOpen(now);wearDay=null;renderOverview();};
   // with the panel folded, the backup reminder goes under the title instead
-  el.innerHTML=wearHTML(now)+(!wearOpen(now)&&showNudge?'<div class="ovnudge">'+nudgeHTML()+'</div>':'')+'<p class="lab">'+esc(t.count(now.length))+'</p><div class="wgrid">'
-    +now.map(card).join("")
+  var sorted=sortWatches(now);
+  el.innerHTML=wearHTML(now)+(!wearOpen(now)&&showNudge?'<div class="ovnudge">'+nudgeHTML()+'</div>':'')
+    +'<div class="listhd"><p class="lab">'+esc(t.count(now.length))+'</p>'+sortHTML()+'</div><div class="wgrid">'
+    +sorted.rows.map(function(r,i){return (i===sorted.cut?'<div class="divider">'+esc(t.others)+'</div>':'')+card(r.w,r.a);}).join("")
     +'<button class="wc add" id="cardAdd"><span class="plus">+</span>'+esc(t.addWatch)+'</button></div>'
     +(former.length?'<div class="former"><button class="sm dash" id="formerBtn">'+esc(t.formerN(former.length))+'</button>'
-      +'<div class="wgrid" id="formerGrid"'+(showFormer?'':' hidden')+'>'+former.map(card).join("")+'</div></div>':'')
+      +'<div class="wgrid" id="formerGrid"'+(showFormer?'':' hidden')+'>'+former.map(function(w){return card(w);}).join("")+'</div></div>':'')
     +rotationHTML();
   el.querySelectorAll("[data-wear]").forEach(function(b){
     b.onclick=function(){
@@ -700,6 +801,10 @@ function renderOverview(){
   var wc=document.getElementById("wearClose");
   if(wc)wc.onclick=function(){wearShow=false;wearDay=null;renderOverview();};
   document.getElementById("cardAdd").onclick=openAdd;
+  document.getElementById("sortSel").onchange=function(e){
+    sortBy=e.target.value;try{localStorage.setItem(SORTKEY,sortBy);}catch(err){}
+    renderOverview();
+  };
   var fb=document.getElementById("formerBtn");
   if(fb)fb.onclick=function(){showFormer=!showFormer;document.getElementById("formerGrid").hidden=!showFormer;};
 }
