@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=6"></script>
+<script src="/watchdata.js?v=7"></script>
 <script src="/watchrate/sample.js?v=5"></script>
 <script src="/brands.js?v=1"></script>
 <style>
@@ -86,6 +86,7 @@
   .ms{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
   .ms .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .ms .n{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+  .ms .n.prev{color:var(--muted)}
   .ms .n.none{color:var(--muted);font-weight:400;font-size:16px;padding:5px 0}
   .ms .d{font-size:13px;color:var(--muted)}
   .ms a{font-size:13px;margin-top:auto;padding-top:8px;color:var(--accent);text-decoration:none;font-weight:600}
@@ -342,7 +343,7 @@ var I18N={
   name:"Name", namePh:"e.g. Speedy",
   empty:"No watches yet. Add your first one: a short name is all it needs, the details can wait.",
   loadSample:"Show sample watches",
-  noMeas:"no measurements yet", perDay:"s/day", reserveF:function(h){return h+" h reserve";},
+  noMeas:"no measurements yet", oneMeasF:"1 measurement", prevF:"previous", perDay:"s/day", reserveF:function(h){return h+" h reserve";},
   back:"← Collection", tabOv:"Overview", tabDet:"Details",
   dataH2:"Your data", exportBtn:"Back up now", importBtn:"Restore from backup…", shareBtn:"Share…",
   bkIdle:"Your watch data is stored in this browser only. Back up now and then to keep it safe.",
@@ -391,6 +392,7 @@ var I18N={
   rate:"Rate", reserve:"Power reserve", tg:"Timegrapher",
   rateD:function(n,span){return "Last session, "+n+" measurements over "+span;},
   rateNone:"No measurements yet", oneMeas:"One measurement so far; the rate needs two.",
+  ratePrev:function(end,start){return "Previous session, ended "+end+". New session since "+start+"; the rate needs a second measurement.";},
   reserveD:function(n){return n===1?"From 1 measurement":"Average of "+n+" measurements";},
   reserveNone:"Not measured yet", tgD:function(d){return "Last session "+d;},
   tgN:function(n){return n+(n===1?" session":" sessions");}, tgNone:"No sessions yet",
@@ -415,7 +417,7 @@ var I18N={
   name:"Naam", namePh:"bijv. Speedy",
   empty:"Nog geen horloges. Voeg je eerste toe: een korte naam is genoeg, de gegevens kunnen later.",
   loadSample:"Toon voorbeeldhorloges",
-  noMeas:"nog geen metingen", perDay:"s/dag", reserveF:function(h){return h+" u reserve";},
+  noMeas:"nog geen metingen", oneMeasF:"1 meting", prevF:"vorige", perDay:"s/dag", reserveF:function(h){return h+" u reserve";},
   back:"← Collectie", tabOv:"Overzicht", tabDet:"Gegevens",
   dataH2:"Je gegevens", exportBtn:"Back-up maken", importBtn:"Herstellen uit back-up…", shareBtn:"Delen…",
   bkIdle:"Je horlogedata staat alleen in deze browser. Maak af en toe een back-up, dan is hij veilig.",
@@ -464,6 +466,7 @@ var I18N={
   rate:"Gang", reserve:"Gangreserve", tg:"Timegrapher",
   rateD:function(n,span){return "Laatste sessie, "+n+" metingen over "+span;},
   rateNone:"Nog geen metingen", oneMeas:"Nog maar één meting; voor de gang zijn er twee nodig.",
+  ratePrev:function(end,start){return "Vorige sessie, tot "+end+". Nieuwe sessie sinds "+start+"; voor de gang is een tweede meting nodig.";},
   reserveD:function(n){return n===1?"Uit 1 meting":"Gemiddelde van "+n+" metingen";},
   reserveNone:"Nog niet gemeten", tgD:function(d){return "Laatste sessie "+d;},
   tgN:function(n){return n+(n===1?" sessie":" sessies");}, tgNone:"Nog geen sessies",
@@ -751,8 +754,11 @@ function renderOverview(){
     return;
   }
   function card(w,a){
-    var r=WatchData.currentRate(w),pr=reserveHours(w),sv=serviceInfo(w),facts=[];
-    facts.push(r?'<span class="f"><b>'+fmtRate(r)+'</b> '+t.perDay+'</span>':'<span class="f">'+esc(t.noMeas)+'</span>');
+    var r=WatchData.currentRate(w),pr=reserveHours(w),sv=serviceInfo(w),facts=[],prev;
+    // a new session with one measurement shows the previous session's rate, marked as such
+    if(r)facts.push('<span class="f"><b>'+fmtRate(r)+'</b> '+t.perDay+'</span>');
+    else if((prev=WatchData.previousRate(w)))facts.push('<span class="f">'+fmtRate(prev)+' '+t.perDay+' · '+esc(t.prevF)+'</span>');
+    else facts.push('<span class="f">'+esc((w.measurements||[]).length?t.oneMeasF:t.noMeas)+'</span>');
     if(pr)facts.push('<span class="f">'+esc(t.reserveF(pr.h))+'</span>');
     if(sv&&sv.overdue)facts.push('<span class="f warn">'+esc(t.svcPill)+'</span>');
     var lw=lastWorn(w);
@@ -865,14 +871,16 @@ function renderDetail(id){
 }
 function renderOv(w){
   var t=T(),r=WatchData.currentRate(w),pr=reserveHours(w),tg=(w.timegrapher||[]).slice().sort(function(a,b){return b.t-a.t;});
-  var nMeas=(w.measurements||[]).length;
+  var nMeas=(w.measurements||[]).length,prev=r?null:WatchData.previousRate(w),s=WatchData.rateSession(w);
   function tile(k,n,d,link,linkTxt){
     return '<div class="ms"><span class="k">'+esc(k)+'</span>'+n+'<span class="d">'+esc(d)+'</span>'
       +(link?'<a href="'+link+'" data-open="'+link+'">'+esc(linkTxt)+'</a>':'')+'</div>';
   }
   document.getElementById("paneOv").innerHTML='<div class="meas">'
-    +tile(t.rate,r?'<span class="n">'+fmtRate(r)+' '+t.perDay+'</span>':'<span class="n none">'+esc(t.rateNone)+'</span>',
-      r?t.rateD(r.n,humanSpan(r.span)):(nMeas===1?t.oneMeas:""),"/watchrate/",t.openRM)
+    +tile(t.rate,r?'<span class="n">'+fmtRate(r)+' '+t.perDay+'</span>'
+        :prev?'<span class="n prev">'+fmtRate(prev)+' '+t.perDay+'</span>'
+        :'<span class="n none">'+esc(nMeas?t.oneMeasF:t.rateNone)+'</span>',
+      r?t.rateD(r.n,humanSpan(r.span)):prev?t.ratePrev(fmtDate(prev.end),fmtDate(s.start)):(nMeas?t.oneMeas:""),"/watchrate/",t.openRM)
     +tile(t.reserve,pr?'<span class="n">~ '+pr.h+(lang==="nl"?" u":" h")+'</span>':'<span class="n none">'+esc(t.reserveNone)+'</span>',
       pr?t.reserveD(pr.n):"","/powerreserve/",t.openPR)
     +tile(t.tg,tg.length?'<span class="n">'+esc(t.tgN(tg.length))+'</span>':'<span class="n none">'+esc(t.tgNone)+'</span>',

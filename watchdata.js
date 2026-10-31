@@ -202,14 +202,24 @@ var WatchData=(function(){
 
   /* ----- rate -----
      Sessions start at measurements flagged newStart; the current rate is the
-     least-squares slope of the last session, in s/day (same as the Rate Meter). */
-  function lastSession(w){
-    var pts=((w&&w.measurements)||[]).slice().sort(function(a,b){return a.t-b.t;}),cur=[];
-    pts.forEach(function(p){if(p.newStart&&cur.length)cur=[];cur.push(p);});
-    return cur;
+     least-squares slope of the last session, in s/day (same as the Rate Meter).
+     previousRate is the rate of the latest earlier session that has one, for
+     while a new session has only its first measurement. */
+  function sessions(w){
+    var pts=((w&&w.measurements)||[]).slice().sort(function(a,b){return a.t-b.t;}),segs=[],cur=[];
+    pts.forEach(function(p){if(p.newStart&&cur.length){segs.push(cur);cur=[];}cur.push(p);});
+    if(cur.length)segs.push(cur);
+    return segs;
   }
-  function currentRate(w){
-    var pts=lastSession(w),n=pts.length;if(n<2)return null;
+  function lastSession(w){var s=sessions(w);return s.length?s[s.length-1]:[];}
+  function currentRate(w){return rateOf(lastSession(w));}
+  function previousRate(w){
+    var s=sessions(w);
+    for(var i=s.length-2;i>=0;i--){var r=rateOf(s[i]);if(r){r.end=s[i][s[i].length-1].t;return r;}}
+    return null;
+  }
+  function rateOf(pts){
+    var n=pts.length;if(n<2)return null;
     var sT=0,sO=0,sTT=0,sTO=0;
     pts.forEach(function(p){sT+=p.t;sO+=p.offset;sTT+=p.t*p.t;sTO+=p.t*p.offset;});
     var den=n*sTT-sT*sT;if(den===0)return null;
@@ -243,5 +253,5 @@ var WatchData=(function(){
     backupName:backupName,backupData:backupData,
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
     markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,ensureIds:ensureIds,merge:merge,
-    currentRate:currentRate,rateSession:rateSession};
+    currentRate:currentRate,previousRate:previousRate,rateSession:rateSession};
 })();
