@@ -392,10 +392,12 @@ function dayOptions(pr,cands){
 
 /* ===== watch picker: same as the Rate Meter; details, renaming and deleting live in the Collection ===== */
 var NEW_WATCH="__new__",adding=false,guideOpen=false;
+// marker after a watch with a running measurement, same as on the Rate Meter
+var LIVE_MARK="\u2002\u25cf";
 function renderWatches(){
   var sel=document.getElementById("watchSel");
   var empty=!state.watches.length,naming=adding||empty;
-  sel.innerHTML=state.watches.map(function(w){return '<option value="'+escapeHtml(String(w.id))+'">'+escapeHtml(w.name)+'</option>';}).join("")
+  sel.innerHTML=state.watches.map(function(w){return '<option value="'+escapeHtml(String(w.id))+'">'+escapeHtml(w.name)+(running(w)?LIVE_MARK:"")+'</option>';}).join("")
     +'<option disabled>──────────</option>'
     +'<option value="'+NEW_WATCH+'">'+escapeHtml(tr("addToggle"))+'</option>';
   if(!empty)sel.value=String(state.activeWatch);

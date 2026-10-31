@@ -585,11 +585,14 @@ function seedOffset(){var w=activeWatch();
 
 /* ===== render ===== */
 var NEW_WATCH="__new__",adding=false;
+// marker after a watch with a running rate session: not ended and not quiet, as on the Collection cards
+var LIVE_MARK="\u2002\u25cf";
+function rateLive(w){var s=WatchData.rateSession(w);return !!(s&&!s.ended&&!s.quiet);}
 function renderWatches(){
   var t=I18N[lang],sel=document.getElementById("watchSel");
   if(state.watches.length&&!state.watches.some(function(w){return w.id===state.activeWatch;}))state.activeWatch=state.watches[0].id;
   var empty=!state.watches.length,naming=adding||empty;
-  sel.innerHTML=state.watches.map(function(w){return '<option value="'+escapeHtml(String(w.id))+'">'+escapeHtml(w.name)+'</option>';}).join("")
+  sel.innerHTML=state.watches.map(function(w){return '<option value="'+escapeHtml(String(w.id))+'">'+escapeHtml(w.name)+(rateLive(w)?LIVE_MARK:"")+'</option>';}).join("")
     +'<option disabled>\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500</option>'
     +'<option value="'+NEW_WATCH+'">'+escapeHtml(t.addToggle)+'</option>';
   if(!empty)sel.value=String(state.activeWatch);
