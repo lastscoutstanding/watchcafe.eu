@@ -12,6 +12,7 @@
 <script src="/nav.js" defer></script>
 <script src="/watchdata.js?v=5"></script>
 <script src="/watchrate/sample.js?v=5"></script>
+<script src="/brands.js?v=1"></script>
 <style>
   :root{
     --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -51,6 +52,7 @@
   @media(max-width:520px){.wgrid{grid-template-columns:1fr}}
   .wc{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;text-align:left;color:var(--ink);text-decoration:none;min-width:0}
   .wc:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:var(--card2)}
+  .wc .brand{display:block;min-height:13px} /* kept when empty, so names line up */
   .wc .nm{font-weight:700;font-size:16px;overflow-wrap:anywhere}
   .wc .md{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
   .wc .facts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
@@ -625,8 +627,11 @@ function renderOverview(){
     if(sv&&sv.overdue)facts.push('<span class="f warn">'+esc(t.svcPill)+'</span>');
     var lw=lastWorn(w);
     if(lw&&!isFormer(w)){var ago=Math.round((todayT()-lw)/DAY);if(ago>=0)facts.push('<span class="f'+(ago===0?' worn':'')+'">'+esc(ago===0?t.wornToday:t.wornAgo(ago))+'</span>');}
-    var md=modelLine(w)+(info(w).ref?" · "+info(w).ref:"");
-    return '<a class="wc" href="#'+encodeURIComponent(w.id)+'"><span class="nm">'+esc(w.name)+'</span>'
+    // the wordmark carries the brand, so the line below shows model and reference only
+    var bw=window.Brands&&Brands.loaded?Brands.forWatch(w):null;
+    var md=(bw&&(bw.brand||bw.raw)?[info(w).model,info(w).ref]:[modelLine(w),info(w).ref]).filter(Boolean).join(" · ");
+    return '<a class="wc" href="#'+encodeURIComponent(w.id)+'"><span class="brand">'+(bw?Brands.wordmark(bw.brand,bw.raw):'')+'</span>'
+      +'<span class="nm">'+esc(w.name)+'</span>'
       +(md?'<span class="md">'+esc(md)+'</span>':'')
       +'<span class="facts">'+facts.join("")+'</span></a>';
   }
@@ -1076,6 +1081,7 @@ window.addEventListener("hashchange",function(){
 });
 // another tab (Rate Meter, Power Reserve) changed the data
 window.addEventListener("storage",function(e){if(e.key===KEY&&!editing&&!logForm){reload();render();}});
+window.addEventListener("swcbrands",function(){if(!currentId())renderOverview();});
 window.addEventListener("swclang",function(e){lang=e.detail;closeImport();applyLang();render();});
 
 reload();

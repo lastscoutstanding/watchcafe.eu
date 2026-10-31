@@ -1,0 +1,84 @@
+# watchcafe.eu - watch brands for the brand marks (badge + wordmark)
+# One brand per line:  Name | aliases | style | monogram
+#   Name      as shown in the wordmark
+#   aliases   other spellings, separated by ;  (optional)
+#   style     roman (classic serif caps), didone (bold high-contrast serif caps),
+#             grotesk (bold sans caps), wide (light, widely spaced caps),
+#             italic (serif italic)
+#   monogram  1-3 characters in the dial badge
+# Matching ignores case, accents, spaces and punctuation ("&" = "and").
+# Brands not on this list get a plain wordmark and a dial at 10:10.
+# Lines starting with # are ignored.
+A. Lange & Söhne | Lange; ALS; Lange & Sohne; Lange und Söhne | roman | ALS
+Alpina | | grotesk | A
+Audemars Piguet | AP | roman | AP
+Ball | Ball Watch | grotesk | B
+Baume & Mercier | Baume et Mercier | roman | BM
+Bell & Ross | B&R | grotesk | BR
+Blancpain | | roman | B
+Breguet | | italic | B
+Breitling | | grotesk | B
+Bremont | | roman | B
+Bulgari | Bvlgari | wide | B
+Carl F. Bucherer | Bucherer | roman | CFB
+Cartier | | italic | C
+Casio | G-Shock | grotesk | C
+Certina | | grotesk | C
+Chopard | | italic | C
+Christopher Ward | | wide | CW
+Citizen | | grotesk | C
+Corum | | roman | C
+Doxa | | grotesk | D
+Eberhard & Co. | Eberhard | roman | E
+Edox | | grotesk | E
+Farer | | wide | F
+Fortis | | grotesk | F
+Franck Muller | | italic | FM
+Frederique Constant | | roman | FC
+Girard-Perregaux | GP | roman | GP
+Glashütte Original | Glashutte Original; Glashütte | roman | GO
+Glycine | | grotesk | G
+Grand Seiko | | roman | GS
+H. Moser & Cie. | Moser; H. Moser; Moser & Cie | roman | HM
+Hamilton | | grotesk | H
+Hanhart | | grotesk | H
+Hublot | | wide | H
+IWC Schaffhausen | IWC | grotesk | IWC
+Jaeger-LeCoultre | JLC | roman | JL
+Junghans | | wide | J
+Laco | | grotesk | L
+Longines | | italic | L
+Louis Erard | | roman | LE
+Luminox | | grotesk | L
+Maurice Lacroix | | roman | ML
+MB&F | | wide | MBF
+Mido | | grotesk | M
+Montblanc | Mont Blanc | wide | M
+Movado | | wide | M
+Mühle-Glashütte | Muhle Glashutte; Mühle | roman | M
+Nivada Grenchen | Nivada | grotesk | N
+Nomos Glashütte | Nomos | wide | N
+Omega | | roman | Ω
+Orient | Orient Star | grotesk | O
+Oris | | wide | O
+Panerai | Officine Panerai | grotesk | P
+Patek Philippe | Patek | roman | PP
+Piaget | | wide | P
+Rado | | wide | R
+Raymond Weil | | wide | RW
+Richard Mille | RM | wide | RM
+Rolex | | roman | R
+Seiko | Seiko 5; Prospex | grotesk | S
+Sinn | | grotesk | S
+Squale | | grotesk | S
+Stowa | | grotesk | S
+Swatch | | grotesk | S
+TAG Heuer | Heuer | grotesk | TH
+Timex | | grotesk | T
+Tissot | | grotesk | T
+Tudor | | roman | T
+Ulysse Nardin | | roman | UN
+Vacheron Constantin | Vacheron | roman | VC
+Vostok | Восток | grotesk | В
+Zenith | | wide | Z
+Zodiac | | grotesk | Z
