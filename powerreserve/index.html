@@ -15,6 +15,7 @@
   :root{
     --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
     --accent:#d96a41; --accent-d:#c25a36; --ink:#e9e7e2; --muted:#a09da6;
+    --panel-1:#1c1c1c; --panel-2:#0b0b0b;
     --amber:#ff8a3c; --amber-off:#3a1e0a; --amber-glow:rgba(255,138,60,.75); --green:#3be35b; --green-off:#0c2a17; --green-glow:rgba(59,227,91,.7); --banner:#b06a4a;
     --nav-bg:#17171b; --nav-border:#2a2a31; --nav-hover:#22222a; --accent-glow:rgba(217,106,65,.7);
   }
@@ -23,17 +24,16 @@
   html,body{margin:0;padding:0}
   body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
   .wrap{max-width:948px;margin:0 auto}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:30px 30px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
-  .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px}
+  .card{background:var(--card);border-radius:14px;padding:30px 30px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:22px}
   h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
   .sub{color:var(--muted);font-size:14px;margin:0}
-  .lang{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:none}
-  .lang button{border:none;background:#26262c;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;touch-action:manipulation}
-  .lang button.active{background:var(--accent);color:#fff}
-  .lang button:hover:not(.active){background:#30303a}
+  .hdr-right{display:flex;align-items:center;gap:10px;flex:none}
+  .help-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:#26262c;color:var(--muted);font-weight:700;font-size:15px;padding:0;line-height:1;cursor:pointer}
+  .help-btn:hover{background:#30303a;color:var(--ink)}
 
   select,input[type=text],input[type=time]{font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);width:100%}
-  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 5px}
+  label.fld{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 5px}
   button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);touch-action:manipulation}
   button:hover{background:#30303a}
   button:active{transform:scale(.98)}
@@ -44,64 +44,87 @@
   button.danger{color:#ff6b5e}
   button.ghost{background:transparent}
 
-  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .row.nowrap{flex-wrap:nowrap}
   .grow{flex:1 1 auto;min-width:0}
-  .lab{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .hint{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.5}
+
+  /* watch picker: same as the Rate Meter */
+  .watchpick{margin-top:6px}
+  .watchpick .row{gap:8px;align-items:stretch}
+  #addForm{flex-wrap:wrap}
+  #addForm input{flex:1 1 220px}
+  @media(max-width:520px){#addForm input{flex-basis:100%}}
+  .icon-btn{flex:none;width:42px;padding:0;display:inline-flex;align-items:center;justify-content:center;color:var(--muted)}
+  a.icon-btn{align-self:stretch;border:1px solid var(--border);border-radius:8px;background:#26262c;text-decoration:none}
+  a.icon-btn:hover{background:#30303a;color:var(--accent);border-color:var(--accent)}
+
+  .guide{margin-top:18px;background:#241d1a;border:1px solid #45332a;border-radius:12px;padding:18px 20px;display:none}
+  .guide-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .guide-head span{font-weight:700;color:var(--accent);font-size:15px}
+  .guide-x{border:none;background:transparent;font-size:20px;line-height:1;color:var(--muted);padding:2px 6px;cursor:pointer}
+  .guide-x:hover{background:transparent;color:var(--ink)}
+  .guide-intro{margin:0 0 12px;font-size:14px;color:var(--ink)}
+  .guide-steps{margin:0;padding:0;list-style:none;counter-reset:gs}
+  .guide-steps li{counter-increment:gs;position:relative;padding:0 0 10px 34px;font-size:14px;line-height:1.5;color:var(--ink)}
+  .guide-steps li:before{content:counter(gs);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .guide-steps li:last-child{padding-bottom:0}
+  .guide-note{margin:14px 0 0;font-size:13px;color:#eda57f;background:#2e221c;border-radius:8px;padding:10px 12px}
 
   /* LED */
-  .led{display:flex;align-items:center;justify-content:center;gap:4px}
-  .led .digit{width:26px}
+  .led{display:flex;align-items:center;justify-content:center;gap:5px}
+  .led .digit{width:clamp(22px,5.4vw,40px)}
   .led .digit svg{width:100%;height:auto;display:block}
   .led .seg{fill:var(--amber-off)}
   .led .seg.on{fill:var(--amber);filter:drop-shadow(0 0 4px var(--amber-glow))}
-  .led .colon{display:flex;flex-direction:column;gap:8px;padding:0 2px 4px}
-  .led .colon .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 4px var(--amber-glow)}
+  .led .colon{display:flex;flex-direction:column;gap:10px;padding:0 3px 6px}
+  .led .colon .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 4px var(--amber-glow)}
+  .led .sp{width:clamp(8px,2vw,14px)}
   .led.green .seg{fill:var(--green-off)}
   .led.green .seg.on{fill:var(--green);filter:drop-shadow(0 0 4px var(--green-glow))}
   .led.green .colon .dot{background:var(--green);box-shadow:0 0 4px var(--green-glow)}
-  .led.sm .digit{width:19px}
-  .led-text{font-family:"Courier New",monospace;color:var(--amber);font-size:26px;text-align:center;text-shadow:0 0 5px var(--amber-glow);letter-spacing:1px}
-  .led.sm .colon .dot{width:5px;height:5px}
+  .led-text{font-family:"Courier New",monospace;color:var(--amber);font-size:30px;font-weight:700;text-align:center;text-shadow:0 0 5px var(--amber-glow);letter-spacing:1px}
 
-  .greenclock{display:flex;align-items:center;gap:12px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin:6px 0 20px}
-  .greenclock .txt{font-size:12.5px;color:var(--muted);line-height:1.5}
-
-  .prcard{border:0.5px solid var(--border);border-radius:12px;background:var(--card2);padding:16px 18px;margin-bottom:12px}
-  .prcard.stopped{border-color:var(--accent)}
-  .prcard .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}
-  .prcard .top b{font-size:15px}
-  .prcard .meta{font-size:11px;color:var(--muted);white-space:nowrap}
-  .prpanel{background:#111114;border-radius:12px;padding:16px 0;margin-bottom:12px}
+  .block{border-top:1px solid var(--border);margin-top:26px;padding-top:22px}
+  .block h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:0 0 14px;font-weight:700}
+  .block h2 .wname{color:var(--accent);text-transform:none;letter-spacing:0}
+  .panel{background:linear-gradient(180deg,var(--panel-1),var(--panel-2));border-radius:16px;padding:18px 16px 20px;box-shadow:inset 0 2px 8px rgba(0,0,0,.6);overflow:hidden}
+  .plab{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 12px;text-align:center}
+  .grp{background:#1a1a20;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:14px}
+  .grp-h{display:flex;align-items:center;gap:9px;margin-bottom:12px;font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:700}
+  .grp-h .meta{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400;font-size:12px}
   .btns{display:flex;gap:8px}
-  .btns button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px}
-  .confirmline{font-size:11px;color:var(--muted);margin:8px 0 0;text-align:center}
-  .calc{font-size:11px;color:var(--muted);margin:8px 0 0}
-  .saverow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:12px;margin-top:12px}
+  .btns button{flex:1}
+  .saverow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px;margin-top:12px}
   .reserve{font-size:14px;color:var(--ink)}
   .reserve b{font-family:"Courier New",monospace;color:var(--amber)}
 
-  .block{border-top:1px solid var(--border);margin-top:26px;padding-top:22px}
-  .block h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:0 0 12px;font-weight:700}
   table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{text-align:left;padding:8px;border-bottom:1px solid var(--border)}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--border)}
   th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
-  td.num{font-variant-numeric:tabular-nums;font-family:"Courier New",monospace;white-space:nowrap}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   .empty{color:var(--muted);font-size:14px;padding:14px 2px;line-height:1.6}
-  .empty a{color:var(--accent)}
+  .typical{font-size:13.5px;color:var(--muted);margin:0 0 6px}
+  .typical b{font-family:"Courier New",monospace;color:var(--ink)}
+
+  /* backup status: same line as on the Rate Meter */
+  .bkstatus{display:flex;align-items:baseline;gap:10px;font-size:14px;margin-bottom:8px}
+  .bkdot{width:10px;height:10px;border-radius:50%;flex:none;align-self:center;background:#5a5a66}
+  .bkdot.ok{background:#3be35b;box-shadow:0 0 6px rgba(59,227,91,.6)}
+  .bkdot.due{background:#ffb02e;box-shadow:0 0 6px rgba(255,176,46,.6)}
+  .bkstatus .mut,.bkstatus.idle{color:var(--muted)}
+  .datalink{font-size:13.5px;font-weight:600;color:var(--accent);text-decoration:none}
+  .datalink:hover{text-decoration:underline}
   /* reminder after saving when a backup is due (same as the Rate Meter) */
-  .bknudge{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--muted);background:#0e0e12;border:1px solid var(--border)}
+  .bknudge{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:9px 12px;border-radius:8px;font-size:13px;color:var(--muted);background:#0e0e12;border:1px solid var(--border)}
   .bknudge .txt{flex:1 1 220px}
   .bknudge .txt b{color:var(--ink);font-weight:600}
   .bknudge .ok{color:#3be35b;font-weight:700;margin-right:4px}
-  .bknudge button.sm{padding:6px 10px;font-size:13px}
   .bknudge .x{background:none;border:none;color:var(--muted);padding:2px 6px;font-size:16px;line-height:1}
   .bknudge .x:hover{color:var(--ink);background:none}
   .notice{background:#2e221c;border:1px solid #45332a;color:#eda57f;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px;display:none}
 
   .banner{margin-top:26px;background:var(--banner,#b06a4a);color:#fff;font-weight:700;text-align:center;padding:16px;border-radius:8px;font-size:15px}
-  .links{display:flex;justify-content:center;gap:22px;margin-top:16px;font-size:14px;flex-wrap:wrap}
-  .links a{color:var(--accent);text-decoration:none;font-weight:600}
-  .links a:hover{text-decoration:underline}
   .gears{margin-top:14px;text-align:center;font-size:12.5px;color:#8f8c96}
   .gears a{color:var(--accent);text-decoration:none}
   .gears a:hover{text-decoration:underline}
@@ -117,44 +140,64 @@
         <h1 id="title">Power Reserve</h1>
         <p class="sub" id="sub"></p>
       </div>
+      <div class="hdr-right">
+        <button class="help-btn" id="helpBtn" aria-label="How it works">?</button>
+      </div>
     </div>
 
     <div class="notice" id="notice"></div>
 
-    <div id="startArea">
-      <div class="row">
-        <div class="grow">
-          <label class="fld" id="startLbl" for="watchSel"></label>
-          <select id="watchSel"></select>
-        </div>
-        <button class="primary" id="woundBtn"></button>
+    <div class="watchpick">
+      <label class="fld" id="watchSelLbl" for="watchSel"></label>
+      <div class="row nowrap" id="watchRow">
+        <select id="watchSel" class="grow"></select>
+        <a class="icon-btn" id="watchInfo" href="/collection/">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+            <path d="M8 1.8a6.2 6.2 0 1 0 0 12.4A6.2 6.2 0 0 0 8 1.8zM8 7.2v4M8 4.9v.1"
+                  fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
       </div>
-      <div class="greenclock">
-        <div class="led green" id="greenClock"></div>
-        <span class="txt" id="greenTxt"></span>
+      <div class="row nowrap" id="addForm" style="display:none">
+        <input type="text" id="newWatch" class="grow">
+        <button class="primary" id="addWatch"></button>
+        <button id="addCancel"></button>
       </div>
     </div>
 
-    <p class="lab" id="runningLbl" style="display:none"></p>
-    <div id="running"></div>
-    <div class="bknudge" id="bkNudge" style="display:none"></div>
+    <div class="guide" id="guide">
+      <div class="guide-head">
+        <span id="guideTitle"></span>
+        <button class="guide-x" id="guideClose" aria-label="Close">&times;</button>
+      </div>
+      <p class="guide-intro" id="guideIntro"></p>
+      <ol class="guide-steps">
+        <li id="gStep1"></li>
+        <li id="gStep2"></li>
+        <li id="gStep3"></li>
+        <li id="gStep4"></li>
+      </ol>
+      <p class="guide-note" id="guideNote"></p>
+    </div>
+
+    <div class="block" id="meterBlock">
+      <h2 id="meterH2"></h2>
+      <div id="meter"></div>
+      <div class="bknudge" id="bkNudge" style="display:none"></div>
+    </div>
 
     <div class="block">
       <h2 id="histH2"></h2>
-      <div class="row" style="margin-bottom:8px">
-        <div class="grow">
-          <label class="fld" id="histSelLbl" for="histSel"></label>
-          <select id="histSel"></select>
-        </div>
-      </div>
       <div id="histWrap"></div>
     </div>
 
-    <div class="banner" id="banner"></div>
-    <div class="links">
-      <a href="https://watchcafe.eu" id="linkHome"></a>
-      <a href="/watchrate/" id="linkMeter"></a>
+    <!-- backup & restore live in the Collection; this line only shows the status -->
+    <div class="block" id="dataBlock">
+      <div class="bkstatus" id="bkStatus"><span class="bkdot" id="bkDot"></span><span id="bkText"></span></div>
+      <a class="datalink" id="dataLink" href="/collection/?backup"></a>
     </div>
+
+    <div class="banner" id="banner"></div>
     <div class="gears" id="gears"></div>
   </div>
 </div>
@@ -164,61 +207,79 @@
 var I18N={
  en:{
   title:"Power Reserve", sub:"Measure how long your watch runs on a full wind",
-  start:"Start a measurement for", wound:"Wound \u0026 set",
-  greenTxt:"Set your watch to this clock, wind it fully, then tap.",
-  greenTxtNoWatch:"Pick a watch above, set it to this clock, wind fully, then tap.",
-  noWatches:"No watches yet. Add one in your ",
-  meterLink:"Collection", noWatchesTail:" first \u2014 the list is shared.",
-  allRunning:"All your watches already have a running measurement.",
-  running:"Running now", elapsed:"Elapsed since fully wound",
-  stillRunning:"Still running", stopped:"Stopped", cancel:"Cancel",
+  watchSelLbl:"Watch", watchInfo:"Details, rename or delete in Collection",
+  watchPlaceholder:"Watch name (e.g. Seiko SARB033)", add:"Add", addToggle:"+ Add watch", addCancel:"Cancel",
+  measuringLabel:"Measuring", chooseWatch:"— choose a watch —",
+  guideTitle:"How it works", guideIntro:"Find out how long your watch runs on a full wind.",
+  gStep1:"<b>Wind and set</b> — wind the watch fully, set it to the green clock and tap “Wound & set”.",
+  gStep2:"<b>Let it run</b> — don’t wind or wear it. Measuring several watches at once is fine: pick each one above.",
+  gStep3:"<b>Check now and then</b> — tap “Still running” when you see it running; this tells the page which day it stopped.",
+  gStep4:"<b>Once it stops</b> — tap “Stopped”, enter where the hands are and save.",
+  guideNote:"The reserve is the time from winding to the moment the hands stopped, so you don’t have to catch it stopping.",
+  grpWind:"Wind and set", grpStart:"Start", grpRunning:"Running", grpStopped:"Stopped — read the hands",
+  greenTxt:"Wind your watch fully, set it to this clock, then tap.",
+  wound:"Wound & set",
+  elapsed:"Elapsed since fully wound",
+  stillRunning:"Still running", stopped:"Stopped",
   woundAt:"wound {d}",
-  lastConfirmed:"last confirmed running: {d}",
-  readHands:"Stopped \u2014 read the hands",
-  handsAt:"hands at", day:"day", auto:"(auto)",
-  reserve:"Reserve:", save:"Save", discard:"Discard", back:"Back",
-  histH2:"History", histSel:"Watch",
+  lastConfirmed:"Last confirmed running: {d}",
+  handsAt:"Hands at", day:"Day", auto:"(auto)",
+  reserve:"Reserve:", save:"Save", discard:"Discard", back:"Back", del:"delete",
+  histH2:"History",
   noHist:"No power-reserve measurements saved for this watch yet.",
-  thDate:"Wound", thReserve:"Reserve", thNote:"Note", typical:"Typical:", over:"over {n} measurements",
-  banner:"\u00a9 2026 watchcafe.eu \u2014 info@watchcafe.eu",
+  thDate:"Wound", thReserve:"Reserve", typical:"Typical:", over:"over {n} measurements", overOne:"from 1 measurement",
+  banner:"© 2026 watchcafe.eu — info@watchcafe.eu",
+  dataLink:"Backup & restore in your Collection →",
+  bkIdle:"Your watch data is stored in this browser only. Back up now and then to keep it safe.",
+  bkNever:"Never backed up", bkOnlyHereOne:"1 item lives only in this browser", bkOnlyHereMany:"{n} items live only in this browser",
+  bkDone:"Backed up", bkLast:"Last backup", bkNewSinceOne:"1 new item since", bkNewSinceMany:"{n} new items since",
   bkSaved:"Saved.", bkOne:"1 item", bkMany:"{n} items",
   bkSince:"<b>{m}</b> since your last backup {ago}.", bkNeverOne:"<b>{m}</b> lives only in this browser.", bkNeverMany:"<b>{m}</b> live only in this browser.",
   bkToday:"today", bkYesterday:"yesterday", bkDaysAgo:"{n} days ago", bkGo:"Back up now", bkDismiss:"Dismiss",
-  linkHome:"watchcafe.eu home", linkMeter:"Rate Meter",
-  gears:"This site runs on gears, not cookies. Your watch data never leaves your browser \u2014 ",
-  gearsLink:"see for yourself \u2192",
+  gears:"This site runs on gears, not cookies. Your watch data never leaves your browser — ",
+  gearsLink:"see for yourself →",
   confirmDiscard:"Discard this running measurement? The wind timestamp will be lost.",
   confirmDelHist:"Delete this saved power-reserve measurement?",
-  invalidHands:"Enter the stop time as HH:MM (e.g. 03:47)."
+  invalidHands:"Enter the stop time as HH:MM (e.g. 03:47).",
+  notice:"Storage isn't available here (e.g. preview). On the live site everything is saved."
  },
  nl:{
   title:"Gangreserve", sub:"Meet hoe lang je horloge loopt op een volledige opwinding",
-  start:"Start een meting voor", wound:"Opgewonden \u0026 gelijk",
-  greenTxt:"Zet je horloge gelijk aan deze klok, wind volledig op, en tik.",
-  greenTxtNoWatch:"Kies hierboven een horloge, zet het gelijk aan deze klok, wind volledig op, en tik.",
-  noWatches:"Nog geen horloges. Voeg er eerst \u00e9\u00e9n toe in je ",
-  meterLink:"Collectie", noWatchesTail:" \u2014 de lijst is gedeeld.",
-  allRunning:"Al je horloges hebben al een lopende meting.",
-  running:"Nu lopend", elapsed:"Verstreken sinds volledig opgewonden",
-  stillRunning:"Loopt nog", stopped:"Gestopt", cancel:"Annuleren",
+  watchSelLbl:"Horloge", watchInfo:"Gegevens, hernoemen of verwijderen in Collectie",
+  watchPlaceholder:"Naam van horloge (bv. Seiko SARB033)", add:"Toevoegen", addToggle:"+ Horloge toevoegen", addCancel:"Annuleren",
+  measuringLabel:"Meten", chooseWatch:"— kies een horloge —",
+  guideTitle:"Zo werkt het", guideIntro:"Ontdek hoe lang je horloge loopt op een volledige opwinding.",
+  gStep1:"<b>Opwinden en gelijkzetten</b> — wind het horloge volledig op, zet het gelijk aan de groene klok en tik op “Opgewonden & gelijk”.",
+  gStep2:"<b>Laat het lopen</b> — niet opwinden of dragen. Meerdere horloges tegelijk meten kan: kies ze hierboven een voor een.",
+  gStep3:"<b>Kijk af en toe</b> — tik op “Loopt nog” als je ziet dat het loopt; zo weet de pagina op welke dag het stilviel.",
+  gStep4:"<b>Als het stilstaat</b> — tik op “Gestopt”, vul in waar de wijzers staan en sla op.",
+  guideNote:"De gangreserve is de tijd van opwinden tot het moment dat de wijzers stilvielen, dus je hoeft er niet bij te zijn als het stopt.",
+  grpWind:"Opwinden en gelijkzetten", grpStart:"Starten", grpRunning:"Loopt", grpStopped:"Gestopt — lees de wijzers af",
+  greenTxt:"Wind je horloge volledig op, zet het gelijk aan deze klok en tik dan.",
+  wound:"Opgewonden & gelijk",
+  elapsed:"Verstreken sinds volledig opgewonden",
+  stillRunning:"Loopt nog", stopped:"Gestopt",
   woundAt:"opgewonden {d}",
-  lastConfirmed:"laatst bevestigd lopend: {d}",
-  readHands:"Gestopt \u2014 lees de wijzers af",
-  handsAt:"wijzers op", day:"dag", auto:"(auto)",
-  reserve:"Gangreserve:", save:"Opslaan", discard:"Verwerpen", back:"Terug",
-  histH2:"Historie", histSel:"Horloge",
+  lastConfirmed:"Laatst bevestigd lopend: {d}",
+  handsAt:"Wijzers op", day:"Dag", auto:"(auto)",
+  reserve:"Gangreserve:", save:"Opslaan", discard:"Verwerpen", back:"Terug", del:"verwijder",
+  histH2:"Historie",
   noHist:"Nog geen gangreserve-metingen opgeslagen voor dit horloge.",
-  thDate:"Opgewonden", thReserve:"Gangreserve", thNote:"Notitie", typical:"Typisch:", over:"uit {n} metingen",
-  banner:"\u00a9 2026 watchcafe.eu \u2014 info@watchcafe.eu",
+  thDate:"Opgewonden", thReserve:"Gangreserve", typical:"Typisch:", over:"uit {n} metingen", overOne:"uit 1 meting",
+  banner:"© 2026 watchcafe.eu — info@watchcafe.eu",
+  dataLink:"Back-up & herstel in je Collectie →",
+  bkIdle:"Je horlogedata staat alleen in deze browser. Maak af en toe een back-up, dan is hij veilig.",
+  bkNever:"Nog nooit een back-up gemaakt", bkOnlyHereOne:"1 item staat alleen in deze browser", bkOnlyHereMany:"{n} items staan alleen in deze browser",
+  bkDone:"Back-up gemaakt", bkLast:"Laatste back-up", bkNewSinceOne:"1 nieuw item sindsdien", bkNewSinceMany:"{n} nieuwe items sindsdien",
   bkSaved:"Opgeslagen.", bkOne:"1 item", bkMany:"{n} items",
   bkSince:"<b>{m}</b> sinds je laatste back-up van {ago}.", bkNeverOne:"<b>{m}</b> staat alleen in deze browser.", bkNeverMany:"<b>{m}</b> staan alleen in deze browser.",
   bkToday:"vandaag", bkYesterday:"gisteren", bkDaysAgo:"{n} dagen geleden", bkGo:"Back-up maken", bkDismiss:"Sluiten",
-  linkHome:"watchcafe.eu home", linkMeter:"Rate Meter",
-  gears:"Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit \u2014 ",
-  gearsLink:"zie het zelf \u2192",
+  gears:"Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — ",
+  gearsLink:"zie het zelf →",
   confirmDiscard:"Deze lopende meting verwerpen? Het opwindmoment gaat verloren.",
   confirmDelHist:"Deze opgeslagen gangreserve-meting verwijderen?",
-  invalidHands:"Voer de stoptijd in als UU:MM (bv. 03:47)."
+  invalidHands:"Voer de stoptijd in als UU:MM (bv. 03:47).",
+  notice:"Opslag is hier niet beschikbaar (bv. preview). Op de live site blijft alles bewaard."
  }
 };
 var LKEY="siouxWatchRateMeterLang";
@@ -231,7 +292,7 @@ c:"66,72 72,78 72,118 66,124 60,118 60,78",d:"12,126 18,120 62,120 68,126 62,132
 e:"14,72 20,78 20,118 14,124 8,118 8,78",f:"14,16 20,22 20,62 14,68 8,62 8,22",
 g:"12,70 18,64 62,64 68,70 62,76 18,76"};
 var ORDER=["a","b","c","d","e","f","g"];
-var MAP={"0":"abcdef","1":"bc","2":"abged","3":"abgcd","4":"fgbc","5":"afgcd","6":"afgedc","7":"abc","8":"abcdefg","9":"abcdfg"," ":"","-":"g"};
+var MAP={"0":"abcdef","1":"bc","2":"abged","3":"abgcd","4":"fgbc","5":"afgcd","6":"afgedc","7":"abc","8":"abcdefg","9":"abcdfg","d":"bcdeg","-":"g"};
 function ledInto(el,str,cls){
   el.className="led"+(cls?(" "+cls):"");
   el.innerHTML="";
@@ -239,6 +300,7 @@ function ledInto(el,str,cls){
   for(var i=0;i<str.length;i++){
     var ch=str[i];
     if(ch===":"){var c=document.createElement("div");c.className="colon";c.innerHTML='<span class="dot"></span><span class="dot"></span>';el.appendChild(c);continue;}
+    if(ch===" "){var sp=document.createElement("div");sp.className="sp";el.appendChild(sp);continue;}
     var on=MAP[ch]||"";
     var d=document.createElement("div");d.className="digit";
     var svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 80 140");
@@ -247,28 +309,35 @@ function ledInto(el,str,cls){
   }
 }
 
-/* ===== storage (gedeeld met rate meter) ===== */
+/* ===== storage (shared with the Rate Meter) ===== */
 var KEY="siouxWatchRateMeter";
 var memOnly=false, state;
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function load(){try{var raw=localStorage.getItem(KEY);if(raw)return JSON.parse(raw);}catch(e){memOnly=true;}return null;}
 function save(){if(memOnly)return;try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){memOnly=true;showNotice();}}
-function showNotice(){var n=document.getElementById("notice");n.style.display="block";n.textContent=lang==="nl"?"Opslag is hier niet beschikbaar (bv. preview). Op de live site blijft alles bewaard.":"Storage isn't available here (e.g. preview). On the live site everything is saved.";}
+function showNotice(){var n=document.getElementById("notice");n.style.display="block";n.textContent=tr("notice");}
 function seed(){return {version:2,activeWatch:null,watches:[]};}
-state=load()||seed();
-if(!Array.isArray(state.watches))state.watches=[];
+function loadState(){
+  state=load()||seed();
+  if(!Array.isArray(state.watches))state.watches=[];
+  if(state.watches.length&&!state.watches.some(function(w){return w.id===state.activeWatch;}))state.activeWatch=state.watches[0].id;
+}
+loadState();
 
 /* ===== helpers ===== */
-function running(w){return w.prCurrent&&w.prCurrent.start;}
-function fmtDT(ms){return new Date(ms).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).replace(",",",");}
-function fmtDay(ms){return new Date(ms).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",{weekday:"short",day:"numeric",month:"short"});}
+function running(w){return !!(w&&w.prCurrent&&w.prCurrent.start);}
+function activeWatch(){return state.watches.find(function(w){return w.id===state.activeWatch;})||state.watches[0]||null;}
+function byId(id){return state.watches.find(function(w){return w.id===id;});}
+function loc(){return lang==="nl"?"nl-NL":"en-GB";}
+function fmtDT(ms){return new Date(ms).toLocaleString(loc(),{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false});}
+function fmtDay(ms){return new Date(ms).toLocaleDateString(loc(),{weekday:"short",day:"numeric",month:"short"});}
+function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 
-/* verstreken tijd -> LED-string, adaptief */
+/* elapsed time -> LED string, adaptive */
 function elapsedLED(ms){
   if(ms<0)ms=0;
-  var totalMin=Math.floor(ms/60000);
-  var days=Math.floor(totalMin/1440);
-  if(days>=90){ // heel lang: jaren/maanden/dagen (geen LED-klok maar tekst-achtig)
+  var days=Math.floor(ms/86400000);
+  if(days>=90){ // very long: years/months/days as text, not a LED clock
     var y=Math.floor(days/365), mo=Math.floor((days%365)/30), dd=(days%365)%30;
     var s=""; if(y)s+=y+"y "; if(mo||y)s+=mo+"mo "; s+=dd+"d";
     return {text:s,big:false};
@@ -278,10 +347,9 @@ function elapsedLED(ms){
   var h=Math.floor(s2/3600); s2-=h*3600;
   var mi=Math.floor(s2/60); s2-=mi*60;
   function p(n){return (n<10?"0":"")+n;}
-  var str=(d>0?d+"d ":"")+p(h)+":"+p(mi)+":"+p(s2);
-  return {text:str,big:true};
+  return {text:(d>0?d+"d ":"")+p(h)+":"+p(mi)+":"+p(s2),big:true};
 }
-/* reserve compact: uren onder 3 dagen, anders dagen, anders j/mo/d */
+/* compact reserve: hours under 3 days, then days, then y/mo/d */
 function fmtReserve(ms){
   if(ms<0)ms=0;
   var totalMin=Math.round(ms/60000);
@@ -291,7 +359,7 @@ function fmtReserve(ms){
   var h2=Math.floor(totalMin/60),m2=totalMin%60;return h2+"h "+(m2<10?"0":"")+m2+"m";
 }
 
-/* wijzertijd HH:MM (horlogetijd) -> echte stopmoment, met dag-resolutie */
+/* hands HH:MM (watch time) -> real stop moment, with day resolution */
 function resolveStop(startMs,lastRunMs,offsetSec,hh,mm,dayIdx){
   var base=new Date(startMs),cands=[];
   for(var d=0;d<500;d++){
@@ -311,219 +379,218 @@ function stopCandidates(startMs,offsetSec,hh,mm){
   }
   return cands;
 }
-function parseHHMM(v){var m=(v||"").trim().match(/^(\d{1,2})[:.\s](\d{2})$/);if(!m)return null;var h=+m[1],mi=+m[2];if(h>23||mi>59)return null;return {h:h,m:mi};}
-
-/* ===== siteklok (groen, = horlogetijd) ===== */
-function selectedWatch(){var sel=document.getElementById("watchSel");if(!sel)return null;return state.watches.find(function(w){return w.id===sel.value;})||null;}
-function tickClock(){
-  var gc=document.getElementById("greenClock"),gt=document.getElementById("greenTxt");
-  if(gc){
-    var w=selectedWatch();
-    var d=new Date();
-    function p(n){return (n<10?"0":"")+n;}
-    ledInto(gc,p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds()),"green sm");
-    var row=document.querySelector("#startArea .row");
-    if(gt&&row&&row.style.display!=="none")gt.textContent=w?tr("greenTxt"):tr("greenTxtNoWatch");
-  }
-  // lopende tellers
-  document.querySelectorAll("[data-elapsed]").forEach(function(el){
-    var wid=el.getAttribute("data-elapsed");
-    var ww=state.watches.find(function(x){return x.id===wid;});
-    if(ww&&running(ww)){var r=elapsedLED(Date.now()-ww.prCurrent.start);
-      if(r.big)ledInto(el,r.text,"");else{el.className="led-text";el.textContent=r.text;}}
-  });
-}
-
-/* ===== render ===== */
-function renderStart(){
-  var sel=document.getElementById("watchSel");
-  var avail=state.watches.filter(function(w){return !running(w);});
-  var startArea=document.getElementById("startArea");
-  if(!state.watches.length){
-    startArea.innerHTML='<div class="empty">'+tr("noWatches")+'<a href="/collection/">'+tr("meterLink")+'</a>'+tr("noWatchesTail")+'</div>';
-    return;
-  }
-  var rowEl=startArea.querySelector(".row");
-  if(!avail.length){
-    if(rowEl)rowEl.style.display="none";
-    document.getElementById("greenTxt").textContent=tr("allRunning");
-    document.getElementById("greenClock").innerHTML="";
-    return;
-  }
-  if(rowEl)rowEl.style.display="";
-  var cur=sel.value;
-  sel.innerHTML=avail.map(function(w){return '<option value="'+w.id+'">'+escapeHtml(w.name)+'</option>';}).join("");
-  if(avail.some(function(w){return w.id===cur;}))sel.value=cur;
-}
-
-function renderRunning(){
-  var box=document.getElementById("running"),lbl=document.getElementById("runningLbl");
-  var runners=state.watches.filter(running);
-  lbl.style.display=runners.length?"block":"none";
-  lbl.textContent=tr("running")+" \u00b7 "+runners.length;
-  box.innerHTML="";
-  runners.forEach(function(w){
-    var pr=w.prCurrent;
-    var card=document.createElement("div");
-    card.className="prcard"+(pr.stopped?" stopped":"");
-    var head='<div class="top"><b>'+escapeHtml(w.name)+'</b><span class="meta">'+tr("woundAt",{d:fmtDT(pr.start)})+'</span></div>';
-    if(!pr.stopped){
-      card.innerHTML=head
-        +'<p class="lab" style="text-align:center">'+tr("elapsed")+'</p>'
-        +'<div class="prpanel"><div class="led" data-elapsed="'+w.id+'"></div></div>'
-        +'<div class="btns"><button data-still="'+w.id+'"><i></i>'+tr("stillRunning")+'</button>'
-        +'<button data-stop="'+w.id+'">'+tr("stopped")+'</button></div>'
-        +(pr.lastRunning?'<p class="confirmline">'+tr("lastConfirmed",{d:fmtDT(pr.lastRunning)})+'</p>':'');
-    }else{
-      var hands=pr.handsInput||"";
-      var parsed=parseHHMM(hands);
-      var cands=parsed?stopCandidates(pr.start,pr.offset,parsed.h,parsed.m):[];
-      var dayOpts=cands.map(function(c,i){return '<option value="'+i+'"'+(pr.dayIdx===i||(pr.dayIdx==null&&isAutoIdx(pr,cands,i))?' selected':'')+'>'+fmtDay(c)+(isAutoIdx(pr,cands,i)?' '+tr("auto"):'')+'</option>';}).join("");
-      var stopMs=parsed?resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx):null;
-      var reserve=stopMs?fmtReserve(stopMs-pr.start):"\u2014";
-      var realStop=stopMs?new Date(stopMs).toLocaleTimeString(lang==="nl"?"nl-NL":"en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}):"";
-      card.innerHTML=head
-        +'<p class="lab"><i class="ti"></i>'+tr("readHands")+'</p>'
-        +'<div class="row">'
-        +'<div style="flex:1 1 120px"><label class="fld">'+tr("handsAt")+'</label><input type="time" data-hands="'+w.id+'" value="'+escapeHtml(hands)+'"></div>'
-        +'<div style="flex:1 1 120px"><label class="fld">'+tr("day")+'</label><select data-day="'+w.id+'"'+(cands.length?"":" disabled")+'>'+dayOpts+'</select></div>'
-        +'</div>'
-        +'<div class="saverow"><span class="reserve">'+tr("reserve")+' <b data-res="'+w.id+'">'+reserve+'</b></span>'
-        +'<div style="display:flex;gap:8px"><button class="sm" data-back="'+w.id+'">'+tr("back")+'</button>'
-        +'<button class="sm" data-discard="'+w.id+'">'+tr("discard")+'</button>'
-        +'<button class="sm primary" data-save="'+w.id+'"'+(stopMs&&stopMs>pr.start?"":" disabled")+'>'+tr("save")+'</button></div></div>';
-    }
-    box.appendChild(card);
-  });
-  wireRunning();
-}
 function isAutoIdx(pr,cands,i){
   var lb=pr.lastRunning||pr.start;
   for(var j=0;j<cands.length;j++)if(cands[j]>=lb)return j===i;
   return i===0;
 }
+function parseHHMM(v){var m=(v||"").trim().match(/^(\d{1,2})[:.\s](\d{2})$/);if(!m)return null;var h=+m[1],mi=+m[2];if(h>23||mi>59)return null;return {h:h,m:mi};}
+function dayOptions(pr,cands){
+  return cands.map(function(c,i){var auto=isAutoIdx(pr,cands,i);
+    return '<option value="'+i+'"'+(pr.dayIdx===i||(pr.dayIdx==null&&auto)?' selected':'')+'>'+fmtDay(c)+(auto?' '+tr("auto"):'')+'</option>';}).join("");
+}
 
-function refreshStop(w){
-  var pr=w.prCurrent;if(!pr||!pr.stopped)return;
-  var daySel=document.querySelector('[data-day="'+w.id+'"]');
-  var resEl=document.querySelector('[data-res="'+w.id+'"]');
-  var saveBtn=document.querySelector('[data-save="'+w.id+'"]');
-  if(!daySel||!resEl||!saveBtn)return;
-  var parsed=parseHHMM(pr.handsInput);
-  if(!parsed){
-    daySel.disabled=true;daySel.innerHTML="";
-    resEl.textContent="\u2014";saveBtn.disabled=true;return;
+/* ===== watch picker: same as the Rate Meter; details, renaming and deleting live in the Collection ===== */
+var NEW_WATCH="__new__",adding=false,guideOpen=false;
+function renderWatches(){
+  var sel=document.getElementById("watchSel");
+  var empty=!state.watches.length,naming=adding||empty;
+  sel.innerHTML=state.watches.map(function(w){return '<option value="'+escapeHtml(String(w.id))+'">'+escapeHtml(w.name)+'</option>';}).join("")
+    +'<option disabled>──────────</option>'
+    +'<option value="'+NEW_WATCH+'">'+escapeHtml(tr("addToggle"))+'</option>';
+  if(!empty)sel.value=String(state.activeWatch);
+  document.getElementById("watchInfo").href="/collection/"+(empty?"":"#"+encodeURIComponent(state.activeWatch));
+  document.getElementById("watchRow").style.display=naming?"none":"";
+  document.getElementById("addForm").style.display=naming?"":"none";
+  document.getElementById("addCancel").style.display=empty?"none":"";
+}
+function startAdding(){adding=true;renderWatches();document.getElementById("newWatch").focus();}
+function closeAddForm(){adding=false;document.getElementById("newWatch").value="";renderWatches();}
+function addWatch(){var inp=document.getElementById("newWatch");var name=inp.value.trim();if(!name){inp.focus();return;}
+  var w={id:uid(),name:name,measurements:[]};state.watches.push(w);state.activeWatch=w.id;
+  adding=false;inp.value="";save();renderAll();}
+
+/* ===== meter: one step group for the state of the chosen watch ===== */
+function watchSuffix(w){return ' &mdash; <span class="wname">'+(w?escapeHtml(w.name):tr("chooseWatch"))+'</span>';}
+function grp(n,title,meta,body){
+  return '<div class="grp"><div class="grp-h"><span class="grp-n">'+n+'</span><span>'+title+'</span>'
+    +(meta?'<span class="meta">'+meta+'</span>':'')+'</div>'+body+'</div>';
+}
+function renderMeter(){
+  var w=activeWatch(),box=document.getElementById("meter");
+  document.getElementById("meterH2").innerHTML=escapeHtml(tr("measuringLabel"))+watchSuffix(w);
+  document.getElementById("meterBlock").style.opacity=w?"1":".45";
+  var pr=running(w)?w.prCurrent:null;
+  if(!pr){
+    box.innerHTML=grp(1,tr("grpWind"),"",
+        '<div class="panel"><div class="led green" id="greenClock"></div></div>'
+        +'<p class="hint">'+tr("greenTxt")+'</p>')
+      +grp(2,tr("grpStart"),"",'<div class="row" style="justify-content:flex-end"><button class="primary" id="woundBtn"'+(w?'':' disabled')+'>'+tr("wound")+'</button></div>');
+    document.getElementById("woundBtn").onclick=function(){
+      var ww=activeWatch();if(!ww)return;
+      ww.prCurrent={start:Date.now(),offset:0,lastRunning:null,stopped:false,handsInput:"",dayIdx:null};
+      hideNudge();save();renderAll();
+    };
+  }else if(!pr.stopped){
+    box.innerHTML=grp(3,tr("grpRunning"),escapeHtml(tr("woundAt",{d:fmtDT(pr.start)})),
+        '<div class="panel"><p class="plab">'+tr("elapsed")+'</p><div class="led" id="elapsed"></div></div>'
+        +'<div class="btns" style="margin-top:14px"><button id="stillBtn">'+tr("stillRunning")+'</button><button id="stopBtn">'+tr("stopped")+'</button></div>'
+        +(pr.lastRunning?'<p class="hint" style="text-align:center">'+tr("lastConfirmed",{d:fmtDT(pr.lastRunning)})+'</p>':''));
+    document.getElementById("stillBtn").onclick=function(){pr.lastRunning=Date.now();save();renderMeter();};
+    document.getElementById("stopBtn").onclick=function(){pr.stopped=true;save();renderMeter();};
+  }else{
+    var parsed=parseHHMM(pr.handsInput);
+    var cands=parsed?stopCandidates(pr.start,pr.offset,parsed.h,parsed.m):[];
+    box.innerHTML=grp(4,tr("grpStopped"),escapeHtml(tr("woundAt",{d:fmtDT(pr.start)})),
+        '<div class="row" style="align-items:flex-end">'
+        +'<div style="flex:1 1 120px"><label class="fld" for="handsIn">'+tr("handsAt")+'</label><input type="time" id="handsIn" value="'+escapeHtml(pr.handsInput||"")+'"></div>'
+        +'<div style="flex:1 1 120px"><label class="fld" for="daySel">'+tr("day")+'</label><select id="daySel"'+(cands.length?'':' disabled')+'>'+dayOptions(pr,cands)+'</select></div>'
+        +'</div>'
+        +'<div class="saverow"><span class="reserve">'+tr("reserve")+' <b id="resVal">—</b></span>'
+        +'<div style="display:flex;gap:8px"><button class="sm" id="backBtn">'+tr("back")+'</button>'
+        +'<button class="sm" id="discardBtn">'+tr("discard")+'</button>'
+        +'<button class="sm primary" id="saveBtn">'+tr("save")+'</button></div></div>');
+    refreshStop(w);
+    // no rebuild on input: that would close the iOS time picker
+    document.getElementById("handsIn").oninput=function(e){pr.handsInput=e.target.value;pr.dayIdx=null;save();refreshStop(w);};
+    document.getElementById("daySel").onchange=function(e){pr.dayIdx=+e.target.value;save();refreshStop(w);};
+    document.getElementById("backBtn").onclick=function(){pr.stopped=false;save();renderMeter();};
+    document.getElementById("discardBtn").onclick=function(){
+      if(!confirm(tr("confirmDiscard")))return;
+      WatchData.markDeleted(state,"pr:"+pr.start);delete w.prCurrent;save();renderAll();};
+    document.getElementById("saveBtn").onclick=function(){
+      var p=parseHHMM(pr.handsInput);if(!p){alert(tr("invalidHands"));return;}
+      var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,p.h,p.m,pr.dayIdx);
+      if(!Array.isArray(w.powerReserve))w.powerReserve=[];
+      w.powerReserve.push({id:uid(),start:pr.start,stop:stopMs,offset:pr.offset,reserveMs:stopMs-pr.start,note:""});
+      WatchData.markDeleted(state,"pr:"+pr.start);delete w.prCurrent;save();renderAll();showNudge();};
   }
+  tickClock();
+}
+function refreshStop(w){
+  var pr=w.prCurrent,daySel=document.getElementById("daySel"),resEl=document.getElementById("resVal"),saveBtn=document.getElementById("saveBtn");
+  if(!pr||!daySel)return;
+  var parsed=parseHHMM(pr.handsInput);
+  if(!parsed){daySel.disabled=true;daySel.innerHTML="";resEl.textContent="—";saveBtn.disabled=true;return;}
   var cands=stopCandidates(pr.start,pr.offset,parsed.h,parsed.m);
-  daySel.disabled=false;
-  daySel.innerHTML=cands.map(function(c,i){return '<option value="'+i+'"'+(pr.dayIdx===i||(pr.dayIdx==null&&isAutoIdx(pr,cands,i))?' selected':'')+'>'+fmtDay(c)+(isAutoIdx(pr,cands,i)?' '+tr("auto"):'')+'</option>';}).join("");
+  daySel.disabled=false;daySel.innerHTML=dayOptions(pr,cands);
   var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx);
   resEl.textContent=fmtReserve(stopMs-pr.start);
   saveBtn.disabled=!(stopMs>pr.start);
 }
 
-function wireRunning(){
-  document.querySelectorAll("[data-still]").forEach(function(b){b.onclick=function(){
-    var w=byId(b.getAttribute("data-still"));w.prCurrent.lastRunning=Date.now();save();renderRunning();};});
-  document.querySelectorAll("[data-stop]").forEach(function(b){b.onclick=function(){
-    var w=byId(b.getAttribute("data-stop"));w.prCurrent.stopped=true;save();renderRunning();};});
-  document.querySelectorAll("[data-back]").forEach(function(b){b.onclick=function(){
-    var w=byId(b.getAttribute("data-back"));w.prCurrent.stopped=false;save();renderRunning();};});
-  document.querySelectorAll("[data-discard]").forEach(function(b){b.onclick=function(){
-    if(confirm(tr("confirmDiscard"))){var w=byId(b.getAttribute("data-discard"));WatchData.markDeleted(state,"pr:"+w.prCurrent.start);delete w.prCurrent;save();renderAll();}};});
-  document.querySelectorAll("[data-hands]").forEach(function(inp){
-    inp.oninput=function(){var w=byId(inp.getAttribute("data-hands"));w.prCurrent.handsInput=inp.value;w.prCurrent.dayIdx=null;save();refreshStop(w);};});
-  document.querySelectorAll("[data-day]").forEach(function(s){s.onchange=function(){
-    var w=byId(s.getAttribute("data-day"));w.prCurrent.dayIdx=+s.value;save();refreshStop(w);};});
-  document.querySelectorAll("[data-save]").forEach(function(b){b.onclick=function(){
-    var w=byId(b.getAttribute("data-save"));var pr=w.prCurrent;var parsed=parseHHMM(pr.handsInput);
-    if(!parsed){alert(tr("invalidHands"));return;}
-    var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,parsed.h,parsed.m,pr.dayIdx);
-    if(!Array.isArray(w.powerReserve))w.powerReserve=[];
-    w.powerReserve.push({id:uid(),start:pr.start,stop:stopMs,offset:pr.offset,reserveMs:stopMs-pr.start,note:""});
-    WatchData.markDeleted(state,"pr:"+pr.start);delete w.prCurrent;save();renderAll();showNudge();};});
+/* green site clock (= watch time) and the running counter */
+function tickClock(){
+  var gc=document.getElementById("greenClock"),el=document.getElementById("elapsed");
+  function p(n){return (n<10?"0":"")+n;}
+  if(gc){var d=new Date();ledInto(gc,p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds()),"green");}
+  if(el){var w=activeWatch();
+    if(running(w)){var r=elapsedLED(Date.now()-w.prCurrent.start);
+      if(r.big)ledInto(el,r.text,"");else{el.className="led-text";el.textContent=r.text;}}}
 }
-function byId(id){return state.watches.find(function(w){return w.id===id;});}
 
+/* ===== history of the chosen watch ===== */
 function renderHistory(){
-  var sel=document.getElementById("histSel"),wrap=document.getElementById("histWrap");
-  var withHist=state.watches.filter(function(w){return Array.isArray(w.powerReserve)&&w.powerReserve.length;});
-  if(!withHist.length){sel.innerHTML="";sel.style.display="none";wrap.innerHTML='<div class="empty">'+tr("noHist")+'</div>';return;}
-  sel.style.display="";
-  var cur=sel.value;
-  sel.innerHTML=withHist.map(function(w){return '<option value="'+w.id+'">'+escapeHtml(w.name)+'</option>';}).join("");
-  if(withHist.some(function(w){return w.id===cur;}))sel.value=cur;
-  var w=withHist.find(function(x){return x.id===sel.value;})||withHist[0];
-  var list=w.powerReserve.slice().sort(function(a,b){return b.start-a.start;});
-  var html='<table><thead><tr><th>'+tr("thDate")+'</th><th>'+tr("thReserve")+'</th><th></th></tr></thead><tbody>';
+  var w=activeWatch(),wrap=document.getElementById("histWrap");
+  document.getElementById("histH2").innerHTML=escapeHtml(tr("histH2"))+watchSuffix(w);
+  var list=(w&&Array.isArray(w.powerReserve)?w.powerReserve:[]).slice().sort(function(a,b){return b.start-a.start;});
+  if(!list.length){wrap.innerHTML='<div class="empty">'+tr("noHist")+'</div>';return;}
+  var avg=list.reduce(function(a,m){return a+m.reserveMs;},0)/list.length;
+  var html='<p class="typical">'+tr("typical")+' <b>~'+fmtReserve(avg)+'</b> '+(list.length===1?tr("overOne"):tr("over",{n:list.length}))+'</p>'
+    +'<table><thead><tr><th>'+tr("thDate")+'</th><th>'+tr("thReserve")+'</th><th></th></tr></thead><tbody>';
   list.forEach(function(m){
     html+='<tr><td class="num">'+fmtDay(m.start)+'</td><td class="num">'+fmtReserve(m.reserveMs)+'</td>'
-      +'<td style="text-align:right"><button class="sm danger ghost" data-delh="'+m.id+'" data-delw="'+w.id+'">'+I18N[lang].discard+'</button></td></tr>';
+      +'<td style="text-align:right"><button class="sm danger ghost" data-delh="'+escapeHtml(m.id)+'">'+tr("del")+'</button></td></tr>';
   });
-  html+='</tbody></table>';
-  var avg=list.reduce(function(a,m){return a+m.reserveMs;},0)/list.length;
-  html+='<p style="font-size:12.5px;color:var(--muted);margin:10px 6px 0">'+tr("typical")+' <b style="font-family:\'Courier New\',monospace;color:var(--ink)">~'+fmtReserve(avg)+'</b> '+tr("over",{n:list.length})+'</p>';
-  wrap.innerHTML=html;
+  wrap.innerHTML=html+'</tbody></table>';
   wrap.querySelectorAll("[data-delh]").forEach(function(b){b.onclick=function(){
     if(!confirm(tr("confirmDelHist")))return;
-    var ww=byId(b.getAttribute("data-delw"));WatchData.markDeleted(state,b.getAttribute("data-delh"));ww.powerReserve=ww.powerReserve.filter(function(x){return x.id!==b.getAttribute("data-delh");});save();renderAll();};});
+    var id=b.getAttribute("data-delh");
+    WatchData.markDeleted(state,id);w.powerReserve=w.powerReserve.filter(function(x){return x.id!==id;});save();renderAll();};});
 }
 
-// Reminder after saving a measurement, only when a backup is due
+function renderGuide(){
+  var empty=!state.watches.length;
+  document.getElementById("guide").style.display=(empty||guideOpen)?"block":"none";
+  document.getElementById("guideClose").style.display=empty?"none":"inline-block";
+}
+
+/* ===== backup status line and reminder (same as the Rate Meter) ===== */
+function backupAgo(ms){
+  var a=WatchData.backupAge(ms);
+  return a.days===0?tr("bkToday")+", "+a.hm:a.days===1?tr("bkYesterday")+", "+a.hm:tr("bkDaysAgo",{n:a.days});
+}
+function renderBackup(){
+  var st=WatchData.backupStatus(state),html;
+  document.getElementById("bkDot").className="bkdot "+st.level;
+  document.getElementById("bkStatus").classList.toggle("idle",st.level==="idle");
+  if(st.level==="idle")html=escapeHtml(tr("bkIdle"));
+  else if(!st.last)html=tr("bkNever")+' <span class="mut">· '+(st.count===1?tr("bkOnlyHereOne"):tr("bkOnlyHereMany",{n:st.count}))+'</span>';
+  else if(!st.count)html=tr("bkDone")+" "+backupAgo(st.last.at)+(st.last.file?' <span class="mut">· '+escapeHtml(st.last.file)+'</span>':"");
+  else html=tr("bkLast")+" "+backupAgo(st.last.at)+' <span class="mut">· '+(st.count===1?tr("bkNewSinceOne"):tr("bkNewSinceMany",{n:st.count}))+'</span>';
+  document.getElementById("bkText").innerHTML=html;
+}
 function hideNudge(){var n=document.getElementById("bkNudge");n.style.display="none";n.innerHTML="";}
 function showNudge(){
   var st=WatchData.backupStatus(state),n=document.getElementById("bkNudge");
   if(st.level!=="due"){hideNudge();return;}
   var m=st.count===1?tr("bkOne"):tr("bkMany",{n:st.count}),msg;
-  if(st.last){
-    var a=WatchData.backupAge(st.last.at);
-    msg=tr("bkSince",{m:m,ago:a.days===0?tr("bkToday")+", "+a.hm:a.days===1?tr("bkYesterday")+", "+a.hm:tr("bkDaysAgo",{n:a.days})});
-  }else msg=tr(st.count===1?"bkNeverOne":"bkNeverMany",{m:m});
-  n.innerHTML='<span class="txt"><span class="ok">\u2713</span>'+tr("bkSaved")+" "+msg+'</span>'
+  if(st.last)msg=tr("bkSince",{m:m,ago:backupAgo(st.last.at)});
+  else msg=tr(st.count===1?"bkNeverOne":"bkNeverMany",{m:m});
+  n.innerHTML='<span class="txt"><span class="ok">✓</span>'+tr("bkSaved")+" "+msg+'</span>'
     +'<button class="primary sm" id="bkNudgeGo">'+tr("bkGo")+'</button>'
-    +'<button class="x" id="bkNudgeX" aria-label="'+tr("bkDismiss")+'" title="'+tr("bkDismiss")+'">\u00d7</button>';
+    +'<button class="x" id="bkNudgeX" aria-label="'+tr("bkDismiss")+'" title="'+tr("bkDismiss")+'">×</button>';
   n.style.display="";
-  document.getElementById("bkNudgeGo").onclick=function(){WatchData.downloadBackup(state);hideNudge();};
+  document.getElementById("bkNudgeGo").onclick=function(){WatchData.downloadBackup(state);hideNudge();renderBackup();};
   document.getElementById("bkNudgeX").onclick=hideNudge;
 }
-function renderAll(){applyStatic();renderStart();renderRunning();renderHistory();tickClock();}
-function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+function renderAll(){applyStatic();renderWatches();renderMeter();renderHistory();renderGuide();renderBackup();}
 
 function setTxt(id,txt){var el=document.getElementById(id);if(el)el.textContent=txt;}
 function applyStatic(){
   setTxt("title",tr("title"));
   setTxt("sub",tr("sub"));
-  setTxt("startLbl",tr("start"));
-  setTxt("woundBtn",tr("wound"));
-  setTxt("histH2",tr("histH2"));
-  setTxt("histSelLbl",tr("histSel"));
+  setTxt("watchSelLbl",tr("watchSelLbl"));
+  var wi=document.getElementById("watchInfo");wi.setAttribute("aria-label",tr("watchInfo"));wi.title=tr("watchInfo");
+  document.getElementById("newWatch").placeholder=tr("watchPlaceholder");
+  setTxt("addWatch",tr("add"));
+  setTxt("addCancel",tr("addCancel"));
+  setTxt("guideTitle",tr("guideTitle"));
+  setTxt("guideIntro",tr("guideIntro"));
+  ["gStep1","gStep2","gStep3","gStep4"].forEach(function(k){document.getElementById(k).innerHTML=tr(k);});
+  setTxt("guideNote",tr("guideNote"));
+  document.getElementById("helpBtn").setAttribute("aria-label",tr("guideTitle"));
+  setTxt("dataLink",tr("dataLink"));
   setTxt("banner",tr("banner"));
-  setTxt("linkHome",tr("linkHome"));
-  setTxt("linkMeter",tr("linkMeter"));
-  var g=document.getElementById("gears");if(g)g.innerHTML=tr("gears")+'<a href="/privacy/">'+tr("gearsLink")+'</a>';
+  document.getElementById("gears").innerHTML=tr("gears")+'<a href="/privacy/">'+tr("gearsLink")+'</a>';
+  if(memOnly)showNotice();
   document.documentElement.lang=lang;
 }
 
 /* ===== events ===== */
-document.getElementById("watchSel").onchange=tickClock;
-document.getElementById("histSel").onchange=renderHistory;
-document.getElementById("woundBtn").onclick=function(){
-  var w=selectedWatch();if(!w)return;
-  w.prCurrent={start:Date.now(),offset:0,lastRunning:null,stopped:false,handsInput:"",dayIdx:null};
-  save();renderAll();tickClock();
+document.getElementById("watchSel").onchange=function(e){
+  if(e.target.value===NEW_WATCH){startAdding();return;}
+  var w=byId(e.target.value);if(!w)return;
+  state.activeWatch=w.id;hideNudge();save();renderAll();
 };
-window.addEventListener("swclang",function(e){lang=e.detail;hideNudge();renderAll();tickClock();});
+document.getElementById("addWatch").onclick=addWatch;
+document.getElementById("newWatch").addEventListener("keydown",function(e){
+  if(e.key==="Enter")addWatch();
+  else if(e.key==="Escape"&&state.watches.length)closeAddForm();});
+document.getElementById("addCancel").onclick=closeAddForm;
+document.getElementById("helpBtn").onclick=function(){guideOpen=!guideOpen;renderGuide();if(guideOpen)document.getElementById("guide").scrollIntoView({behavior:"smooth",block:"nearest"});};
+document.getElementById("guideClose").onclick=function(){guideOpen=false;renderGuide();};
+window.addEventListener("swclang",function(e){lang=e.detail;hideNudge();renderAll();});
 // back/forward restores the page from the browser cache with the data as it was
 // then; read it again, or the next save would overwrite changes made elsewhere
 window.addEventListener("pageshow",function(e){
   if(!e.persisted)return;
-  state=load()||seed();if(!Array.isArray(state.watches))state.watches=[];renderAll();tickClock();
+  loadState();renderAll();
 });
 
 /* ===== init ===== */
-if(memOnly)showNotice();
 renderAll();
-tickClock();
 setInterval(tickClock,1000);
 </script>
 </body>
