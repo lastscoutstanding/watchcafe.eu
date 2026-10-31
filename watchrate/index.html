@@ -822,8 +822,10 @@ function drawCharts(w){
     }
     return pts;
   }).filter(function(s){return s.length;});
-  var tgSessions=tgOf(w);
-  var okRate=chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain,blocks);
+  // timegrapher sessions only within the shown period (as in the Viewer); without a
+  // rate point there is no rate chart, so a first measurement doesn't stack every session at one x
+  var tgSessions=tgOf(w).filter(function(s){return s.t>=tDomain[0]&&s.t<=tDomain[1];});
+  var okRate=rateSegs.length>0&&chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain,blocks);
   rw.style.display=okRate?"block":"none";
   rh.style.display=(okOff||okRate)?"block":"none";
   document.getElementById("tgLegend").style.display=(okRate&&tgSessions.length)?"block":"none";
