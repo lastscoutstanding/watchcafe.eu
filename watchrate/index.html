@@ -105,6 +105,12 @@
   th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
   td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   .empty{color:var(--muted);font-size:14px;padding:14px 2px}
+  .sessend{display:flex;justify-content:space-between;align-items:center;gap:8px 12px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin:0 0 6px}
+  .sessend b{color:var(--ink);font-weight:600}
+  .sessend.done{padding:9px 12px;border-radius:8px;background:#0e0e12;border:1px solid var(--border)}
+  .sessend button.dash{background:transparent;border-style:dashed;color:var(--muted)}
+  .sessend button.dash:hover{color:var(--ink)}
+  .sessend button.armed{color:#ff6b5e;border-color:#ff6b5e;border-style:solid}
   .tag{display:inline-block;background:#2e221c;color:#eda57f;border-radius:6px;font-size:11px;padding:2px 7px;margin-left:6px;vertical-align:1px;white-space:nowrap}
 
   .chart-wrap{background:#0e0e12;border-radius:12px;padding:14px 12px 10px;margin-top:14px}
@@ -178,7 +184,7 @@
   @media(max-width:600px){.card{padding:22px 16px 26px}.tgcmp{grid-template-columns:1fr 1fr}}
 </style>
   <script src="/nav.js" defer></script>
-  <script src="/watchdata.js?v=5"></script>
+  <script src="/watchdata.js?v=6"></script>
   <script src="sample.js?v=5"></script>
 </head>
 <body>
@@ -320,6 +326,7 @@
         </div>
       </div>
       <div id="rateSummary" class="hint" style="margin:0 0 6px"></div>
+      <div id="sessEnd" class="sessend" style="display:none"></div>
 
       <div class="chart-wrap" id="chartOffWrap" style="display:none">
         <p class="chart-title"><span id="chartOffTitle"></span><span class="cunit">(s)</span></p>
@@ -392,6 +399,9 @@ var I18N={
   grpAlign:"Align to your watch", grpRecord:"Record",
   alignHint:"Use the \u25b2/\u25bc arrows so the green clock matches your watch to the second, then record.",
   sessionLbl:"Session", allSessions:"All sessions", allSessionsC:"All sessions, gaps removed",
+  sessSince:function(d,n){return "Current session since <b>"+d+"</b> \u00b7 "+n+(n===1?" measurement":" measurements");},
+  endSess:"End session", endConfirm:"Confirm", undo:"Undo",
+  sessEnded:function(d){return "Session ended "+d+". Your next measurement starts a new session.";},
   nsHint:"Tick this if the watch was stopped and restarted, or reset to the correct time. The rate calculation then starts fresh from this measurement instead of counting the jump as drift.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Load sample data", clearSample:"Remove samples",
@@ -445,6 +455,9 @@ var I18N={
   grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
   alignHint:"Zet met de \u25b2/\u25bc pijltjes de groene klok gelijk aan je horloge tot op de seconde, en leg dan vast.",
   sessionLbl:"Sessie", allSessions:"Alle sessies", allSessionsC:"Alle sessies, zonder tussenpozen",
+  sessSince:function(d,n){return "Huidige sessie sinds <b>"+d+"</b> \u00b7 "+n+(n===1?" meting":" metingen");},
+  endSess:"Sessie afronden", endConfirm:"Bevestigen", undo:"Ongedaan maken",
+  sessEnded:function(d){return "Sessie afgerond op "+d+". Je volgende meting start een nieuwe sessie.";},
   nsHint:"Vink dit aan als het horloge heeft stilgestaan en opnieuw is gestart, of opnieuw gelijk is gezet. De gangberekening begint dan opnieuw vanaf deze meting in plaats van de sprong als afwijking mee te tellen.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Voorbeelddata laden", clearSample:"Voorbeelden verwijderen",
@@ -590,6 +603,9 @@ function renderMeter(){
   document.getElementById("meterBlock").style.opacity=w?"1":".45";
   document.getElementById("activeWatchName").textContent=w?w.name:t.chooseWatch;
   document.getElementById("recordBtn").disabled=!w;
+  var chk=document.getElementById("newStartChk"),s=w&&WatchData.rateSession(w);
+  if(s&&s.ended){chk.checked=true;chk.disabled=true;}
+  else if(chk.disabled){chk.checked=false;chk.disabled=false;}
   document.getElementById("offVal").textContent=signSec(currentOffset(),false);
 
   var r=rateOf(w);
@@ -615,7 +631,8 @@ function renderHistory(){
   var t=I18N[lang],w=activeWatch(),wrap=document.getElementById("historyWrap"),sum=document.getElementById("rateSummary");
   document.getElementById("histH2").innerHTML=escapeHtml(t.measurements)+watchSuffix(w);
   renderSessionPicker(w);
-  if(!w||!w.measurements.length){wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderTG(w||null);return;}
+  if(!w||!w.measurements.length){document.getElementById("sessEnd").style.display="none";wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderTG(w||null);return;}
+  renderSessEnd(w);
   var pts=selectedMeas(w).slice().sort(function(a,b){return b.t-a.t;}),r=rateOf(w);
   if(r){var rstr=(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" "+t.perDay;
     var since=r.partial?(" ("+t.sinceStart+")"):"";
@@ -631,6 +648,27 @@ function renderHistory(){
   wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");WatchData.markDeleted(state,id);w.measurements=w.measurements.filter(function(x){return x.id!==id;});save();renderAll();};});
   drawCharts(w);
   renderTG(w);
+}
+
+// "End session": an explicit flag (w.rateEnd), two steps like deleting; Undo while no new measurement exists
+var endArmed=false,endTimer=null;
+function renderSessEnd(w){
+  var t=I18N[lang],el=document.getElementById("sessEnd"),s=WatchData.rateSession(w);
+  if(!s){el.style.display="none";return;}
+  var f=function(ms){return new Date(ms).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",{day:"numeric",month:"short"});};
+  el.style.display="";
+  el.classList.toggle("done",s.ended);
+  if(s.ended){
+    el.innerHTML='<span>'+escapeHtml(t.sessEnded(f(w.rateEnd.at)))+'</span><button class="sm dash" id="sessUndo">'+t.undo+'</button>';
+    document.getElementById("sessUndo").onclick=function(){w.rateEnd={at:null,edited:Date.now()};save();renderAll();};
+    return;
+  }
+  el.innerHTML='<span>'+t.sessSince(f(s.start),s.n)+'</span><button class="sm dash'+(endArmed?' armed':'')+'" id="sessEndBtn">'+(endArmed?t.endConfirm:t.endSess)+'</button>';
+  document.getElementById("sessEndBtn").onclick=function(){
+    clearTimeout(endTimer);
+    if(!endArmed){endArmed=true;endTimer=setTimeout(function(){endArmed=false;renderSessEnd(activeWatch());},5000);renderSessEnd(w);return;}
+    endArmed=false;var now=Date.now();w.rateEnd={at:now,edited:now};save();renderAll();
+  };
 }
 
 function renderTG(w){
@@ -914,7 +952,7 @@ document.getElementById("watchSel").onchange=function(e){
   setWatchNote("");
   if(e.target.value===NEW_WATCH){startAdding();return;}
   var v=e.target.value,w=state.watches.find(function(x){return String(x.id)===v;});if(!w)return;
-  state.activeWatch=w.id;selectedSession="last";seedOffset();closeTG();save();renderAll();};
+  state.activeWatch=w.id;selectedSession="last";endArmed=false;seedOffset();closeTG();save();renderAll();};
 document.getElementById("addWatch").onclick=addWatch;
 document.getElementById("newWatch").addEventListener("keydown",function(e){
   if(e.key==="Enter")addWatch();

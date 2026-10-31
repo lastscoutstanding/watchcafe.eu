@@ -121,6 +121,8 @@ var WatchData=(function(){
         mine.sort(function(a,b){return a[L[1]]-b[L[1]];});
         if(mine.length||w[key])w[key]=mine;
       });
+      // "End session" flag: the latest change wins
+      if(iw&&iw.rateEnd&&(+iw.rateEnd.edited||0)>(+(w.rateEnd&&w.rateEnd.edited)||0)){w.rateEnd=iw.rateEnd;updated=true;}
       // running power-reserve measurement: the newest one that wasn't finished or discarded
       var runs=[w.prCurrent,iw&&iw.prCurrent].filter(function(p){return p&&p.start&&!gone("pr:"+p.start);});
       var run=runs.sort(function(a,b){return b.start-a.start;})[0];
@@ -214,9 +216,32 @@ var WatchData=(function(){
     return {rate:(n*sTO-sT*sO)/den*DAY,n:n,span:pts[n-1].t-pts[0].t};
   }
 
+  /* ----- session state -----
+     w.rateEnd = {at, edited}: "End session" in the Rate Meter. at = when it was
+     ended (null after Undo), edited = time of that change, so the latest wins
+     when merging. A measurement after `at` starts a new session, so the flag
+     only ends the session it was set on.
+     rateSession(w) = {start, last, n, gap, ended, quiet} for the last session,
+     or null without measurements. gap = median time between its measurements
+     (at least a day); quiet = no measurement for 3 gaps, so a quartz watch
+     measured monthly stays active for months. Quiet is a hint only: nothing
+     in the data changes. */
+  function ended(w){
+    var e=w&&w.rateEnd,pts=lastSession(w);
+    return !!(e&&e.at&&pts.length&&pts[pts.length-1].t<=e.at);
+  }
+  function rateSession(w,now){
+    var pts=lastSession(w),n=pts.length;if(!n)return null;
+    now=now||Date.now();
+    var gaps=[];for(var i=1;i<n;i++)gaps.push(pts[i].t-pts[i-1].t);
+    gaps.sort(function(a,b){return a-b;});
+    var gap=gaps.length?Math.max(DAY,gaps[gaps.length>>1]):DAY,last=pts[n-1].t;
+    return {start:pts[0].t,last:last,n:n,gap:gap,ended:ended(w),quiet:n>=3&&now-last>3*gap};
+  }
+
   return {getDevice:getDevice,setDevice:setDevice,guessDevice:guessDevice,
     backupName:backupName,backupData:backupData,
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
     markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,ensureIds:ensureIds,merge:merge,
-    currentRate:currentRate};
+    currentRate:currentRate,rateSession:rateSession};
 })();
