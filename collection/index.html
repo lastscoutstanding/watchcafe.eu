@@ -144,6 +144,23 @@
   .wear .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
   .wear h2{font-size:17px;margin:0}
   .wear .hint{font-size:13px;color:var(--muted)}
+  .wear{position:relative}
+  .wear.closable .hd{padding-right:30px}
+  .wear .x{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);padding:4px 8px;font-size:18px;line-height:1}
+  .wear .x:hover{color:var(--ink);background:none}
+  /* title row: the "Wearing today" pill sits right of the title, wraps below it on narrow screens */
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .top .ttl{flex:1 1 260px;min-width:0}
+  #wearPill{flex:0 1 auto;min-width:0;max-width:100%}
+  #wearPill:empty{display:none}
+  .tpill{display:inline-flex;align-items:center;gap:7px;max-width:100%;border-radius:999px;padding:7px 14px;font-size:13.5px;margin:4px 0 18px}
+  .tpill .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tpill .car{font-size:10px;opacity:.8}
+  .tpill.done{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  .tpill.done:hover{background:color-mix(in srgb,var(--accent) 30%,transparent)}
+  .tpill.todo{border-style:dashed;background:transparent;color:var(--muted)}
+  .tpill.todo:hover{color:var(--ink)}
+  .ovnudge .bknudge{margin:0 0 20px}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chips .chip{font-size:14px;padding:7px 14px}
   .chips .chip.on::before{content:"\2713  ";}
@@ -237,8 +254,10 @@
 
     <!-- ===== overview ===== -->
     <div id="vOverview">
-      <h1 id="title">Collection</h1>
-      <p class="sub" id="sub"></p>
+      <div class="top">
+        <div class="ttl"><h1 id="title">Collection</h1><p class="sub" id="sub"></p></div>
+        <span id="wearPill"></span>
+      </div>
       <div id="overview"></div>
       <div class="box" id="addBox" hidden>
         <div class="form">
@@ -327,7 +346,7 @@ var I18N={
   impBad:"Could not read this file as a valid backup.",
   devLbl:"This device:", devPrompt:"Name for this device (shown in backup files):",
   tabLog:"Logbook", tabWorn:"Worn",
-  wearToday:"Wearing today", wearOn:function(d){return "Worn on "+d;}, wearHint:"Tap to log, tap again to undo",
+  wearToday:"Wearing today", wearOn:function(d){return "Worn on "+d;}, wearHint:"Tap to log, tap again to undo", wearAsk:"Wearing today?", wearPill:function(n){return "Today: "+n;}, close:"Close",
   today:"Today", wornToday:"worn today", wornAgo:function(n){return n===1?"worn yesterday":"worn "+n+" d ago";},
   rotation:"Rotation, last 12 months", daysLogged:function(n){return n+(n===1?" day":" days")+" logged";},
   stDays:"days worn, last 12 months", stShare:"of the days you logged", stLast:"last worn", stStreak:"longest streak (days)",
@@ -395,7 +414,7 @@ var I18N={
   impBad:"Kon dit bestand niet lezen als geldige back-up.",
   devLbl:"Dit apparaat:", devPrompt:"Naam voor dit apparaat (komt in de back-upbestanden):",
   tabLog:"Logboek", tabWorn:"Gedragen",
-  wearToday:"Vandaag om", wearOn:function(d){return "Gedragen op "+d;}, wearHint:"Tik om vast te leggen, nog eens om ongedaan te maken",
+  wearToday:"Vandaag om", wearOn:function(d){return "Gedragen op "+d;}, wearHint:"Tik om vast te leggen, nog eens om ongedaan te maken", wearAsk:"Wat draag je vandaag?", wearPill:function(n){return "Vandaag: "+n;}, close:"Sluiten",
   today:"Vandaag", wornToday:"vandaag om", wornAgo:function(n){return n===1?"gisteren om":n+" d geleden om";},
   rotation:"Rotatie, afgelopen 12 maanden", daysLogged:function(n){return n+(n===1?" dag":" dagen")+" vastgelegd";},
   stDays:"dagen gedragen, afgelopen 12 maanden", stShare:"van de vastgelegde dagen", stLast:"laatst gedragen", stStreak:"langste reeks (dagen)",
@@ -577,12 +596,24 @@ function render(){
 }
 
 /* ===== overview ===== */
-// "Wearing today": one tap per watch, with the last seven days to fix a forgotten day
-function wearHTML(now){
+// "Wearing today": one tap per watch, with the last seven days to fix a forgotten day.
+// Open until a watch is logged for today; then it folds into the pill next to the title.
+function wearOpen(now){
+  return wearShow!==null?wearShow:!now.some(function(w){return wornOn(w,todayT());});
+}
+function wearPillHTML(now){
   if(!now.length)return "";
-  var t=T(),today=todayT(),day=wearDay||today,days=[];
+  var t=T(),worn=now.filter(function(w){return wornOn(w,todayT());}),car='<span class="car">'+(wearOpen(now)?"▲":"▼")+'</span>';
+  if(!worn.length)return '<button class="tpill todo" id="wearToggle">'+esc(t.wearAsk)+' '+car+'</button>';
+  var names=worn.map(function(w){return w.name;}).join(", ");
+  return '<button class="tpill done" id="wearToggle" title="'+esc(names)+'"><span class="nm">✓ '+esc(t.wearPill(names))+'</span>'+car+'</button>';
+}
+function wearHTML(now){
+  if(!now.length||!wearOpen(now))return "";
+  var t=T(),today=todayT(),day=wearDay||today,days=[],any=now.some(function(w){return wornOn(w,today);});
   for(var i=6;i>=0;i--)days.push(today-i*DAY);
-  return '<div class="wear"><div class="hd"><h2>'+esc(day===today?t.wearToday:t.wearOn(fmtWeekday(day,true)))+'</h2>'
+  return '<div class="wear'+(any?' closable':'')+'">'+(any?'<button class="x" id="wearClose" aria-label="'+esc(t.close)+'" title="'+esc(t.close)+'">×</button>':'')
+    +'<div class="hd"><h2>'+esc(day===today?t.wearToday:t.wearOn(fmtWeekday(day,true)))+'</h2>'
     +'<span class="hint">'+esc(t.wearHint)+'</span></div>'
     +'<div class="chips">'+now.map(function(w){
       return '<button class="chip'+(wornOn(w,day)?' on':'')+'" data-wear="'+esc(w.id)+'">'+esc(w.name)+'</button>';
@@ -608,11 +639,13 @@ function rotationHTML(){
     +'<div class="rleg">'+rows.map(function(r){return '<span><i style="background:'+r.c+'"></i>'+esc(r.w.name)+' '+r.n+'</span>';}).join("")+'</div></div>';
 }
 var showFormer=false,showNudge=false,wearDay=null; // wearDay: the day the chips apply to (null = today)
+var wearShow=null,wearTimer=null; // wearShow: panel open/closed by hand (null = open until today is logged)
 function renderOverview(){
   var t=T(),el=document.getElementById("overview");
   renderBackup();
   if(!state.watches.length){
     document.getElementById("addBox").hidden=true;
+    document.getElementById("wearPill").innerHTML="";
     el.innerHTML='<div class="empty"><p>'+esc(t.empty)+'</p><div class="row">'
       +'<button class="primary" id="emptyAdd">'+esc(t.addWatch)+'</button>'
       +'<button class="dash" id="emptySample">'+esc(t.loadSample)+'</button></div></div>';
@@ -636,14 +669,27 @@ function renderOverview(){
       +'<span class="facts">'+facts.join("")+'</span></a>';
   }
   var now=state.watches.filter(function(w){return !isFormer(w);}),former=state.watches.filter(isFormer);
-  el.innerHTML=wearHTML(now)+'<p class="lab">'+esc(t.count(now.length))+'</p><div class="wgrid">'
+  document.getElementById("wearPill").innerHTML=wearPillHTML(now);
+  var wp=document.getElementById("wearToggle");
+  if(wp)wp.onclick=function(){wearShow=!wearOpen(now);wearDay=null;renderOverview();};
+  // with the panel folded, the backup reminder goes under the title instead
+  el.innerHTML=wearHTML(now)+(!wearOpen(now)&&showNudge?'<div class="ovnudge">'+nudgeHTML()+'</div>':'')+'<p class="lab">'+esc(t.count(now.length))+'</p><div class="wgrid">'
     +now.map(card).join("")
     +'<button class="wc add" id="cardAdd"><span class="plus">+</span>'+esc(t.addWatch)+'</button></div>'
     +(former.length?'<div class="former"><button class="sm dash" id="formerBtn">'+esc(t.formerN(former.length))+'</button>'
       +'<div class="wgrid" id="formerGrid"'+(showFormer?'':' hidden')+'>'+former.map(card).join("")+'</div></div>':'')
     +rotationHTML();
   el.querySelectorAll("[data-wear]").forEach(function(b){
-    b.onclick=function(){toggleWorn(byId(b.dataset.wear),wearDay||todayT());showNudge=true;renderOverview();};
+    b.onclick=function(){
+      var day=wearDay||todayT(),first=day===todayT()&&!now.some(function(w){return wornOn(w,day);});
+      toggleWorn(byId(b.dataset.wear),day);showNudge=true;
+      // the first watch of today folds the panel, after a beat so the tick shows
+      if(first){
+        wearShow=true;clearTimeout(wearTimer);
+        wearTimer=setTimeout(function(){wearShow=false;wearDay=null;if(!currentId())renderOverview();},450);
+      }
+      renderOverview();
+    };
   });
   el.querySelectorAll("[data-bk]").forEach(function(b){
     b.onclick=function(){if(b.dataset.bk==="go")downloadBackup();else{nudgeOff=true;renderOverview();}};
@@ -651,6 +697,8 @@ function renderOverview(){
   el.querySelectorAll("[data-day]").forEach(function(b){
     b.onclick=function(){var d=+b.dataset.day;wearDay=d===todayT()?null:d;renderOverview();};
   });
+  var wc=document.getElementById("wearClose");
+  if(wc)wc.onclick=function(){wearShow=false;wearDay=null;renderOverview();};
   document.getElementById("cardAdd").onclick=openAdd;
   var fb=document.getElementById("formerBtn");
   if(fb)fb.onclick=function(){showFormer=!showFormer;document.getElementById("formerGrid").hidden=!showFormer;};
