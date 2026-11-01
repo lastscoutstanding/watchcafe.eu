@@ -218,3 +218,4 @@ Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowfla
 
 - [x] Oude `viewer.html` in de root verwijderd (commit b46e201); `watchrate/viewer.html` is de enige viewer.
 - [ ] Beslissen of een lichtere, beter leesbare variant nog gewenst is, nu alle thema's donker zijn.
+- [ ] Doorstart in de voorbeelddata: bijvoorbeeld de Seamaster 300M een doorstart geven (gelijkgezet midden in een sessie), zodat de zaagtand en de gemeenschappelijke gang te zien zijn. `sample.js` `?v=N` ophogen in Rate Meter, Viewer, Collection en rapport. Speedmaster '69 (+1,969) niet aanraken.
