@@ -84,6 +84,7 @@
   .meas{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   @media(max-width:700px){.meas{grid-template-columns:1fr}}
   .ms{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+  .ms .mh{display:flex;justify-content:space-between;align-items:center;gap:6px 10px;flex-wrap:wrap}
   .ms .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .ms .n{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
   .ms .n.prev{color:var(--muted)}
@@ -385,7 +386,7 @@ var I18N={
   sorts:{smart:"Smart",worn:"Last worn",most:"Most worn",bought:"Purchase date",price:"Price",brand:"Brand",name:"Name",service:"Service due",added:"Added"},
   apRate:function(a){return "Rate · "+a;}, apRateQuiet:function(a){return "Rate · last "+a+" ago";},
   apReserve:function(a){return "Reserve · "+a;}, apStopped:"Reserve · stopped",
-  ageDay:function(n){return "day "+n;}, unitH:"h", unitD:"d", unitW:"wk", unitM:"mo",
+  unitH:"h", unitD:"d", unitW:"wk", unitM:"mo",
   svcPill:"service due", soldPill:"sold or gifted", formerN:function(n){return "Former watches ("+n+")";},
   recent:"Recent", seeAll:"See all →", purchased:"Purchased", price:"Price",
   svc:{"":"—","3":"3 years","4":"4 years","5":"5 years","6":"6 years","7":"7 years","8":"8 years","10":"10 years"},
@@ -459,7 +460,7 @@ var I18N={
   sorts:{smart:"Slim",worn:"Laatst gedragen",most:"Meest gedragen",bought:"Aankoopdatum",price:"Prijs",brand:"Merk",name:"Naam",service:"Onderhoud",added:"Toegevoegd"},
   apRate:function(a){return "Gang · "+a;}, apRateQuiet:function(a){return "Gang · laatste "+a+" geleden";},
   apReserve:function(a){return "Reserve · "+a;}, apStopped:"Reserve · gestopt",
-  ageDay:function(n){return "dag "+n;}, unitH:"u", unitD:"d", unitW:"wk", unitM:"mnd",
+  unitH:"u", unitD:"d", unitW:"wk", unitM:"mnd",
   svcPill:"onderhoud nodig", soldPill:"verkocht of weggegeven", formerN:function(n){return "Eerdere horloges ("+n+")";},
   recent:"Recent", seeAll:"Alles bekijken →", purchased:"Gekocht", price:"Prijs",
   svc:{"":"—","3":"3 jaar","4":"4 jaar","5":"5 jaar","6":"6 jaar","7":"7 jaar","8":"8 jaar","10":"10 jaar"},
@@ -675,12 +676,21 @@ function ageStr(ms,hours){
   if(hours&&ms<3*DAY)return Math.max(0,Math.floor(ms/36e5))+" "+t.unitH;
   return d<14?d+" "+t.unitD:d<60?Math.round(d/7)+" "+t.unitW:Math.round(d/30.4)+" "+t.unitM;
 }
+// one pill each for the rate session and the power-reserve measurement, both with the
+// time since they started ("5 h", "6 d", "2 wk"); also used on the Overview tab
+function ratePill(a){
+  var t=T(),now=Date.now();
+  if(a.rate==="live")return '<span class="ap live"><i></i>'+esc(t.apRate(ageStr(now-a.s.start,true)))+'</span>';
+  if(a.rate==="quiet")return '<span class="ap quiet">'+esc(t.apRateQuiet(ageStr(now-a.s.last)))+'</span>';
+  return "";
+}
+function prPill(a){
+  var t=T();
+  return a.pr?'<span class="ap live"><i></i>'+esc(a.pr.stopped?t.apStopped:t.apReserve(ageStr(Date.now()-a.pr.start,true)))+'</span>':"";
+}
 function activityHTML(a){
-  var t=T(),now=Date.now(),out=[];
-  if(a.rate==="live"){var d=Math.floor((now-a.s.start)/DAY);out.push('<span class="ap live"><i></i>'+esc(t.apRate(d<14?t.ageDay(d+1):ageStr(now-a.s.start)))+'</span>');}
-  else if(a.rate==="quiet")out.push('<span class="ap quiet">'+esc(t.apRateQuiet(ageStr(now-a.s.last)))+'</span>');
-  if(a.pr)out.push('<span class="ap live"><i></i>'+esc(a.pr.stopped?t.apStopped:t.apReserve(ageStr(now-a.pr.start,true)))+'</span>');
-  return out.length?'<span class="actrow">'+out.join("")+'</span>':"";
+  var out=ratePill(a)+prPill(a);
+  return out?'<span class="actrow">'+out+'</span>':"";
 }
 // first amount in a free-text price: "€ 3.200" and "3,200" are 3200, "12,50" is 12.5
 function priceOf(w){
@@ -872,17 +882,18 @@ function renderDetail(id){
 function renderOv(w){
   var t=T(),r=WatchData.currentRate(w),pr=reserveHours(w),tg=(w.timegrapher||[]).slice().sort(function(a,b){return b.t-a.t;});
   var nMeas=(w.measurements||[]).length,prev=r?null:WatchData.previousRate(w),s=WatchData.rateSession(w);
-  function tile(k,n,d,link,linkTxt){
-    return '<div class="ms"><span class="k">'+esc(k)+'</span>'+n+'<span class="d">'+esc(d)+'</span>'
+  var a=activity(w);
+  function tile(k,n,d,link,linkTxt,pill){
+    return '<div class="ms"><span class="mh"><span class="k">'+esc(k)+'</span>'+(pill||"")+'</span>'+n+'<span class="d">'+esc(d)+'</span>'
       +(link?'<a href="'+link+'" data-open="'+link+'">'+esc(linkTxt)+'</a>':'')+'</div>';
   }
   document.getElementById("paneOv").innerHTML='<div class="meas">'
     +tile(t.rate,r?'<span class="n">'+fmtRate(r)+' '+t.perDay+'</span>'
         :prev?'<span class="n prev">'+fmtRate(prev)+' '+t.perDay+'</span>'
         :'<span class="n none">'+esc(nMeas?t.oneMeasF:t.rateNone)+'</span>',
-      r?t.rateD(r.n,humanSpan(r.span)):prev?t.ratePrev(fmtDate(prev.end),fmtDate(s.start)):(nMeas?t.oneMeas:""),"/watchrate/",t.openRM)
+      r?t.rateD(r.n,humanSpan(r.span)):prev?t.ratePrev(fmtDate(prev.end),fmtDate(s.start)):(nMeas?t.oneMeas:""),"/watchrate/",t.openRM,ratePill(a))
     +tile(t.reserve,pr?'<span class="n">~ '+pr.h+(lang==="nl"?" u":" h")+'</span>':'<span class="n none">'+esc(t.reserveNone)+'</span>',
-      pr?t.reserveD(pr.n):"","/powerreserve/",t.openPR)
+      pr?t.reserveD(pr.n):"","/powerreserve/",t.openPR,prPill(a))
     +tile(t.tg,tg.length?'<span class="n">'+esc(t.tgN(tg.length))+'</span>':'<span class="n none">'+esc(t.tgNone)+'</span>',
       tg.length?t.tgD(fmtDate(tg[0].t)):"","/watchrate/",t.openRM)
     +'</div>'
