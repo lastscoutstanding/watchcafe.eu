@@ -49,7 +49,8 @@ localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
 - `siouxWatchWearClosed`: dag (00:00 UTC, ms) waarop het blok "Wearing today" met de hand is gesloten; alleen die dag geldig.
 
 Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`): `{ version, activeWatch, watches: [...], deleted?, exportedFrom? }`.
-- Horloge: `{ id, name, measurements, timegrapher?, powerReserve?, prCurrent?, rateEnd?, info?, edited?, log?, worn? }`.
+- Horloge: `{ id, name, measurements, timegrapher?, powerReserve?, prCurrent?, rateEnd?, info?, edited?, log?, worn?, sample? }`.
+- `sample: true`: voorbeeldhorloge (zie Voorbeeldhorloges).
 - `rateEnd`: `{ at, edited }` van "End session" in de Rate Meter; `at` = null na Undo. Samenvoegen: hoogste `edited` wint.
 - Meting: `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
 - `info`: gegevens uit de Collection (`brand, model, ref, caliber, year, serial, caseSize, lugWidth, boxPapers, serviceYears`, alle vrije tekst, alleen ingevulde velden); `edited` = tijdstip van de laatste wijziging van naam of gegevens.
@@ -133,6 +134,14 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 - Timegrapher: "Timegrapher-sessie toevoegen" opent een grid (positie, gang, optioneel amplitude en beat error); posities van de vorige sessie staan klaar. Toont ruitjes in de grafiek, drie vergelijkingskaartjes en een sessielijst.
 - Sample-data: Omega Speedmaster '69 op precies +1,969 s/dag (maanlanding-easter-egg, niet aanpassen), Omega Seamaster 300M met drie sessies met gaten ertussen (toont `allc`; per sessie één positie: worn, dial up, worn, voor een rustige ganggrafiek), drie timegrapher-sessies en drie gangreservemetingen (~55 u), Tudor Black Bay 58 met drie sessies (+7,2, −4,5, ~+1,2), drie timegrapher-sessies en twee gangreservemetingen (~70 u), Ancre 17 Jewels (vintage) met één sessie, per positie een blok van twee dagen (DU +18, DD +24, CD −8, CL +3, worn +10) zodat de positietabel van de Viewer een duidelijke spreiding toont, Casio A300U als kwarts-referentie. Staat in `watchrate/sample.js` (`WatchSample.watches()`), gedeeld door Rate Meter en Viewer; bij wijziging `?v=N` ophogen in beide pagina's.
 
+## Voorbeeldhorloges
+
+- Laden kan alleen bij een lege lijst ("Show sample watches" in de Collection, "Load sample data" in de Rate Meter-gids). `WatchSample.watches()` zet `sample: true` op elk horloge.
+- Een voorbeeldhorloge blijft een voorbeeld, ook als je er metingen, gegevens of logboekregels aan toevoegt: het is nooit een echt horloge uit je collectie.
+- `WatchSample.isSample(w)`: de vlag, of (voor samples van vóór de vlag) een voorbeeldnaam plus minstens één van de eigen voorbeeldmetingen (id uit de inhoud). Een eigen horloge met dezelfde naam als een voorbeeld telt dus niet.
+- "Remove samples" (Rate Meter-gids, alleen zichtbaar als er voorbeelden zijn) en "Remove sample watches (N)" (gestippeld onder de kaarten in de Collection) verwijderen alleen voorbeeldhorloges, met tombstones; eigen horloges blijven. Vroeger wiste de knop álle horloges, en via de tombstones bij samenvoegen ook op andere apparaten.
+- In de Collection: feit "sample" op de kaart en pil "sample watch" naast de naam.
+
 ## Rapport
 
 - Tegel "Report"/"Rapport" in het blok "Your data" in de Collection, opent `watchrate/report.html` (terugknop naar de Collection). Leest `siouxWatchRateMeter`; zonder horloges toont hij de voorbeeldhorloges (met "sample data" in de kop).
@@ -170,7 +179,7 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 ## Power Reserve
 
 - Zelfde opzet als de Rate Meter: één horlogekeuze bovenaan (pulldown met "+ Add watch", i-knop naar de Collection, gedeelde `activeWatch`), dan een blok "Measuring — <horloge>" en de historie van datzelfde horloge. "?"-gids (staat open zonder horloges) en de back-upstatusregel zoals op de Rate Meter.
-- Het meetblok toont één genummerde stapgroep voor de stand van het gekozen horloge: 1 Opwinden en gelijkzetten (groene siteklok) + 2 Starten ("Opgewonden & gelijk"); daarna Loopt (LED-teller, "Loopt nog", "Gestopt") en Gestopt (wijzertijd + dag, Opslaan/Terug/Verwerpen), zonder nummer: na het starten zijn stap 1 en 2 weg, dus een 3 of 4 verwart. Tekst bij stap 1 zonder "then tap" (dat is stap 2).
+- Het meetblok toont één genummerde stapgroep voor de stand van het gekozen horloge: 1 Gelijkzetten en opwinden (groene siteklok; bewust eerst gelijkzetten, dan opwinden, beter voor het horloge) + 2 Starten ("Gelijk & opgewonden" / "Set & wound"); daarna Loopt (LED-teller, "Loopt nog", "Gestopt") en Gestopt (wijzertijd + dag, Opslaan/Terug/Verwerpen), zonder nummer: na het starten zijn stap 1 en 2 weg, dus een 3 of 4 verwart. Tekst bij stap 1 zonder "then tap" (dat is stap 2).
 - "Loopt nog" legt een ondergrens vast en lost de 12-uurs-ambiguïteit op. "Terug" herstelt een per ongeluk gestopte meting.
 - Bewust losgekoppeld van de Rate Meter-offset; opgeslagen metingen houden `offset: 0`.
 - Meerdere horloges tegelijk meten kan: elk horloge met een lopende meting krijgt een ● achter de naam in de pulldown. Bewust geen looptijd in de pulldown en geen lijst met alle lopende metingen; dat overzicht staat in de Collection.
