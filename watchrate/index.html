@@ -371,7 +371,7 @@ var I18N={
   offsetNow:"Offset now",
   rate:"Rate",
   perDay:"s/day",
-  position:"Position", note:"Note", optional:"optional", record:"Record measurement", recSaved:"Saved",
+  position:"Position", note:"Note", optional:"optional", record:"Record measurement", recSaved:"Recorded",
   newStart:"New start",
   measurements:"Measurements", measLog:"Measurement log", noMeasurements:"No measurements recorded yet.", needTwo:"Record at least 2 measurements to calculate the rate.",
   sinceStart:"since the last new start",
@@ -391,7 +391,7 @@ var I18N={
   bkNever:"Never backed up", bkOnlyHere:function(n){return n+(n===1?" item lives":" items live")+" only in this browser";},
   bkDone:"Backed up", bkLast:"Last backup", bkNewSince:function(n){return n+" new item"+(n===1?"":"s")+" since";},
   bkToday:"today", bkYesterday:"yesterday", bkDaysAgo:function(n){return n+" days ago";},
-  bkSaved:"Saved.", bkMeas:function(n){return n+" item"+(n===1?"":"s");},
+  bkSaved:"Recorded.", bkMeas:function(n){return n+" item"+(n===1?"":"s");},
   bkNudgeSince:function(m,ago){return "<b>"+m+"</b> since your last backup "+ago+".";},
   bkNudgeNever:function(m,n){return "<b>"+m+"</b> "+(n===1?"lives":"live")+" only in this browser.";}, bkDismiss:"Dismiss",
   banner:"\u00a9 2026 watchcafe.eu \u2014 info@watchcafe.eu",
@@ -427,7 +427,7 @@ var I18N={
   offsetNow:"Offset nu",
   rate:"Gang",
   perDay:"s/dag",
-  position:"Positie", note:"Notitie", optional:"optioneel", record:"Meting vastleggen", recSaved:"Opgeslagen",
+  position:"Positie", note:"Notitie", optional:"optioneel", record:"Meting vastleggen", recSaved:"Vastgelegd",
   newStart:"Nieuwe start",
   measurements:"Metingen", measLog:"Meetlog", noMeasurements:"Nog geen metingen vastgelegd.", needTwo:"Leg minstens 2 metingen vast om de gang te berekenen.",
   sinceStart:"sinds de laatste nieuwe start",
@@ -447,7 +447,7 @@ var I18N={
   bkNever:"Nog nooit een back-up gemaakt", bkOnlyHere:function(n){return n+(n===1?" item staat":" items staan")+" alleen in deze browser";},
   bkDone:"Back-up gemaakt", bkLast:"Laatste back-up", bkNewSince:function(n){return n+(n===1?" nieuw item":" nieuwe items")+" sindsdien";},
   bkToday:"vandaag", bkYesterday:"gisteren", bkDaysAgo:function(n){return n+" dagen geleden";},
-  bkSaved:"Opgeslagen.", bkMeas:function(n){return n+(n===1?" item":" items");},
+  bkSaved:"Vastgelegd.", bkMeas:function(n){return n+(n===1?" item":" items");},
   bkNudgeSince:function(m,ago){return "<b>"+m+"</b> sinds je laatste back-up van "+ago+".";},
   bkNudgeNever:function(m,n){return "<b>"+m+"</b> "+(n===1?"staat":"staan")+" alleen in deze browser.";}, bkDismiss:"Sluiten",
   banner:"\u00a9 2026 watchcafe.eu \u2014 info@watchcafe.eu",
@@ -1048,7 +1048,7 @@ document.getElementById("recordBtn").onclick=function(){
   document.getElementById("noteIn").value="";chk.checked=false;
   save();renderAll();showNudge();flashRecorded();
 };
-// Brief "✓ Saved" on the button as confirmation, width kept so nothing shifts
+// Brief "✓ Recorded" on the button as confirmation, width kept so nothing shifts
 var recFlashTimer=null;
 function flashRecorded(){
   var b=document.getElementById("recordBtn");
