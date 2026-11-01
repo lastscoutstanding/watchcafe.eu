@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Brand marks — watchcafe.eu</title>
+  <link rel="stylesheet" href="/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<script src="/nav.js" defer></script>
+<script src="/brands.js?v=1"></script>
+<style>
+  :root{
+    --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
+    --accent:#d96a41; --accent-d:#c25a36; --ink:#e9e7e2; --muted:#a09da6;
+    --nav-bg:#17171b; --nav-border:#2a2a31; --nav-hover:#22222a; --accent-glow:rgba(217,106,65,.7);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html{color-scheme:dark}
+  html,body{margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;padding:28px 16px 60px}
+  .wrap{max-width:948px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:30px 30px 34px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  @media(max-width:600px){.card{padding:22px 16px 26px}}
+  h1{color:var(--accent);font-size:clamp(20px,3vw,30px);font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+  h2{font-size:17px;margin:30px 0 12px}
+  h2:first-of-type{margin-top:0}
+  .lab{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+
+  input[type=text],select{font:inherit;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--ink);width:100%}
+  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 5px}
+  label.fld.req::after{content:" *";color:var(--accent)}
+  .hint{font-size:12px;color:var(--muted);margin:5px 0 0}
+  button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 14px;border:1px solid var(--border);background:#26262c;color:var(--ink);touch-action:manipulation}
+  button:hover{background:#30303a}
+  button:active{transform:scale(.98)}
+  button.primary{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  button.primary:hover{background:color-mix(in srgb,var(--accent) 30%,transparent);border-color:var(--accent)}
+  button.sm{padding:6px 10px;font-size:13px}
+  button.dash{background:transparent;border-style:dashed;color:var(--muted)}
+  button.dash:hover{color:var(--ink)}
+
+  /* tester: form left, preview right */
+  .tester{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.tester{grid-template-columns:1fr}}
+  .box{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;min-width:0}
+  .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .form .full{grid-column:1/-1}
+  @media(max-width:420px){.form{grid-template-columns:1fr}}
+  .formsep{grid-column:1/-1;border-top:1px dashed var(--border);margin:2px 0 0}
+  .formbtns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+  .warn{color:#eda57f}
+
+  .prev{display:flex;flex-direction:column;gap:14px}
+  .big{display:flex;align-items:center;gap:16px;min-height:72px}
+  .big .bword{font-size:22px}
+  .big .bword.italic{font-size:26px}
+  .big .bword{white-space:normal;overflow-wrap:anywhere}
+  .sizes{display:flex;align-items:flex-end;gap:14px}
+  .sizes span{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+  .line{display:flex;gap:8px;align-items:center}
+  .line code{flex:1;min-width:0;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;background:#26262c;border:1px solid var(--border);border-radius:8px;padding:8px 10px;overflow-x:auto;white-space:pre;color:var(--ink)}
+  .copied{font-size:12px;color:var(--accent);min-height:1em;margin:4px 0 0}
+
+  /* the mock card copies .wc from the Collection */
+  .wc{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;text-align:left;color:var(--ink);text-decoration:none;min-width:0;position:relative;overflow:hidden;max-width:300px}
+  .prev .wc{background:var(--card)}
+  .wc .brand{display:block;min-height:13px}
+  .wc .nm{font-weight:700;font-size:16px;overflow-wrap:anywhere}
+  .wc .md{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+  .wc .facts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+  .f{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:2px 9px;color:var(--muted);white-space:nowrap}
+  .f b{color:var(--ink);font-weight:600}
+
+  /* list of all brands */
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+  .bar input{flex:1 1 200px;width:auto}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:13px;border:1px solid var(--border);border-radius:999px;padding:5px 11px;background:transparent;color:var(--muted)}
+  .chip:hover{color:var(--ink);background:transparent}
+  .chip.active{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  .chip i{font-style:normal;opacity:.7}
+  .bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:820px){.bgrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.bgrid{grid-template-columns:1fr}}
+  .bt{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;text-align:left;color:var(--ink);min-width:0;font:inherit}
+  .bt:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:var(--card2)}
+  .bt.unk{border-style:dashed;background:transparent;cursor:default}
+  .bt.unk:hover{border-color:var(--border)}
+  .bt .txt{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+  .bt .meta{font-size:12px;color:var(--muted);overflow-wrap:anywhere;line-height:1.4}
+  .bt .meta b{color:var(--ink);font-weight:600}
+  .count{font-size:13px;color:var(--muted);margin:12px 0 0}
+  .foot{font-size:12px;color:var(--muted);margin:22px 0 0;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1 id="title">Brand marks</h1>
+    <p class="sub" id="sub"></p>
+
+    <h2 id="hTester"></h2>
+    <div class="tester">
+      <div class="box">
+        <div class="form">
+          <div class="full"><label class="fld req" for="tName" id="lName"></label><input type="text" id="tName" autocomplete="off"></div>
+          <div class="full"><label class="fld" for="tAliases" id="lAliases"></label><input type="text" id="tAliases" autocomplete="off"><p class="hint" id="hAliases"></p></div>
+          <div><label class="fld" for="tStyle" id="lStyle"></label><select id="tStyle"></select></div>
+          <div><label class="fld" for="tMono" id="lMono"></label><input type="text" id="tMono" maxlength="3" autocomplete="off"></div>
+          <p class="hint full" id="styleHint"></p>
+          <div class="formsep"></div>
+          <div><label class="fld" for="tWatch" id="lWatch"></label><input type="text" id="tWatch" autocomplete="off"></div>
+          <div><label class="fld" for="tModel" id="lModel"></label><input type="text" id="tModel" autocomplete="off"></div>
+        </div>
+        <p class="hint" id="match"></p>
+        <div class="formbtns"><button class="sm dash" id="tReset"></button></div>
+      </div>
+      <div class="box prev">
+        <div class="big" id="pBig"></div>
+        <div class="sizes" id="pSizes"></div>
+        <div><p class="lab" id="lCard"></p><div id="pCard"></div></div>
+        <div><p class="lab" id="lLine"></p>
+          <div class="line"><code id="pLine"></code><button class="sm primary" id="copyBtn"></button></div>
+          <p class="copied" id="copied"></p></div>
+      </div>
+    </div>
+
+    <h2 id="hList"></h2>
+    <div class="bar"><input type="text" id="q" autocomplete="off"><div class="chips" id="chips"></div></div>
+    <div class="bgrid" id="list"></div>
+    <p class="count" id="count"></p>
+    <p class="foot" id="foot"></p>
+  </div>
+</div>
+
+<script>
+var STYLES=["roman","didone","grotesk","wide","italic"];
+// shown greyed in the fields and used in the preview until something is typed
+var DEMO={name:"Minase",watch:"Divido",model:"VM03"};
+var TEXT={
+ en:{
+  title:"Brand marks",
+  sub:"Every brand in brands.txt as wordmark and dial badge, plus a tester for new lines.",
+  hTester:"Try a brand",name:"Name",aliases:"Aliases",aliasesHint:"Other spellings, separated by ; (optional)",
+  style:"Style",mono:"Monogram",monoPh:"1–3 characters",watch:"Watch name on the card",model:"Model · reference",
+  styles:{roman:"Roman — classic serif caps",didone:"Didone — bold high-contrast serif",grotesk:"Grotesk — bold sans caps",wide:"Wide — light, widely spaced caps",italic:"Italic — serif italic"},
+  noMono:"No monogram: the badge shows a dial at 10:10, like an unknown brand.",
+  reset:"Clear",card:"On a Collection card",line:"Line for brands.txt",copy:"Copy",copied:"Copied. Paste it into brands.txt, alphabetically.",copyFail:"Select the line and copy it by hand.",
+  eg:"e.g. ",
+  perDay:"s/day",worn:"worn today",
+  inList:function(n){return "Same as the line for "+n+" in brands.txt.";},
+  changed:function(n){return "Edits the line for "+n+" in brands.txt: replace that line.";},
+  clash:function(w,n){return "“"+w+"” already matches "+n+" in brands.txt.";},
+  isNew:"New brand: add the line to brands.txt.",
+  hList:"All brands",search:"Search name or alias",all:"All",
+  count:function(n,m){return n===m?n+" brands":n+" of "+m+" brands";},
+  none:"No brand matches.",
+  unknown:"Unknown brand",unknownMeta:"Not in brands.txt: plain grey wordmark, dial at 10:10.",
+  meta:{aliases:"Aliases",style:"Style",mono:"Monogram"},
+  pick:"Click a brand to load it into the tester.",
+  foot:"Wordmarks are set in a type style per brand, never redrawn logos. Matching ignores case, accents, spaces and punctuation (“&” = “and”). This page is not linked from the menu."
+ },
+ nl:{
+  title:"Merktekens",
+  sub:"Alle merken uit brands.txt als woordmerk en wijzerplaatbadge, plus een tester voor nieuwe regels.",
+  hTester:"Probeer een merk",name:"Naam",aliases:"Aliassen",aliasesHint:"Andere schrijfwijzen, gescheiden door ; (optioneel)",
+  style:"Stijl",mono:"Monogram",monoPh:"1–3 tekens",watch:"Horlogenaam op de kaart",model:"Model · referentie",
+  styles:{roman:"Roman — klassieke schreefkapitalen",didone:"Didone — vette schreef met veel contrast",grotesk:"Grotesk — vette schreefloze kapitalen",wide:"Wide — dunne, ruim gespatieerde kapitalen",italic:"Italic — cursieve schreef"},
+  noMono:"Geen monogram: de badge toont wijzers op 10:10, net als bij een onbekend merk.",
+  reset:"Wissen",card:"Op een Collection-kaart",line:"Regel voor brands.txt",copy:"Kopieer",copied:"Gekopieerd. Plak hem op alfabetische plek in brands.txt.",copyFail:"Selecteer de regel en kopieer hem met de hand.",
+  eg:"bijv. ",
+  perDay:"s/dag",worn:"vandaag om",
+  inList:function(n){return "Gelijk aan de regel voor "+n+" in brands.txt.";},
+  changed:function(n){return "Wijzigt de regel voor "+n+" in brands.txt: vervang die regel.";},
+  clash:function(w,n){return "‘"+w+"’ past al op "+n+" in brands.txt.";},
+  isNew:"Nieuw merk: voeg de regel toe aan brands.txt.",
+  hList:"Alle merken",search:"Zoek op naam of alias",all:"Alle",
+  count:function(n,m){return n===m?n+" merken":n+" van "+m+" merken";},
+  none:"Geen merk gevonden.",
+  unknown:"Onbekend merk",unknownMeta:"Niet in brands.txt: grijs woordmerk, wijzers op 10:10.",
+  meta:{aliases:"Aliassen",style:"Stijl",mono:"Monogram"},
+  pick:"Klik op een merk om het in de tester te laden.",
+  foot:"Woordmerken staan in een letterstijl per merk, nooit in nagetekende logo's. Bij het herkennen tellen hoofdletters, accenten, spaties en leestekens niet mee (“&” = “and”). Deze pagina staat niet in het menu."
+ }
+};
+var lang=(function(){try{return localStorage.getItem("siouxWatchRateMeterLang")||"en";}catch(e){return "en";}})();
+function T(){return TEXT[lang]||TEXT.en;}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function $(id){return document.getElementById(id);}
+
+var source=null,filter="",styleFilter="";
+
+/* ===== tester ===== */
+function testBrand(){
+  return {name:$("tName").value.trim(),
+    aliases:$("tAliases").value.split(";").map(function(s){return s.trim();}).filter(Boolean),
+    style:$("tStyle").value,mono:$("tMono").value.trim()};
+}
+// brands.txt format: "Name | aliases | style | monogram", with "| |" for no aliases
+function lineOf(b){
+  return (b.name+" | "+(b.aliases.length?b.aliases.join("; ")+" | ":"| ")+b.style+" | "+b.mono).trim();
+}
+function renderTester(){
+  var t=T(),b=testBrand(),show=b.name?b:{name:DEMO.name,aliases:[],style:b.style,mono:b.mono};
+  $("pBig").innerHTML=Brands.badge(show,64)+Brands.wordmark(show);
+  $("pSizes").innerHTML=[40,28,20].map(function(s){return '<span>'+Brands.badge(show,s)+s+' px</span>';}).join("");
+  var nm=$("tWatch").value.trim()||DEMO.watch,md=$("tModel").value.trim();
+  $("pCard").innerHTML='<div class="wc"><span class="brand">'+Brands.wordmark(show)+'</span>'
+    +'<span class="nm">'+esc(nm)+'</span>'+(md?'<span class="md">'+esc(md)+'</span>':'')
+    +'<span class="facts"><span class="f"><b>+1.9</b> '+esc(t.perDay)+'</span><span class="f">'+esc(t.worn)+'</span></span></div>';
+  $("pLine").textContent=lineOf(show);
+  $("styleHint").textContent=t.styles[b.style]+(b.mono?"":" · "+t.noMono);
+  $("copied").textContent="";
+  // does the name or an alias already match a brand in the list?
+  var msg="",cls="";
+  if(Brands.loaded&&b.name){
+    var hit=null,word="";
+    [b.name].concat(b.aliases).some(function(n){var x=Brands.find(n);if(x&&x!==source){hit=x;word=n;}return !!hit;});
+    if(hit){msg=t.clash(word,hit.name);cls="warn";}
+    else if(source)msg=lineOf(b)===lineOf(source)?t.inList(source.name):t.changed(source.name);
+    else msg=t.isNew;
+  }
+  $("match").textContent=msg;$("match").className="hint"+(cls?" "+cls:"");
+}
+function loadBrand(b){
+  source=b;
+  $("tName").value=b?b.name:"";$("tAliases").value=b?b.aliases.join("; "):"";
+  $("tStyle").value=b?b.style:"roman";$("tMono").value=b?b.mono:"";
+  renderTester();
+}
+function copyLine(){
+  var t=T(),txt=$("pLine").textContent;
+  function fail(){$("copied").textContent=t.copyFail;var r=document.createRange();r.selectNodeContents($("pLine"));var s=getSelection();s.removeAllRanges();s.addRange(r);}
+  if(!$("tName").value.trim()){$("tName").focus();return;}
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(txt).then(function(){$("copied").textContent=t.copied;},fail);
+  else fail();
+}
+
+/* ===== list ===== */
+function norm(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();}
+function renderList(){
+  var t=T(),all=Brands.list(),q=norm(filter.trim());
+  var counts={};STYLES.forEach(function(s){counts[s]=0;});all.forEach(function(b){counts[b.style]=(counts[b.style]||0)+1;});
+  $("chips").innerHTML='<button class="chip'+(styleFilter?'':' active')+'" data-style="">'+esc(t.all)+'</button>'
+    +STYLES.map(function(s){return '<button class="chip'+(styleFilter===s?' active':'')+'" data-style="'+s+'">'+s+' <i>'+counts[s]+'</i></button>';}).join("");
+  $("chips").querySelectorAll("button").forEach(function(c){c.onclick=function(){styleFilter=c.dataset.style;renderList();};});
+  var rows=all.filter(function(b){
+    if(styleFilter&&b.style!==styleFilter)return false;
+    return !q||[b.name].concat(b.aliases).some(function(n){return norm(n).indexOf(q)>=0;});
+  });
+  $("list").innerHTML=rows.map(function(b){
+    var i=all.indexOf(b);
+    return '<button class="bt" data-i="'+i+'">'+Brands.badge(b,40)+'<span class="txt">'+Brands.wordmark(b)
+      +'<span class="meta">'+(b.aliases.length?t.meta.aliases+': <b>'+esc(b.aliases.join("; "))+'</b><br>':'')
+      +t.meta.style+': <b>'+esc(b.style)+'</b> · '+t.meta.mono+': <b>'+esc(b.mono||"–")+'</b></span></span></button>';
+  }).join("")
+    +(!q&&!styleFilter?'<div class="bt unk">'+Brands.badge(null,40)+'<span class="txt">'+Brands.wordmark(null,t.unknown)
+      +'<span class="meta">'+esc(t.unknownMeta)+'</span></span></div>':'');
+  $("list").querySelectorAll(".bt[data-i]").forEach(function(el){
+    el.onclick=function(){loadBrand(all[+el.dataset.i]);$("hTester").scrollIntoView({behavior:"smooth"});};
+  });
+  $("count").textContent=rows.length?t.count(rows.length,all.length)+" · "+t.pick:t.none;
+}
+
+/* ===== static texts ===== */
+function applyLang(){
+  var t=T(),cur=$("tStyle").value||"roman";
+  document.documentElement.lang=lang;
+  ["title","sub","hTester","hList","foot"].forEach(function(k){$(k).textContent=t[k];});
+  $("lName").textContent=t.name;$("lAliases").textContent=t.aliases;$("hAliases").textContent=t.aliasesHint;
+  $("lStyle").textContent=t.style;$("lMono").textContent=t.mono;$("lWatch").textContent=t.watch;$("lModel").textContent=t.model;
+  $("tName").placeholder=t.eg+DEMO.name;$("tMono").placeholder=t.monoPh;$("tWatch").placeholder=t.eg+DEMO.watch;$("tModel").placeholder=t.eg+DEMO.model;
+  $("tStyle").innerHTML=STYLES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join("");$("tStyle").value=cur;
+  $("tReset").textContent=t.reset;$("lCard").textContent=t.card;$("lLine").textContent=t.line;$("copyBtn").textContent=t.copy;
+  $("q").placeholder=t.search;
+  document.title=t.title+" — watchcafe.eu";
+}
+
+["tName","tAliases","tMono","tWatch","tModel"].forEach(function(id){$(id).addEventListener("input",renderTester);});
+$("tStyle").onchange=renderTester;
+$("tReset").onclick=function(){loadBrand(null);$("tWatch").value="";$("tModel").value="";renderTester();$("tName").focus();};
+$("copyBtn").onclick=copyLine;
+$("q").addEventListener("input",function(){filter=$("q").value;renderList();});
+window.addEventListener("swcbrands",function(){renderList();renderTester();});
+window.addEventListener("swclang",function(e){lang=e.detail;applyLang();renderList();renderTester();});
+
+applyLang();
+renderTester();
+if(Brands.loaded)renderList();
+</script>
+</body>
+</html>
