@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/brands.js?v=1"></script>
+<script src="/brands.js?v=2"></script>
 <style>
   :root{
     --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -69,8 +69,8 @@
 
   /* the same brand in every style, side by side; click one to pick it */
   .allst{margin-top:18px}
-  .sgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-  @media(max-width:860px){.sgrid{grid-template-columns:repeat(3,1fr)}}
+  .sgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  @media(max-width:960px){.sgrid{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:520px){.sgrid{grid-template-columns:1fr 1fr}}
   .st{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;min-width:0;font:inherit;color:var(--ink)}
   .st:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:var(--card2)}
@@ -134,7 +134,7 @@
         <div class="formbtns"><button class="sm dash" id="tReset"></button></div>
       </div>
       <div class="box prev">
-        <div class="big" id="pBig"></div>
+        <div class="big led-dim" id="pBig"></div>
         <div class="sizes" id="pSizes"></div>
         <div><p class="lab" id="lCard"></p><div id="pCard"></div></div>
         <div><p class="lab" id="lLine"></p>
@@ -154,7 +154,7 @@
 </div>
 
 <script>
-var STYLES=["roman","didone","grotesk","wide","italic"];
+var STYLES=["roman","didone","grotesk","wide","italic","led"];
 // shown greyed in the fields and used in the preview until something is typed
 var DEMO={name:"Minase",watch:"Divido",model:"VM03"};
 var TEXT={
@@ -163,8 +163,9 @@ var TEXT={
   sub:"Every brand in brands.txt as wordmark and dial badge, plus a tester for new lines.",
   hTester:"Try a brand",name:"Name",aliases:"Aliases",aliasesHint:"Other spellings, separated by ; (optional)",
   style:"Style",mono:"Monogram",monoPh:"1–3 characters",watch:"Watch name on the card",model:"Model · reference",
-  styles:{roman:"Roman — classic serif caps",didone:"Didone — bold high-contrast serif",grotesk:"Grotesk — bold sans caps",wide:"Wide — light, widely spaced caps",italic:"Italic — serif italic"},
+  styles:{roman:"Roman — classic serif caps",didone:"Didone — bold high-contrast serif",grotesk:"Grotesk — bold sans caps",wide:"Wide — light, widely spaced caps",italic:"Italic — serif italic",led:"LED — 14-segment display, like the clock"},
   noMono:"No monogram: the badge shows a dial at 10:10, like an unknown brand.",
+  ledFallback:"The segments can't show every letter of this name, so the wordmark falls back to grotesk.",
   allStyles:"In every style · click to pick",reset:"Clear",card:"On a Collection card",line:"Line for brands.txt",copy:"Copy",copied:"Copied. Paste it into brands.txt, alphabetically.",copyFail:"Select the line and copy it by hand.",
   eg:"e.g. ",
   perDay:"s/day",worn:"worn today",
@@ -185,8 +186,9 @@ var TEXT={
   sub:"Alle merken uit brands.txt als woordmerk en wijzerplaatbadge, plus een tester voor nieuwe regels.",
   hTester:"Probeer een merk",name:"Naam",aliases:"Aliassen",aliasesHint:"Andere schrijfwijzen, gescheiden door ; (optioneel)",
   style:"Stijl",mono:"Monogram",monoPh:"1–3 tekens",watch:"Horlogenaam op de kaart",model:"Model · referentie",
-  styles:{roman:"Roman — klassieke schreefkapitalen",didone:"Didone — vette schreef met veel contrast",grotesk:"Grotesk — vette schreefloze kapitalen",wide:"Wide — dunne, ruim gespatieerde kapitalen",italic:"Italic — cursieve schreef"},
+  styles:{roman:"Roman — klassieke schreefkapitalen",didone:"Didone — vette schreef met veel contrast",grotesk:"Grotesk — vette schreefloze kapitalen",wide:"Wide — dunne, ruim gespatieerde kapitalen",italic:"Italic — cursieve schreef",led:"LED — 14-segmentdisplay, zoals de klok"},
   noMono:"Geen monogram: de badge toont wijzers op 10:10, net als bij een onbekend merk.",
+  ledFallback:"De segmenten kunnen niet elke letter van deze naam tonen, dus valt het woordmerk terug op grotesk.",
   allStyles:"In elke stijl · klik om te kiezen",reset:"Wissen",card:"Op een Collection-kaart",line:"Regel voor brands.txt",copy:"Kopieer",copied:"Gekopieerd. Plak hem op alfabetische plek in brands.txt.",copyFail:"Selecteer de regel en kopieer hem met de hand.",
   eg:"bijv. ",
   perDay:"s/dag",worn:"vandaag om",
@@ -235,7 +237,8 @@ function renderTester(){
   }).join("");
   $("pStyles").querySelectorAll(".st").forEach(function(el){el.onclick=function(){$("tStyle").value=el.dataset.style;renderTester();};});
   $("pLine").textContent=lineOf(show);
-  $("styleHint").textContent=t.styles[b.style]+(b.mono?"":" · "+t.noMono);
+  $("styleHint").textContent=t.styles[b.style]+(b.mono?"":" · "+t.noMono)
+    +(b.style==="led"&&Brands.wordmark(show).indexOf("led")<0?" · "+t.ledFallback:"");
   $("copied").textContent="";
   // does the name or an alias already match a brand in the list?
   var msg="",cls="";

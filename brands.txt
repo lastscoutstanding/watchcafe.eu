@@ -4,7 +4,8 @@
 #   aliases   other spellings, separated by ;  (optional)
 #   style     roman (classic serif caps), didone (bold high-contrast serif caps),
 #             grotesk (bold sans caps), wide (light, widely spaced caps),
-#             italic (serif italic)
+#             italic (serif italic), led (14-segment LED display, like the
+#             clock; names with letters it can't show fall back to grotesk)
 #   monogram  1-3 characters in the dial badge
 # Matching ignores case, accents, spaces and punctuation ("&" = "and").
 # Brands not on this list get a plain wordmark and a dial at 10:10.
