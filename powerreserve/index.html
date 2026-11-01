@@ -217,7 +217,7 @@ var I18N={
   gStep4:"<b>Once it stops</b> — tap “Stopped”, enter where the hands are and save.",
   guideNote:"The reserve is the time from winding to the moment the hands stopped, so you don’t have to catch it stopping.",
   grpWind:"Wind and set", grpStart:"Start", grpRunning:"Running", grpStopped:"Stopped — read the hands",
-  greenTxt:"Wind your watch fully, set it to this clock, then tap.",
+  greenTxt:"Wind your watch fully and set it to this clock.",
   wound:"Wound & set",
   elapsed:"Elapsed since fully wound",
   stillRunning:"Still running", stopped:"Stopped",
@@ -255,7 +255,7 @@ var I18N={
   gStep4:"<b>Als het stilstaat</b> — tik op “Gestopt”, vul in waar de wijzers staan en sla op.",
   guideNote:"De gangreserve is de tijd van opwinden tot het moment dat de wijzers stilvielen, dus je hoeft er niet bij te zijn als het stopt.",
   grpWind:"Opwinden en gelijkzetten", grpStart:"Starten", grpRunning:"Loopt", grpStopped:"Gestopt — lees de wijzers af",
-  greenTxt:"Wind je horloge volledig op, zet het gelijk aan deze klok en tik dan.",
+  greenTxt:"Wind je horloge volledig op en zet het gelijk aan deze klok.",
   wound:"Opgewonden & gelijk",
   elapsed:"Verstreken sinds volledig opgewonden",
   stillRunning:"Loopt nog", stopped:"Gestopt",
@@ -412,10 +412,11 @@ function addWatch(){var inp=document.getElementById("newWatch");var name=inp.val
   var w={id:uid(),name:name,measurements:[]};state.watches.push(w);state.activeWatch=w.id;
   adding=false;inp.value="";save();renderAll();}
 
-/* ===== meter: one step group for the state of the chosen watch ===== */
+/* ===== meter: one step group for the state of the chosen watch =====
+   Only the two start steps are numbered; once running, the earlier steps are gone. */
 function watchSuffix(w){return ' &mdash; <span class="wname">'+(w?escapeHtml(w.name):tr("chooseWatch"))+'</span>';}
 function grp(n,title,meta,body){
-  return '<div class="grp"><div class="grp-h"><span class="grp-n">'+n+'</span><span>'+title+'</span>'
+  return '<div class="grp"><div class="grp-h">'+(n?'<span class="grp-n">'+n+'</span>':'')+'<span>'+title+'</span>'
     +(meta?'<span class="meta">'+meta+'</span>':'')+'</div>'+body+'</div>';
 }
 function renderMeter(){
@@ -434,7 +435,7 @@ function renderMeter(){
       hideNudge();save();renderAll();
     };
   }else if(!pr.stopped){
-    box.innerHTML=grp(3,tr("grpRunning"),escapeHtml(tr("woundAt",{d:fmtDT(pr.start)})),
+    box.innerHTML=grp(0,tr("grpRunning"),escapeHtml(tr("woundAt",{d:fmtDT(pr.start)})),
         '<div class="panel"><p class="plab">'+tr("elapsed")+'</p><div class="led" id="elapsed"></div></div>'
         +'<div class="btns" style="margin-top:14px"><button id="stillBtn">'+tr("stillRunning")+'</button><button id="stopBtn">'+tr("stopped")+'</button></div>'
         +(pr.lastRunning?'<p class="hint" style="text-align:center">'+tr("lastConfirmed",{d:fmtDT(pr.lastRunning)})+'</p>':''));
@@ -443,7 +444,7 @@ function renderMeter(){
   }else{
     var parsed=parseHHMM(pr.handsInput);
     var cands=parsed?stopCandidates(pr.start,pr.offset,parsed.h,parsed.m):[];
-    box.innerHTML=grp(4,tr("grpStopped"),escapeHtml(tr("woundAt",{d:fmtDT(pr.start)})),
+    box.innerHTML=grp(0,tr("grpStopped"),escapeHtml(tr("woundAt",{d:fmtDT(pr.start)})),
         '<div class="row" style="align-items:flex-end">'
         +'<div style="flex:1 1 120px"><label class="fld" for="handsIn">'+tr("handsAt")+'</label><input type="time" id="handsIn" value="'+escapeHtml(pr.handsInput||"")+'"></div>'
         +'<div style="flex:1 1 120px"><label class="fld" for="daySel">'+tr("day")+'</label><select id="daySel"'+(cands.length?'':' disabled')+'>'+dayOptions(pr,cands)+'</select></div>'
