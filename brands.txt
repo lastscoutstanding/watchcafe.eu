@@ -52,6 +52,7 @@ Louis Erard | | roman | LE
 Luminox | | grotesk | L
 Maurice Lacroix | | roman | ML
 MB&F | | wide | MBF
+MeisterSinger | meister; singer | didone | MS
 Mido | | grotesk | M
 Montblanc | Mont Blanc | wide | M
 Movado | | wide | M
