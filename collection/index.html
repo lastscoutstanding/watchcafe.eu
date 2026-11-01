@@ -1338,6 +1338,18 @@ window.addEventListener("swcbrands",function(){if(!currentId())renderOverview();
 window.addEventListener("swclang",function(e){lang=e.detail;closeImport();applyLang();render();});
 
 reload();
+// /collection/?samples (hidden Tools menu, for testing): adds the sample watches next to
+// your own, once; "Remove sample watches" takes them out again
+if(/[?&]samples\b/.test(location.search)){
+  if(!state.watches.some(WatchSample.isSample)){
+    var added=WatchSample.watches().map(function(w){w.id=uid();return w;});
+    WatchData.ensureIds(added);
+    state.watches=state.watches.concat(added);
+    if(!state.watches.some(function(w){return w.id===state.activeWatch;}))state.activeWatch=added[0].id;
+    save();
+  }
+  history.replaceState(null,"",location.pathname+location.hash);
+}
 applyLang();
 render();
 // /collection/?backup (from the Rate Meter) jumps to "Your data"

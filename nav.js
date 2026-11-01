@@ -15,7 +15,8 @@
   // Hidden tools: shown in the gear menu only after a right-click / ctrl-click
   // or a long press on the gear. Add one line per tool.
   var TOOLS = [
-    { title: "Brand marks",   url: "/collection/brands.html" }
+    { title: "Brand marks",   url: "/collection/brands.html" },
+    { title: "Add samples",   url: "/collection/?samples" }
   ];
   var LANGS = [ ["en","English"], ["nl","Nederlands"] ];
   var LKEY = "siouxWatchRateMeterLang";
