@@ -185,7 +185,7 @@
 </style>
   <script src="/nav.js" defer></script>
   <script src="/watchdata.js?v=7"></script>
-  <script src="sample.js?v=5"></script>
+  <script src="sample.js?v=6"></script>
 </head>
 <body>
 <div class="wrap">
@@ -405,6 +405,7 @@ var I18N={
   nsHint:"Tick this if the watch was stopped and restarted, or reset to the correct time. The rate calculation then starts fresh from this measurement instead of counting the jump as drift.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Load sample data", clearSample:"Remove samples",
+  confirmClearSample:function(n){return (n===1?"Remove the sample watch":"Remove the "+n+" sample watches")+", including anything you added to "+(n===1?"it":"them")+"? Your own watches stay.";},
   tgToggle:"Add session", tgToggleClose:"Close", tgDate:"Date", tgNote2:"Note", tgPos:"Position",
   tgRateH:"rate (s/day)", tgAmpH:"amplitude (\u00b0)", tgBeatH:"beat error (ms)",
   tgAddRow:"+ position", tgSave:"Save session", tgCancel:"Cancel",
@@ -461,6 +462,7 @@ var I18N={
   nsHint:"Vink dit aan als het horloge heeft stilgestaan en opnieuw is gestart, of opnieuw gelijk is gezet. De gangberekening begint dan opnieuw vanaf deze meting in plaats van de sprong als afwijking mee te tellen.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Voorbeelddata laden", clearSample:"Voorbeelden verwijderen",
+  confirmClearSample:function(n){return (n===1?"Het voorbeeldhorloge":"De "+n+" voorbeeldhorloges")+" verwijderen, inclusief wat je eraan hebt toegevoegd? Je eigen horloges blijven staan.";},
   tgToggle:"Sessie toevoegen", tgToggleClose:"Sluiten", tgDate:"Datum", tgNote2:"Notitie", tgPos:"Positie",
   tgRateH:"gang (s/dag)", tgAmpH:"amplitude (\u00b0)", tgBeatH:"beat error (ms)",
   tgAddRow:"+ positie", tgSave:"Sessie opslaan", tgCancel:"Annuleren",
@@ -855,8 +857,14 @@ function renderGuide(){
   var empty=state.watches.length===0;
   document.getElementById("guide").style.display=(empty||guideOpen)?"block":"none";
   document.getElementById("guideClose").style.display=empty?"none":"inline-block";
-  var sb=document.getElementById("sampleBtn");
-  if(sb)sb.textContent=empty?I18N[lang].loadSample:I18N[lang].clearSample;
+  sampleBtnText();
+}
+// "Load sample data" on an empty list, "Remove samples" while there are sample watches, else nothing
+function sampleBtnText(){
+  var sb=document.getElementById("sampleBtn");if(!sb)return;
+  var has=state.watches.some(WatchSample.isSample);
+  sb.parentNode.style.display=(!state.watches.length||has)?"":"none";
+  sb.textContent=state.watches.length?I18N[lang].clearSample:I18N[lang].loadSample;
 }
 function renderAll(){renderWatches();renderMeter();renderHistory();renderGuide();renderBackup();}
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
@@ -902,8 +910,7 @@ function applyLang(){
   document.getElementById("nsHint").textContent=t.nsHint;
   var tgOpen=document.getElementById("tgForm").style.display!=="none";
   document.getElementById("tgToggle").textContent=tgOpen?t.tgToggleClose:t.tgToggle;
-  var sb=document.getElementById("sampleBtn");
-  if(sb)sb.textContent=state.watches.length?t.clearSample:t.loadSample;
+  sampleBtnText();
   document.getElementById("tgLblDate").textContent=t.tgDate;
   document.getElementById("tgLblNote").textContent=t.tgNote2;
   document.getElementById("tgNote").placeholder=t.optional;
@@ -945,8 +952,13 @@ document.getElementById("sessionSel").onchange=function(e){selectedSession=e.tar
 
 document.getElementById("sampleBtn").onclick=function(){
   if(state.watches.length){
-    var msg=lang==="nl"?"Alle horloges verwijderen? (dit zijn de voorbeelden \u2014 of je eigen horloges als je die hebt toegevoegd)":"Remove all watches? (these are the samples \u2014 or your own if you added any)";
-    if(confirm(msg)){state.watches.forEach(function(w){WatchData.markWatchDeleted(state,w);});state.watches=[];state.activeWatch=null;seedOffset();closeTG();save();renderAll();}
+    // only sample watches go, with whatever was added to them; own watches stay
+    var samples=state.watches.filter(WatchSample.isSample);
+    if(!samples.length||!confirm(I18N[lang].confirmClearSample(samples.length)))return;
+    samples.forEach(function(w){WatchData.markWatchDeleted(state,w);});
+    state.watches=state.watches.filter(function(w){return samples.indexOf(w)<0;});
+    if(!state.watches.some(function(w){return w.id===state.activeWatch;}))state.activeWatch=state.watches.length?state.watches[0].id:null;
+    seedOffset();closeTG();save();renderAll();
   }else{
     state.watches=sampleWatches();WatchData.ensureIds(state.watches);state.activeWatch=state.watches[0].id;seedOffset();save();renderAll();
   }

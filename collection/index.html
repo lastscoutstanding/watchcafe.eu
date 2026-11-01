@@ -11,7 +11,7 @@
 
 <script src="/nav.js" defer></script>
 <script src="/watchdata.js?v=7"></script>
-<script src="/watchrate/sample.js?v=5"></script>
+<script src="/watchrate/sample.js?v=6"></script>
 <script src="/brands.js?v=1"></script>
 <style>
   :root{
@@ -343,7 +343,9 @@ var I18N={
   addWatch:"Add watch", add:"Add", cancel:"Cancel", save:"Save",
   name:"Name", namePh:"e.g. Speedy",
   empty:"No watches yet. Add your first one: a short name is all it needs, the details can wait.",
-  loadSample:"Show sample watches",
+  loadSample:"Show sample watches", sampleF:"sample", samplePill:"sample watch",
+  clearSamples:function(n){return "Remove sample watches ("+n+")";},
+  confirmClearSample:function(n){return (n===1?"Remove the sample watch":"Remove the "+n+" sample watches")+", including anything you added to "+(n===1?"it":"them")+"? Your own watches stay.";},
   noMeas:"no measurements yet", oneMeasF:"1 measurement", prevF:"previous", perDay:"s/day", reserveF:function(h){return h+" h reserve";},
   back:"← Collection", tabOv:"Overview", tabDet:"Details",
   dataH2:"Your data", exportBtn:"Back up now", importBtn:"Restore from backup…", shareBtn:"Share…",
@@ -417,7 +419,9 @@ var I18N={
   addWatch:"Horloge toevoegen", add:"Toevoegen", cancel:"Annuleren", save:"Opslaan",
   name:"Naam", namePh:"bijv. Speedy",
   empty:"Nog geen horloges. Voeg je eerste toe: een korte naam is genoeg, de gegevens kunnen later.",
-  loadSample:"Toon voorbeeldhorloges",
+  loadSample:"Toon voorbeeldhorloges", sampleF:"voorbeeld", samplePill:"voorbeeldhorloge",
+  clearSamples:function(n){return "Voorbeeldhorloges verwijderen ("+n+")";},
+  confirmClearSample:function(n){return (n===1?"Het voorbeeldhorloge":"De "+n+" voorbeeldhorloges")+" verwijderen, inclusief wat je eraan hebt toegevoegd? Je eigen horloges blijven staan.";},
   noMeas:"nog geen metingen", oneMeasF:"1 meting", prevF:"vorige", perDay:"s/dag", reserveF:function(h){return h+" u reserve";},
   back:"← Collectie", tabOv:"Overzicht", tabDet:"Gegevens",
   dataH2:"Je gegevens", exportBtn:"Back-up maken", importBtn:"Herstellen uit back-up…", shareBtn:"Delen…",
@@ -779,6 +783,7 @@ function renderOverview(){
     if(pr)facts.push('<span class="f">'+esc(t.reserveF(pr.h))+'</span>');
     if(sv&&sv.overdue)facts.push('<span class="f warn">'+esc(t.svcPill)+'</span>');
     var lw=lastWorn(w);
+    if(WatchSample.isSample(w))facts.push('<span class="f">'+esc(t.sampleF)+'</span>');
     if(lw&&!isFormer(w)){var ago=Math.round((todayT()-lw)/DAY);if(ago>=0)facts.push('<span class="f'+(ago===0?' worn':'')+'">'+esc(ago===0?t.wornToday:t.wornAgo(ago))+'</span>');}
     // the wordmark carries the brand, so the line below shows model and reference only
     var bw=window.Brands&&Brands.loaded?Brands.forWatch(w):null;
@@ -790,7 +795,7 @@ function renderOverview(){
       +activityHTML(a)
       +'<span class="facts">'+facts.join("")+'</span></a>';
   }
-  var now=state.watches.filter(function(w){return !isFormer(w);}),former=state.watches.filter(isFormer);
+  var now=state.watches.filter(function(w){return !isFormer(w);}),former=state.watches.filter(isFormer),samples=state.watches.filter(WatchSample.isSample);
   document.getElementById("wearPill").innerHTML=wearPillHTML(now);
   var wp=document.getElementById("wearToggle");
   if(wp)wp.onclick=function(){setWearShow(!wearOpen(now));renderOverview();};
@@ -802,6 +807,7 @@ function renderOverview(){
     +'<button class="wc add" id="cardAdd"><span class="plus">+</span>'+esc(t.addWatch)+'</button></div>'
     +(former.length?'<div class="former"><button class="sm dash" id="formerBtn">'+esc(t.formerN(former.length))+'</button>'
       +'<div class="wgrid" id="formerGrid"'+(showFormer?'':' hidden')+'>'+former.map(function(w){return card(w);}).join("")+'</div></div>':'')
+    +(samples.length?'<div class="former"><button class="sm dash" id="clearSamples">'+esc(t.clearSamples(samples.length))+'</button></div>':'')
     +rotationHTML();
   el.querySelectorAll("[data-wear]").forEach(function(b){
     b.onclick=function(){
@@ -830,6 +836,16 @@ function renderOverview(){
   };
   var fb=document.getElementById("formerBtn");
   if(fb)fb.onclick=function(){showFormer=!showFormer;document.getElementById("formerGrid").hidden=!showFormer;};
+  var cs=document.getElementById("clearSamples");
+  if(cs)cs.onclick=function(){if(confirm(t.confirmClearSample(samples.length)))clearSamples();};
+}
+// sample watches go with whatever was added to them; own watches stay
+function clearSamples(){
+  var gone=state.watches.filter(WatchSample.isSample);
+  gone.forEach(function(w){WatchData.markWatchDeleted(state,w);});
+  state.watches=state.watches.filter(function(w){return gone.indexOf(w)<0;});
+  if(!state.watches.some(function(w){return w.id===state.activeWatch;}))state.activeWatch=state.watches.length?state.watches[0].id:null;
+  save();render();
 }
 function openAdd(){
   var b=document.getElementById("addBox");b.hidden=false;
@@ -878,7 +894,7 @@ function renderDetail(id){
   document.getElementById("tabs").hidden=false;
   document.getElementById("dName").textContent=w.name;
   document.getElementById("dRef").textContent=refLine(w);
-  var pill=document.getElementById("dPill");pill.hidden=!isFormer(w);pill.textContent=t.soldPill;
+  var pill=document.getElementById("dPill"),smp=WatchSample.isSample(w);pill.hidden=!isFormer(w)&&!smp;pill.textContent=isFormer(w)?t.soldPill:t.samplePill;
   document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.dataset.tab===tab);});
   document.getElementById("paneOv").hidden=tab!=="ov";
   document.getElementById("paneLog").hidden=tab!=="log";

@@ -3,7 +3,9 @@
    each page assigns its own. Measurement, timegrapher and power reserve ids
    are derived from content (see WatchData.ensureIds). The Speedmaster runs at
    exactly +1.969 s/day (moon landing): leave it as it is. The info blocks
-   (brand, model, reference, caliber) and log entries show up in the Collection. */
+   (brand, model, reference, caliber) and log entries show up in the Collection.
+   Every sample watch carries sample:true and stays a sample, whatever is added
+   to it; "Remove samples" removes exactly those (see isSample). */
 var WatchSample=(function(){
   function watches(){return [
     {name:"Omega Speedmaster ’69",info:{brand:"Omega",model:"Speedmaster Professional",ref:"145.022-69",caliber:"861",year:"1969",serviceYears:"5"},log:[{t:1597363200000,type:"purchase",where:"Vintage dealer",cost:"€ 6,450",note:"Papers only"},{t:1678233600000,type:"service",where:"Independent watchmaker",cost:"€ 640",note:"Full overhaul, new mainspring and crystal"},{t:1717286400000,type:"strap",where:"Brown leather racing strap",cost:"€ 89",note:"Bracelet stored in the box"},{t:1790294400000,type:"event",where:"Watch Café, Sioux Labs",note:"On the timegrapher"}],measurements:[{t:1781661600000,offset:0.6,position:"dial_up",note:"set to time"},{t:1781787600000,offset:3.5,position:"worn"},{t:1781874000000,offset:5.5,position:"crown_down"},{t:1782007200000,offset:8.6,position:"dial_up"},{t:1782133200000,offset:11.4,position:"worn"},{t:1782219600000,offset:13.4,position:"crown_left"},{t:1782352800000,offset:16.3,position:"worn"},{t:1782478800000,offset:19.4,position:"dial_up"},{t:1782651600000,offset:23.1,position:"worn"},{t:1782698400000,offset:24.2,position:"crown_down"},{t:1782910800000,offset:29.1,position:"dial_up"},{t:1782997200000,offset:31.1,position:"worn"},{t:1783130400000,offset:34.1,position:"crown_left"},{t:1783342800000,offset:39,position:"worn"}],timegrapher:[{t:1781978400000,note:"moon-landing anniversary check",readings:[{position:"dial_up",rate:2,amplitude:295,beatError:0.1},{position:"crown_down",rate:1,amplitude:271,beatError:0.2},{position:"crown_left",rate:3,amplitude:264,beatError:0.2}]},{t:1783015200000,note:"",readings:[{position:"dial_up",rate:2,amplitude:289,beatError:0.1},{position:"crown_down",rate:1,amplitude:266,beatError:0.2}]}]},
@@ -29,5 +31,16 @@ var WatchSample=(function(){
     ws.forEach(function(w){w.worn.reverse();});
     return ws;
   }
-  return {watches:function(){return withWorn(watches());}};
+  // Samples loaded before the flag existed: a sample name plus at least one of
+  // that sample's own measurements (content-derived id, see WatchData.ensureIds)
+  var legacy=null;
+  function isSample(w){
+    if(!w)return false;
+    if(w.sample===true)return true;
+    if(!legacy){legacy={};watches().forEach(function(s){
+      legacy[s.name]={};s.measurements.forEach(function(m){legacy[s.name]["m"+m.t+"_"+m.offset]=1;});});}
+    var ids=legacy[w.name];
+    return !!ids&&(w.measurements||[]).some(function(m){return ids[m.id||("m"+m.t+"_"+m.offset)];});
+  }
+  return {watches:function(){return withWorn(watches()).map(function(w){w.sample=true;return w;});},isSample:isSample};
 })();
