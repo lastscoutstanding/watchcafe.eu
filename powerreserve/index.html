@@ -95,6 +95,7 @@
   .grp-h .meta{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400;font-size:12px}
   .btns{display:flex;gap:8px}
   .btns button{flex:1}
+  .hnote{color:var(--muted);font-size:13px}
   .saverow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px;margin-top:12px}
   .reserve{font-size:14px;color:var(--ink)}
   .reserve b{font-family:"Courier New",monospace;color:var(--amber)}
@@ -225,6 +226,7 @@ var I18N={
   lastConfirmed:"Last confirmed running: {d}",
   handsAt:"Hands at", day:"Day", auto:"(auto)",
   reserve:"Reserve:", save:"Save", discard:"Discard", back:"Back", del:"delete",
+  note:"Note", optional:"optional", thNote:"Note",
   histH2:"History",
   noHist:"No power-reserve measurements saved for this watch yet.",
   thDate:"Wound", thReserve:"Reserve", typical:"Typical:", over:"over {n} measurements", overOne:"from 1 measurement",
@@ -263,6 +265,7 @@ var I18N={
   lastConfirmed:"Laatst bevestigd lopend: {d}",
   handsAt:"Wijzers op", day:"Dag", auto:"(auto)",
   reserve:"Gangreserve:", save:"Opslaan", discard:"Verwerpen", back:"Terug", del:"verwijder",
+  note:"Notitie", optional:"optioneel", thNote:"Notitie",
   histH2:"Historie",
   noHist:"Nog geen gangreserve-metingen opgeslagen voor dit horloge.",
   thDate:"Opgewonden", thReserve:"Gangreserve", typical:"Typisch:", over:"uit {n} metingen", overOne:"uit 1 meting",
@@ -419,6 +422,15 @@ function grp(n,title,meta,body){
   return '<div class="grp"><div class="grp-h">'+(n?'<span class="grp-n">'+n+'</span>':'')+'<span>'+title+'</span>'
     +(meta?'<span class="meta">'+meta+'</span>':'')+'</div>'+body+'</div>';
 }
+// Note on a measurement: typed before the start (kept per watch until it starts), then
+// stored on prCurrent and editable while running and once stopped; saved with the result.
+var startNotes={};
+function noteField(id,val){
+  return '<div style="margin-top:12px"><label class="fld" for="'+id+'">'+tr("note")+'</label>'
+    +'<input type="text" id="'+id+'" maxlength="200" placeholder="'+escapeHtml(tr("optional"))+'" value="'+escapeHtml(val||"")+'"></div>';
+}
+// no rebuild on input, so typing never loses focus
+function bindNote(id,pr){document.getElementById(id).oninput=function(e){pr.note=e.target.value;save();};}
 function renderMeter(){
   var w=activeWatch(),box=document.getElementById("meter");
   document.getElementById("meterH2").innerHTML=escapeHtml(tr("measuringLabel"))+watchSuffix(w);
@@ -428,17 +440,24 @@ function renderMeter(){
     box.innerHTML=grp(1,tr("grpWind"),"",
         '<div class="panel"><div class="led green" id="greenClock"></div></div>'
         +'<p class="hint">'+tr("greenTxt")+'</p>')
-      +grp(2,tr("grpStart"),"",'<div class="row" style="justify-content:flex-end"><button class="primary" id="woundBtn"'+(w?'':' disabled')+'>'+tr("wound")+'</button></div>');
+      +grp(2,tr("grpStart"),"",'<div class="row" style="align-items:flex-end;gap:10px;flex-wrap:wrap">'
+        +'<div style="flex:1 1 220px">'+noteField("startNote",w&&startNotes[w.id]).replace('style="margin-top:12px"','')+'</div>'
+        +'<button class="primary" id="woundBtn" style="flex:none"'+(w?'':' disabled')+'>'+tr("wound")+'</button></div>');
+    document.getElementById("startNote").oninput=function(e){var ww=activeWatch();if(ww)startNotes[ww.id]=e.target.value;};
     document.getElementById("woundBtn").onclick=function(){
       var ww=activeWatch();if(!ww)return;
       ww.prCurrent={start:Date.now(),offset:0,lastRunning:null,stopped:false,handsInput:"",dayIdx:null};
+      if((startNotes[ww.id]||"").trim())ww.prCurrent.note=startNotes[ww.id].trim();
+      delete startNotes[ww.id];
       hideNudge();save();renderAll();
     };
   }else if(!pr.stopped){
     box.innerHTML=grp(0,tr("grpRunning"),escapeHtml(tr("woundAt",{d:fmtDT(pr.start)})),
         '<div class="panel"><p class="plab">'+tr("elapsed")+'</p><div class="led" id="elapsed"></div></div>'
         +'<div class="btns" style="margin-top:14px"><button id="stillBtn">'+tr("stillRunning")+'</button><button id="stopBtn">'+tr("stopped")+'</button></div>'
-        +(pr.lastRunning?'<p class="hint" style="text-align:center">'+tr("lastConfirmed",{d:fmtDT(pr.lastRunning)})+'</p>':''));
+        +(pr.lastRunning?'<p class="hint" style="text-align:center">'+tr("lastConfirmed",{d:fmtDT(pr.lastRunning)})+'</p>':'')
+        +noteField("runNote",pr.note));
+    bindNote("runNote",pr);
     document.getElementById("stillBtn").onclick=function(){pr.lastRunning=Date.now();save();renderMeter();};
     document.getElementById("stopBtn").onclick=function(){pr.stopped=true;save();renderMeter();};
   }else{
@@ -449,6 +468,7 @@ function renderMeter(){
         +'<div style="flex:1 1 120px"><label class="fld" for="handsIn">'+tr("handsAt")+'</label><input type="time" id="handsIn" value="'+escapeHtml(pr.handsInput||"")+'"></div>'
         +'<div style="flex:1 1 120px"><label class="fld" for="daySel">'+tr("day")+'</label><select id="daySel"'+(cands.length?'':' disabled')+'>'+dayOptions(pr,cands)+'</select></div>'
         +'</div>'
+        +noteField("stopNote",pr.note)
         +'<div class="saverow"><span class="reserve">'+tr("reserve")+' <b id="resVal">—</b></span>'
         +'<div style="display:flex;gap:8px"><button class="sm" id="backBtn">'+tr("back")+'</button>'
         +'<button class="sm" id="discardBtn">'+tr("discard")+'</button>'
@@ -457,6 +477,7 @@ function renderMeter(){
     // no rebuild on input: that would close the iOS time picker
     document.getElementById("handsIn").oninput=function(e){pr.handsInput=e.target.value;pr.dayIdx=null;save();refreshStop(w);};
     document.getElementById("daySel").onchange=function(e){pr.dayIdx=+e.target.value;save();refreshStop(w);};
+    bindNote("stopNote",pr);
     document.getElementById("backBtn").onclick=function(){pr.stopped=false;save();renderMeter();};
     document.getElementById("discardBtn").onclick=function(){
       if(!confirm(tr("confirmDiscard")))return;
@@ -465,7 +486,7 @@ function renderMeter(){
       var p=parseHHMM(pr.handsInput);if(!p){alert(tr("invalidHands"));return;}
       var stopMs=resolveStop(pr.start,pr.lastRunning,pr.offset,p.h,p.m,pr.dayIdx);
       if(!Array.isArray(w.powerReserve))w.powerReserve=[];
-      w.powerReserve.push({id:uid(),start:pr.start,stop:stopMs,offset:pr.offset,reserveMs:stopMs-pr.start,note:""});
+      w.powerReserve.push({id:uid(),start:pr.start,stop:stopMs,offset:pr.offset,reserveMs:stopMs-pr.start,note:(pr.note||"").trim()});
       WatchData.markDeleted(state,"pr:"+pr.start);delete w.prCurrent;save();renderAll();showNudge();};
   }
   tickClock();
@@ -500,9 +521,9 @@ function renderHistory(){
   if(!list.length){wrap.innerHTML='<div class="empty">'+tr("noHist")+'</div>';return;}
   var avg=list.reduce(function(a,m){return a+m.reserveMs;},0)/list.length;
   var html='<p class="typical">'+tr("typical")+' <b>~'+fmtReserve(avg)+'</b> '+(list.length===1?tr("overOne"):tr("over",{n:list.length}))+'</p>'
-    +'<table><thead><tr><th>'+tr("thDate")+'</th><th>'+tr("thReserve")+'</th><th></th></tr></thead><tbody>';
+    +'<table><thead><tr><th>'+tr("thDate")+'</th><th>'+tr("thReserve")+'</th><th>'+tr("thNote")+'</th><th></th></tr></thead><tbody>';
   list.forEach(function(m){
-    html+='<tr><td class="num">'+fmtDay(m.start)+'</td><td class="num">'+fmtReserve(m.reserveMs)+'</td>'
+    html+='<tr><td class="num">'+fmtDay(m.start)+'</td><td class="num">'+fmtReserve(m.reserveMs)+'</td><td class="hnote">'+escapeHtml(m.note||"")+'</td>'
       +'<td style="text-align:right"><button class="sm danger ghost" data-delh="'+escapeHtml(m.id)+'">'+tr("del")+'</button></td></tr>';
   });
   wrap.innerHTML=html+'</tbody></table>';
