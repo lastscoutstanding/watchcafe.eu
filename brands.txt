@@ -35,6 +35,7 @@ Farer | | wide | F
 Fortis | | grotesk | F
 Franck Muller | | italic | FM
 Frederique Constant | | roman | FC
+F.P.Journe | Francois-Paul | didone | FPJ
 Girard-Perregaux | GP | roman | GP
 Glashütte Original | Glashutte Original; Glashütte | roman | GO
 Glycine | | grotesk | G
