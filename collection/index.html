@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=7"></script>
+<script src="/watchdata.js?v=8"></script>
 <script src="/watchrate/sample.js?v=6"></script>
 <script src="/brands.js?v=1"></script>
 <style>
@@ -260,6 +260,9 @@
   .improw .st.del{color:#ff6b5e}
   .impbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
   .impbtns .replace{margin-left:auto;background:transparent;border-style:dashed;color:var(--muted)}
+  .impsec{margin-top:14px;padding:10px 0 4px;border-top:1px dashed var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:700}
+  .improw .sub{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+  .improw .st button{margin-left:6px;padding:3px 10px;font-size:12px}
   .imppanel .hint2{font-size:12px;color:var(--muted);margin-top:10px}
   .wear .bknudge{margin-top:14px}
   .gears{margin-top:20px;text-align:center;font-size:12.5px;color:#8f8c96}
@@ -363,6 +366,9 @@ var I18N={
   impNew:function(n){return "new watch, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" new";}, impRemoved:function(n){return n+" removed";}, impUpdated:"details updated",
   impSame:"no changes", impLocalOnly:"only on this device, kept", impWatchRemoved:"deleted on the other device",
   impMerge:"Merge", impCancel:"Cancel", impReplace:"Replace everything",
+  impDelSec:"Deleted on this device · in the backup", impDelSub:function(d,n){return "deleted "+d+" · "+n+(n===1?" item":" items")+" in the backup";}, impSampleSub:"sample watch",
+  impRestore:"Restore", impWillRestore:"will be restored", impUndo:"Undo", impMergeRestore:function(n){return "Merge and restore "+n;},
+  impHintDel:"Deleted watches stay deleted unless you restore them above.",
   impHint:"Merge adds what’s new in the backup and keeps everything that’s only on this device. Deletions on either side carry over.",
   impReplaceConfirm:"Replace all data in this browser with this backup? Anything not in the backup is lost.",
   impBad:"Could not read this file as a valid backup.",
@@ -407,6 +413,9 @@ var I18N={
   showSerial:"Click to show", edit:"Edit details", del:"Delete watch…",
   delArmed:function(n){return "Click again within 5 seconds to delete “"+n+"” and all its measurements.";},
   delAgain:"Click again to delete",
+  delNoBackup:"It isn’t in any backup yet, so it can’t be brought back.", delBackupFirst:"Back up first",
+  delFromBackup:function(a){return "You can bring it back from your last backup ("+a+") with “Restore from backup…”.";},
+  delFromBackupLess:function(a,n){return "Your last backup ("+a+") can bring it back, but without the "+n+(n===1?" item":" items")+" added since.";},
   deleted:function(n){return "“"+n+"” deleted.";},
   needName:"A watch needs a name.",
   notFound:"This watch isn't in this browser (any more).",
@@ -439,6 +448,9 @@ var I18N={
   impNew:function(n){return "nieuw horloge, "+n+(n===1?" item":" items");}, impAdded:function(n){return "+"+n+" nieuw";}, impRemoved:function(n){return n+" verwijderd";}, impUpdated:"gegevens bijgewerkt",
   impSame:"geen wijzigingen", impLocalOnly:"alleen op dit apparaat, blijft staan", impWatchRemoved:"verwijderd op het andere apparaat",
   impMerge:"Samenvoegen", impCancel:"Annuleren", impReplace:"Alles vervangen",
+  impDelSec:"Verwijderd op dit apparaat · in de back-up", impDelSub:function(d,n){return "verwijderd "+d+" · "+n+(n===1?" item":" items")+" in de back-up";}, impSampleSub:"voorbeeldhorloge",
+  impRestore:"Terugzetten", impWillRestore:"wordt teruggezet", impUndo:"Ongedaan maken", impMergeRestore:function(n){return "Samenvoegen en "+n+" terugzetten";},
+  impHintDel:"Verwijderde horloges blijven weg, tenzij je ze hierboven terugzet.",
   impHint:"Samenvoegen voegt toe wat nieuw is in de back-up en houdt alles wat alleen op dit apparaat staat. Verwijderingen aan beide kanten worden overgenomen.",
   impReplaceConfirm:"Alle gegevens in deze browser vervangen door deze back-up? Wat niet in de back-up staat, ben je kwijt.",
   impBad:"Kon dit bestand niet lezen als geldige back-up.",
@@ -483,6 +495,9 @@ var I18N={
   showSerial:"Klik om te tonen", edit:"Gegevens bewerken", del:"Horloge verwijderen…",
   delArmed:function(n){return "Klik binnen 5 seconden nogmaals om “"+n+"” en al zijn metingen te verwijderen.";},
   delAgain:"Klik nogmaals om te verwijderen",
+  delNoBackup:"Het staat nog in geen enkele back-up, dus je krijgt het niet terug.", delBackupFirst:"Eerst een back-up maken",
+  delFromBackup:function(a){return "Je kunt het terughalen uit je laatste back-up ("+a+") via “Herstellen uit back-up…”.";},
+  delFromBackupLess:function(a,n){return "Je laatste back-up ("+a+") kan het terughalen, maar zonder de "+n+(n===1?" item":" items")+" van daarna.";},
   deleted:function(n){return "“"+n+"” verwijderd.";},
   needName:"Een horloge heeft een naam nodig.",
   notFound:"Dit horloge staat (niet meer) in deze browser.",
@@ -1125,13 +1140,28 @@ function saveEdit(w){
   editing=false;render();
 }
 /* two-step delete, like the Rate Meter used to have: arm, then confirm within 5 s */
+// Whether the last backup on this device has this watch (made after the watch was),
+// and how many of its items came later; without one, offer to back up first.
+function delBackupHTML(w){
+  var t=T(),last=WatchData.lastBackup(),made=WatchData.idTime(w.id);
+  if(!last||(made&&last.at<made))
+    return esc(t.delNoBackup)+' <button class="sm dash" id="delBackup">'+esc(t.delBackupFirst)+'</button>';
+  var n=0;
+  ["measurements","timegrapher","powerReserve","log","worn"].forEach(function(k){
+    (w[k]||[]).forEach(function(x){if(WatchData.idTime(x.id)>last.at)n++;});
+  });
+  return esc(n?t.delFromBackupLess(backupAgo(last.at),n):t.delFromBackup(backupAgo(last.at)));
+}
 var armed=null,armTimer=null;
 function disarm(){armed=null;clearTimeout(armTimer);}
 function deleteWatch(w,btn){
   var t=T();
   if(armed!==w.id){
     armed=w.id;btn.classList.add("armed");btn.textContent=t.delAgain;
-    document.getElementById("detNote").textContent=t.delArmed(w.name);
+    var note=document.getElementById("detNote");
+    note.innerHTML=esc(t.delArmed(w.name))+" "+delBackupHTML(w);
+    var bf=document.getElementById("delBackup");
+    if(bf)bf.onclick=function(){disarm();downloadBackup();render();};
     armTimer=setTimeout(function(){disarm();if(currentId()===String(w.id)&&!editing)render();},5000);
     return;
   }
@@ -1225,13 +1255,38 @@ function showImport(d){
     else st=r.status==="localOnly"?t.impLocalOnly:t.impSame;
     return '<div class="improw"><span>'+esc(r.name)+'</span><span class="st '+cls+'">'+esc(st)+'</span></div>';
   }).join("");
-  p.innerHTML='<h3>'+esc(t.impTitle)+'</h3><div class="from">'+esc(t.impFrom)+' '+from+'</div>'+rows
+  // watches deleted here that the backup still has: merging skips them unless restored
+  var back=(d.watches||[]).filter(function(w){return WatchData.deletedAt(state,w.id);}),pick={};
+  var items=function(w){return ["measurements","timegrapher","powerReserve","log","worn"].reduce(function(n,k){return n+(w[k]||[]).length;},0);};
+  var delRows=back.length?'<div class="impsec">'+esc(t.impDelSec)+'</div>'+back.map(function(w,i){
+    return '<div class="improw"><span>'+esc(w.name)+'<span class="sub">'
+      +esc((WatchSample.isSample(w)?t.impSampleSub+" · ":"")+t.impDelSub(fmtDate(WatchData.deletedAt(state,w.id)),items(w)))
+      +'</span></span><span class="st" data-rs="'+i+'"></span></div>';
+  }).join(""):"";
+  p.innerHTML='<h3>'+esc(t.impTitle)+'</h3><div class="from">'+esc(t.impFrom)+' '+from+'</div>'+rows+delRows
     +'<div class="impbtns"><button class="primary" id="impMerge">'+esc(t.impMerge)+'</button><button id="impCancel">'+esc(t.impCancel)+'</button>'
-    +'<button class="replace" id="impReplace">'+esc(t.impReplace)+'</button></div><div class="hint2">'+esc(t.impHint)+'</div>';
+    +'<button class="replace" id="impReplace">'+esc(t.impReplace)+'</button></div><div class="hint2">'+esc(t.impHint)+(back.length?" "+esc(t.impHintDel):"")+'</div>';
+  function drawPick(){
+    p.querySelectorAll("[data-rs]").forEach(function(el){
+      var i=+el.dataset.rs;
+      el.className="st"+(pick[i]?" add":"");
+      el.innerHTML=(pick[i]?esc(t.impWillRestore)+" ":"")+'<button class="sm dash">'+esc(pick[i]?t.impUndo:t.impRestore)+'</button>';
+      el.querySelector("button").onclick=function(){pick[i]=!pick[i];drawPick();};
+    });
+    var n=Object.keys(pick).filter(function(i){return pick[i];}).length;
+    document.getElementById("impMerge").textContent=n?t.impMergeRestore(n):t.impMerge;
+  }
+  drawPick();
   p.hidden=false;
   p.scrollIntoView({behavior:"smooth",block:"nearest"});
   document.getElementById("impCancel").onclick=closeImport;
   document.getElementById("impMerge").onclick=function(){
+    var chosen=back.filter(function(w,i){return pick[i];});
+    if(chosen.length){
+      var base=JSON.parse(JSON.stringify(state));
+      chosen.forEach(function(w){WatchData.markRestored(base,w);});
+      res=WatchData.merge(base,d);
+    }
     state=res.state;closeImport();save();render();};
   document.getElementById("impReplace").onclick=function(){
     if(!confirm(T().impReplaceConfirm))return;

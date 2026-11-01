@@ -58,6 +58,19 @@ var WatchData=(function(){
     markDeleted(state,w.id);
     if(w.prCurrent&&w.prCurrent.start)markDeleted(state,"pr:"+w.prCurrent.start);
   }
+  /* state.restored = { <id>: <ms> }: a deleted watch brought back from a backup.
+     An id counts as deleted while its deletion is newer than its restore, so the
+     restore carries over to other devices and a later delete still wins. */
+  function deletedAt(state,id){
+    var d=state&&state.deleted&&+state.deleted[String(id)]||0,r=state&&state.restored&&+state.restored[String(id)]||0;
+    return d>r?d:0;
+  }
+  function markRestored(state,w){
+    if(!state.restored||typeof state.restored!=="object")state.restored={};
+    var now=Date.now();
+    state.restored[String(w.id)]=now;
+    if(w.prCurrent&&w.prCurrent.start)state.restored["pr:"+w.prCurrent.start]=now;
+  }
 
   // Items saved before ids existed (e.g. sample data) get an id derived from
   // their content, so the same item matches on every device.
@@ -86,11 +99,11 @@ var WatchData=(function(){
     var inc=JSON.parse(JSON.stringify(incoming));
     var loc=JSON.parse(JSON.stringify(local));
     ensureIds(loc.watches);ensureIds(inc.watches);
-    var deleted={},k;
-    [loc.deleted,inc.deleted].forEach(function(d){
-      if(d&&typeof d==="object")for(k in d)deleted[k]=Math.max(deleted[k]||0,+d[k]||0);
+    var deleted={},restored={},k;
+    [[loc.deleted,deleted],[inc.deleted,deleted],[loc.restored,restored],[inc.restored,restored]].forEach(function(p){
+      var d=p[0];if(d&&typeof d==="object")for(k in d)p[1][k]=Math.max(p[1][k]||0,+d[k]||0);
     });
-    function gone(id){return id!=null&&deleted.hasOwnProperty(String(id));}
+    function gone(id){return id!=null&&deleted.hasOwnProperty(String(id))&&deleted[id]>(restored[id]||0);}
     var incById={};
     (inc.watches||[]).forEach(function(w){incById[w.id]=w;});
     var out=[],rows=[];
@@ -142,6 +155,7 @@ var WatchData=(function(){
 
     loc.watches=out;
     loc.deleted=deleted;
+    if(Object.keys(restored).length)loc.restored=restored;
     delete loc.exportedFrom;
     if(!out.some(function(w){return w.id===loc.activeWatch;}))loc.activeWatch=out[0]?out[0].id:null;
     return {state:loc,rows:rows};
@@ -252,6 +266,6 @@ var WatchData=(function(){
   return {getDevice:getDevice,setDevice:setDevice,guessDevice:guessDevice,
     backupName:backupName,backupData:backupData,
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
-    markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,ensureIds:ensureIds,merge:merge,
+    markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,deletedAt:deletedAt,markRestored:markRestored,idTime:idTime,ensureIds:ensureIds,merge:merge,
     currentRate:currentRate,previousRate:previousRate,rateSession:rateSession};
 })();
