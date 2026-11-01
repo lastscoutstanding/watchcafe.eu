@@ -99,6 +99,10 @@
 
   .chk{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink);cursor:pointer;user-select:none}
   .chk input{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+  /* locked: New start fixed on (first measurement, ended session), Reset greyed out */
+  .chk:has(input:disabled){color:var(--muted);cursor:default}
+  .chk:has(input:disabled:not(:checked)){opacity:.5}
+  .chk input:disabled{cursor:default}
 
   table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
   th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--border)}
@@ -612,7 +616,8 @@ function renderMeter(){
   document.getElementById("recordBtn").disabled=!w;
   var chk=document.getElementById("newStartChk"),s=w&&WatchData.rateSession(w);
   var rs=document.getElementById("restartChk");
-  if(s&&s.ended){chk.checked=true;chk.disabled=true;rs.checked=false;rs.disabled=true;}
+  // first measurement of a watch, or after End session: always a new start, a reset makes no sense
+  if(!s||s.ended){chk.checked=true;chk.disabled=true;rs.checked=false;rs.disabled=true;}
   else if(chk.disabled){chk.checked=false;chk.disabled=false;rs.disabled=false;}
   document.getElementById("offVal").textContent=signSec(currentOffset(),false);
 
@@ -1073,7 +1078,7 @@ document.getElementById("recordBtn").onclick=function(){
   var chk=document.getElementById("newStartChk");
   var m={id:uid(),t:Date.now(),offset:offsetN,position:document.getElementById("posSel").value,note:document.getElementById("noteIn").value.trim()};
   var rs=document.getElementById("restartChk");
-  if(chk.checked)m.newStart=true;
+  if(chk.checked&&w.measurements.length)m.newStart=true; // the first measurement starts a session anyway
   else if(rs.checked)m.restart=true;
   w.measurements.push(m);
   document.getElementById("noteIn").value="";chk.checked=false;rs.checked=false;
