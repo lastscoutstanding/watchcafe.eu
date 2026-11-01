@@ -572,9 +572,11 @@ function watchPage(a,opt){
       +(a.spread!=null?'<tr><td colspan="2"><b>'+esc(t("spread"))+'</b></td><td class="num"><b>'+a.spread.toFixed(1)+'</b></td></tr>':'')+'</tbody></table></div>');
   }
   if(a.pr.length){
-    side.push('<div><h3>'+esc(t("powerReserve"))+'</h3><table><thead><tr><th>'+t("wound")+'</th><th>'+t("stopped")+'</th><th class="num">'+t("reserve")+'</th></tr></thead><tbody>'
-      +a.pr.map(function(p){return '<tr><td>'+esc(fDTs(p.start))+'</td><td>'+esc(fDTs(p.stop))+'</td><td class="num">'+fHM(p.reserveMs)+'</td></tr>';}).join("")
-      +(a.pr.length>1?'<tr><td colspan="2"><b>'+esc(t("typical"))+'</b></td><td class="num"><b>'+fHM(a.prAvg)+'</b></td></tr>':'')+'</tbody></table></div>');
+    // note column only when at least one measurement has a note
+    var prNotes=a.pr.some(function(p){return p.note;});
+    side.push('<div><h3>'+esc(t("powerReserve"))+'</h3><table><thead><tr><th>'+t("wound")+'</th><th>'+t("stopped")+'</th><th class="num">'+t("reserve")+'</th>'+(prNotes?'<th>'+t("note2")+'</th>':'')+'</tr></thead><tbody>'
+      +a.pr.map(function(p){return '<tr><td>'+esc(fDTs(p.start))+'</td><td>'+esc(fDTs(p.stop))+'</td><td class="num">'+fHM(p.reserveMs)+'</td>'+(prNotes?'<td class="dim">'+esc(p.note||"")+'</td>':'')+'</tr>';}).join("")
+      +(a.pr.length>1?'<tr><td colspan="2"><b>'+esc(t("typical"))+'</b></td><td class="num"><b>'+fHM(a.prAvg)+'</b></td>'+(prNotes?'<td></td>':'')+'</tr>':'')+'</tbody></table></div>');
   }
   if(side.length)h+='<div class="two">'+side.join("")+'</div>';
 
