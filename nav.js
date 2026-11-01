@@ -12,6 +12,11 @@
     { title: "Guide",         url: "/guide/" },
     { title: "Watch Café",    url: "/cafe/" }
   ];
+  // Hidden tools: shown in the gear menu only after a right-click / ctrl-click
+  // or a long press on the gear. Add one line per tool.
+  var TOOLS = [
+    { title: "Brand marks",   url: "/collection/brands.html" }
+  ];
   var LANGS = [ ["en","English"], ["nl","Nederlands"] ];
   var LKEY = "siouxWatchRateMeterLang";
   function getLang(){ try{ return localStorage.getItem(LKEY) || "en"; }catch(e){ return "en"; } }
@@ -52,7 +57,7 @@
   + '.swc-gear{position:relative}'
   + '.swc-gearbtn{background:none;border:1px solid var(--border,#33333c);border-radius:8px;color:var(--muted,#c9c6cf);'
   +   'width:38px;height:34px;font-size:16px;line-height:1;cursor:pointer;padding:0;touch-action:manipulation;'
-  +   'display:flex;align-items:center;justify-content:center}'
+  +   'display:flex;align-items:center;justify-content:center;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}'
   + '.swc-gearbtn:hover{color:var(--ink,#fff);background:var(--nav-hover,#22222a)}'
   + '.swc-menu{display:none;position:absolute;right:0;top:40px;background:var(--card,#1c1c21);border:1px solid var(--border,#33333c);'
   +   'border-radius:10px;padding:6px;min-width:150px;box-shadow:0 10px 30px rgba(0,0,0,.5)}'
@@ -63,6 +68,10 @@
   + '.swc-menu button:hover{background:var(--nav-hover,#26262c);color:var(--ink,#fff)}'
   + '.swc-menu button .ck{color:var(--accent,#d96a41);font-weight:700;opacity:0}'
   + '.swc-menu button.sel .ck{opacity:1}'
+  + '.swc-menu a{display:block;color:#c9c6cf;font-size:14px;text-decoration:none;padding:8px 10px;border-radius:7px}'
+  + '.swc-menu a:hover{background:var(--nav-hover,#26262c);color:var(--ink,#fff)}'
+  + '.swc-tsec{display:none}'
+  + '.swc-menu.tools .swc-tsec{display:block}'
   + '.swc-menu .mdiv{height:1px;background:var(--border,#33333c);margin:6px 4px}'
   + '.swc-burger{display:none;background:none;border:1px solid var(--border,#33333c);border-radius:8px;color:var(--ink,#e9e7e2);'
   +   'width:38px;height:34px;font-size:17px;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}'
@@ -93,6 +102,7 @@
   var themeBtns = THEMES.map(function(t){
     return '<button data-theme-opt="' + t[0] + '"><span>' + t[1] + '</span><span class="ck">\u2713</span></button>';
   }).join('');
+  var toolLinks = TOOLS.map(function(t){ return '<a href="' + t.url + '">' + t.title + '</a>'; }).join('');
   nav.innerHTML = '<div class="swc-in">'
     + '<a class="swc-brand" href="/"><span class="dot"></span>watchcafe.eu</a>'
     + '<button class="swc-burger" aria-label="Menu" aria-expanded="false">\u2630</button>'
@@ -100,7 +110,8 @@
     + '<div class="swc-tools"><div class="swc-gear">'
     +   '<button class="swc-gearbtn" aria-label="Settings" aria-expanded="false">\u2699</button>'
     +   '<div class="swc-menu"><div class="lbl">Language</div>' + langBtns
-    +     '<div class="mdiv"></div><div class="lbl">Theme</div>' + themeBtns + '</div>'
+    +     '<div class="mdiv"></div><div class="lbl">Theme</div>' + themeBtns
+    +     '<div class="swc-tsec"><div class="mdiv"></div><div class="lbl">Tools</div>' + toolLinks + '</div></div>'
     + '</div></div>'
     + '</div>';
   var spacer = document.createElement('div');
@@ -130,10 +141,32 @@
     });
   }
   markLang(); markTheme();
+  function openGear(tools){
+    gearmenu.classList.add('open');
+    gearmenu.classList.toggle('tools', !!tools);
+    gearbtn.setAttribute('aria-expanded', 'true');
+  }
   gearbtn.addEventListener('click', function(e){
     e.stopPropagation();
-    var open = gearmenu.classList.toggle('open');
-    gearbtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(gearmenu.classList.contains('open')){
+      gearmenu.classList.remove('open');
+      gearbtn.setAttribute('aria-expanded', 'false');
+    } else openGear(false);
+  });
+  // right-click, ctrl-click (Mac) and long press on Android fire contextmenu
+  gearbtn.addEventListener('contextmenu', function(e){ e.preventDefault(); openGear(true); });
+  // iOS has no contextmenu on long press: time the touch ourselves
+  var pressTimer = null, pressed = false;
+  gearbtn.addEventListener('touchstart', function(){
+    pressed = false;
+    pressTimer = setTimeout(function(){ pressed = true; openGear(true); }, 500);
+  }, {passive:true});
+  function cancelPress(){ clearTimeout(pressTimer); }
+  gearbtn.addEventListener('touchmove', cancelPress, {passive:true});
+  gearbtn.addEventListener('touchcancel', cancelPress);
+  gearbtn.addEventListener('touchend', function(e){
+    cancelPress();
+    if(pressed){ e.preventDefault(); pressed = false; } // no click after a long press, or the menu would close
   });
   nav.querySelectorAll('.swc-menu button[data-lang]').forEach(function(b){
     b.addEventListener('click', function(){
