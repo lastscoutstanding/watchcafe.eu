@@ -630,8 +630,15 @@ function render(){
 /* ===== overview ===== */
 // "Wearing today": one tap per watch, with the last seven days to fix a forgotten day.
 // Open until a watch is logged for today; then it folds into the pill next to the title.
+// Closed by hand on a day without a watch, it stays closed until tomorrow (remembered per device).
+var WEARKEY="siouxWatchWearClosed";
+function wearClosedToday(){try{return +localStorage.getItem(WEARKEY)===todayT();}catch(e){return false;}}
+function setWearShow(v){
+  wearShow=v;wearDay=null;
+  try{if(v)localStorage.removeItem(WEARKEY);else localStorage.setItem(WEARKEY,String(todayT()));}catch(e){}
+}
 function wearOpen(now){
-  return wearShow!==null?wearShow:!now.some(function(w){return wornOn(w,todayT());});
+  return wearShow!==null?wearShow:!wearClosedToday()&&!now.some(function(w){return wornOn(w,todayT());});
 }
 function wearPillHTML(now){
   if(!now.length)return "";
@@ -642,9 +649,9 @@ function wearPillHTML(now){
 }
 function wearHTML(now){
   if(!now.length||!wearOpen(now))return "";
-  var t=T(),today=todayT(),day=wearDay||today,days=[],any=now.some(function(w){return wornOn(w,today);});
+  var t=T(),today=todayT(),day=wearDay||today,days=[];
   for(var i=6;i>=0;i--)days.push(today-i*DAY);
-  return '<div class="wear'+(any?' closable':'')+'">'+(any?'<button class="x" id="wearClose" aria-label="'+esc(t.close)+'" title="'+esc(t.close)+'">×</button>':'')
+  return '<div class="wear closable"><button class="x" id="wearClose" aria-label="'+esc(t.close)+'" title="'+esc(t.close)+'">×</button>'
     +'<div class="hd"><h2>'+esc(day===today?t.wearToday:t.wearOn(fmtWeekday(day,true)))+'</h2>'
     +'<span class="hint">'+esc(t.wearHint)+'</span></div>'
     +'<div class="chips">'+now.map(function(w){
@@ -786,7 +793,7 @@ function renderOverview(){
   var now=state.watches.filter(function(w){return !isFormer(w);}),former=state.watches.filter(isFormer);
   document.getElementById("wearPill").innerHTML=wearPillHTML(now);
   var wp=document.getElementById("wearToggle");
-  if(wp)wp.onclick=function(){wearShow=!wearOpen(now);wearDay=null;renderOverview();};
+  if(wp)wp.onclick=function(){setWearShow(!wearOpen(now));renderOverview();};
   // with the panel folded, the backup reminder goes under the title instead
   var sorted=sortWatches(now);
   el.innerHTML=wearHTML(now)+(!wearOpen(now)&&showNudge?'<div class="ovnudge">'+nudgeHTML()+'</div>':'')
@@ -815,7 +822,7 @@ function renderOverview(){
     b.onclick=function(){var d=+b.dataset.day;wearDay=d===todayT()?null:d;renderOverview();};
   });
   var wc=document.getElementById("wearClose");
-  if(wc)wc.onclick=function(){wearShow=false;wearDay=null;renderOverview();};
+  if(wc)wc.onclick=function(){setWearShow(false);renderOverview();};
   document.getElementById("cardAdd").onclick=openAdd;
   document.getElementById("sortSel").onchange=function(e){
     sortBy=e.target.value;try{localStorage.setItem(SORTKEY,sortBy);}catch(err){}
