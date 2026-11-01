@@ -112,6 +112,7 @@
   .sessend button.dash:hover{color:var(--ink)}
   .sessend button.armed{color:#ff6b5e;border-color:#ff6b5e;border-style:solid}
   .tag{display:inline-block;background:#2e221c;color:#eda57f;border-radius:6px;font-size:11px;padding:2px 7px;margin-left:6px;vertical-align:1px;white-space:nowrap}
+  .tag.rs{background:transparent;border:1px dashed #eda57f;padding:1px 6px}
 
   .chart-wrap{background:#0e0e12;border-radius:12px;padding:14px 12px 10px;margin-top:14px}
   .chart-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#999;margin:0 0 8px 4px}
@@ -184,7 +185,7 @@
   @media(max-width:600px){.card{padding:22px 16px 26px}.tgcmp{grid-template-columns:1fr 1fr}}
 </style>
   <script src="/nav.js" defer></script>
-  <script src="/watchdata.js?v=8"></script>
+  <script src="/watchdata.js?v=9"></script>
   <script src="sample.js?v=6"></script>
 </head>
 <body>
@@ -289,10 +290,14 @@
           </div>
         </div>
         <div class="row" style="margin-top:14px;justify-content:space-between;align-items:center;gap:12px">
-          <label class="chk" style="margin:0"><input type="checkbox" id="newStartChk"><span id="newStartLbl"></span><button class="qbtn" id="nsHelp" aria-label="?">?</button></label>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <label class="chk" style="margin:0"><input type="checkbox" id="newStartChk"><span id="newStartLbl"></span><button class="qbtn" id="nsHelp" aria-label="?">?</button></label>
+            <label class="chk" style="margin:0"><input type="checkbox" id="restartChk"><span id="restartLbl"></span><button class="qbtn" id="rsHelp" aria-label="?">?</button></label>
+          </div>
           <button class="primary" id="recordBtn" style="flex:none"></button>
         </div>
         <p class="hint infobox" id="nsHint" style="display:none"></p>
+        <p class="hint infobox" id="rsHint" style="display:none"></p>
         <div class="bknudge" id="bkNudge" style="display:none"></div>
       </div>
 
@@ -372,17 +377,17 @@ var I18N={
   rate:"Rate",
   perDay:"s/day",
   position:"Position", note:"Note", optional:"optional", record:"Record measurement", recSaved:"Recorded",
-  newStart:"New start",
+  newStart:"New start", restart:"Reset, same session",
   measurements:"Measurements", measLog:"Measurement log", noMeasurements:"No measurements recorded yet.", needTwo:"Record at least 2 measurements to calculate the rate.",
   sinceStart:"since the last new start",
   thTime:"Time", thOffset:"Offset", thPosition:"Position", thNote:"Note", del:"delete",
-  newStartTag:"new start",
+  newStartTag:"new start", restartTag:"reset",
   chartOffset:"Offset over time", chartRate:"Rate over time",
-  rateChartHint:"Rate points are calculated from consecutive measurements at least 6 hours apart. Lines break at a new start.",
+  rateChartHint:"Rate points are calculated from consecutive measurements at least 6 hours apart. Lines break at a new start or a reset.",
   guideTitle:"How it works", guideIntro:"Track how fast or slow your watch runs, in seconds per day.",
   gStep1:"<b>Add a watch</b> \u2014 type its name above and tap Add.",
   gStep2:"<b>Match the time</b> \u2014 use the &#9650;/&#9660; arrows so the green clock matches your watch to the second.",
-  gStep3:"<b>Record</b> the measurement \u2014 add the position if you like. Did the watch stop or did you reset it? Tick \u201cNew start\u201d.",
+  gStep3:"<b>Record</b> the measurement \u2014 add the position if you like. Did you set the watch, or did it stop? Tick \u201cReset, same session\u201d. For a fresh measuring period, tick \u201cNew start\u201d.",
   gStep4:"<b>Come back later</b> \u2014 after a few hours or a day, measure again. The rate is calculated automatically.",
   guideNote:"One measurement gives only an offset. You need at least two, taken at different times, to get a rate in s/day.",
   help:"How it works", close:"Close",
@@ -402,7 +407,8 @@ var I18N={
   sessSince:function(d,n){return "Current session since <b>"+d+"</b> \u00b7 "+n+(n===1?" measurement":" measurements");},
   endSess:"End session", endConfirm:"Confirm", undo:"Undo",
   sessEnded:function(d){return "Session ended "+d+". Your next measurement starts a new session.";},
-  nsHint:"Tick this if the watch was stopped and restarted, or reset to the correct time. The rate calculation then starts fresh from this measurement instead of counting the jump as drift.",
+  nsHint:"Tick this to start a new measuring period, for example after a service or when the watch has been put away for a while. The rate starts fresh from this measurement; earlier measurements no longer count. To set the watch and keep the session going, use \u201cReset, same session\u201d.",
+  rsHint:"Tick this if you set the watch (also for daylight saving time) or it had stopped, and you want to keep the session going. The offset may jump here; the rate stays one line over the whole session. Set the green clock to what your watch shows now: a few seconds off is fine, for example on a watch without hacking seconds. Tip: record a normal measurement first, then set the watch and measure again.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Load sample data", clearSample:"Remove samples",
   confirmClearSample:function(n){return (n===1?"Remove the sample watch":"Remove the "+n+" sample watches")+", including anything you added to "+(n===1?"it":"them")+"? Your own watches stay.";},
@@ -429,17 +435,17 @@ var I18N={
   rate:"Gang",
   perDay:"s/dag",
   position:"Positie", note:"Notitie", optional:"optioneel", record:"Meting vastleggen", recSaved:"Vastgelegd",
-  newStart:"Nieuwe start",
+  newStart:"Nieuwe start", restart:"Doorstart",
   measurements:"Metingen", measLog:"Meetlog", noMeasurements:"Nog geen metingen vastgelegd.", needTwo:"Leg minstens 2 metingen vast om de gang te berekenen.",
   sinceStart:"sinds de laatste nieuwe start",
   thTime:"Tijdstip", thOffset:"Offset", thPosition:"Positie", thNote:"Notitie", del:"verwijder",
-  newStartTag:"nieuwe start",
+  newStartTag:"nieuwe start", restartTag:"doorstart",
   chartOffset:"Offset in de tijd", chartRate:"Gang in de tijd",
-  rateChartHint:"Gangpunten worden berekend uit opeenvolgende metingen die minstens 6 uur uit elkaar liggen. Lijnen breken bij een nieuwe start.",
+  rateChartHint:"Gangpunten worden berekend uit opeenvolgende metingen die minstens 6 uur uit elkaar liggen. Lijnen breken bij een nieuwe start of doorstart.",
   guideTitle:"Zo werkt het", guideIntro:"Meet hoeveel je horloge per dag voor- of achterloopt.",
   gStep1:"<b>Voeg een horloge toe</b> \u2014 typ de naam hierboven en tik op Toevoegen.",
   gStep2:"<b>Zet de tijd gelijk</b> \u2014 gebruik de &#9650;/&#9660; pijltjes zodat de groene klok tot op de seconde gelijkloopt met je horloge.",
-  gStep3:"<b>Leg de meting vast</b> \u2014 eventueel met de positie erbij. Heeft het horloge stilgestaan of is het gelijkgezet? Vink dan \u201cNieuwe start\u201d aan.",
+  gStep3:"<b>Leg de meting vast</b> \u2014 eventueel met de positie erbij. Heb je het horloge gelijkgezet of heeft het stilgestaan? Vink dan \u201cDoorstart\u201d aan. Voor een nieuwe meetperiode vink je \u201cNieuwe start\u201d aan.",
   gStep4:"<b>Kom later terug</b> \u2014 meet na een paar uur of een dag opnieuw. De gang wordt dan automatisch berekend.",
   guideNote:"E\u00e9n meting geeft alleen een offset. Voor een gang in s/dag heb je minstens twee metingen op verschillende momenten nodig.",
   help:"Zo werkt het", close:"Sluiten",
@@ -459,7 +465,8 @@ var I18N={
   sessSince:function(d,n){return "Huidige sessie sinds <b>"+d+"</b> \u00b7 "+n+(n===1?" meting":" metingen");},
   endSess:"Sessie afronden", endConfirm:"Bevestigen", undo:"Ongedaan maken",
   sessEnded:function(d){return "Sessie afgerond op "+d+". Je volgende meting start een nieuwe sessie.";},
-  nsHint:"Vink dit aan als het horloge heeft stilgestaan en opnieuw is gestart, of opnieuw gelijk is gezet. De gangberekening begint dan opnieuw vanaf deze meting in plaats van de sprong als afwijking mee te tellen.",
+  nsHint:"Vink dit aan voor een nieuwe meetperiode, bijvoorbeeld na een onderhoudsbeurt of als het horloge een tijd in de la heeft gelegen. De gang begint opnieuw vanaf deze meting; eerdere metingen tellen niet meer mee. Wil je het horloge gelijkzetten en de sessie laten doorlopen, gebruik dan \u201cDoorstart\u201d.",
+  rsHint:"Vink dit aan als je het horloge hebt gelijkgezet (ook bij zomer- of wintertijd) of als het heeft stilgestaan, en je de sessie wilt laten doorlopen. De offset mag hier verspringen; de gang blijft \u00e9\u00e9n lijn over de hele sessie. Zet de groene klok op wat je horloge nu aanwijst: een paar seconden ernaast is prima, bijvoorbeeld bij een horloge zonder stopseconde. Tip: leg eerst een gewone meting vast, zet het horloge dan gelijk en meet opnieuw.",
   tgFrameLabel:"Timegrapher",
   loadSample:"Voorbeelddata laden", clearSample:"Voorbeelden verwijderen",
   confirmClearSample:function(n){return (n===1?"Het voorbeeldhorloge":"De "+n+" voorbeeldhorloges")+" verwijderen, inclusief wat je eraan hebt toegevoegd? Je eigen horloges blijven staan.";},
@@ -555,13 +562,8 @@ function segments(w){
   if(cur.length)segs.push(cur);
   return segs;
 }
-function rateOfPts(pts){
-  if(!pts||pts.length<2)return null;
-  var n=pts.length,sT=0,sO=0,sTT=0,sTO=0;
-  pts.forEach(function(p){sT+=p.t;sO+=p.offset;sTT+=p.t*p.t;sTO+=p.t*p.offset;});
-  var den=n*sTT-sT*sT; if(den===0)return null;
-  return {rate:(n*sTO-sT*sO)/den*86400000, span:pts[n-1].t-pts[0].t, n:n};
-}
+// one rate per session; a reset ("Reset, same session") only moves the offset (see WatchData.rateOf)
+function rateOfPts(pts){return pts&&pts.length>1?WatchData.rateOf(pts):null;}
 function rateOf(w){
   if(!w||!w.measurements.length)return null;
   var segs=segments(w);
@@ -609,8 +611,9 @@ function renderMeter(){
   document.getElementById("activeWatchName").textContent=w?w.name:t.chooseWatch;
   document.getElementById("recordBtn").disabled=!w;
   var chk=document.getElementById("newStartChk"),s=w&&WatchData.rateSession(w);
-  if(s&&s.ended){chk.checked=true;chk.disabled=true;}
-  else if(chk.disabled){chk.checked=false;chk.disabled=false;}
+  var rs=document.getElementById("restartChk");
+  if(s&&s.ended){chk.checked=true;chk.disabled=true;rs.checked=false;rs.disabled=true;}
+  else if(chk.disabled){chk.checked=false;chk.disabled=false;rs.disabled=false;}
   document.getElementById("offVal").textContent=signSec(currentOffset(),false);
 
   var r=rateOf(w);
@@ -646,7 +649,7 @@ function renderHistory(){
   var html='<h2 style="margin-top:22px">'+escapeHtml(t.measLog)+watchSuffix(w)+'</h2><table><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
   pts.forEach(function(m){
     var d=new Date(m.t).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
-    var tag=m.newStart?('<span class="tag">'+t.newStartTag+'</span>'):"";
+    var tag=m.newStart?('<span class="tag">'+t.newStartTag+'</span>'):m.restart?('<span class="tag rs">'+t.restartTag+'</span>'):"";
     html+='<tr><td class="num">'+d+tag+'</td><td class="num">'+signSec(m.offset,true)+'</td><td>'+(m.position?escapeHtml(posLabel(m.position)):"\u2014")+'</td><td>'+escapeHtml(m.note||"")+'</td><td><button class="sm danger ghost" data-id="'+m.id+'">'+t.del+'</button></td></tr>';
   });
   html+="</tbody></table>";wrap.innerHTML=html;
@@ -812,21 +815,22 @@ function drawCharts(w){
   var tDomain=tAll.length?[Math.min.apply(null,tAll),Math.max.apply(null,tAll)]:null;
   var blocks=(selectedSession==="allc")?segs.map(function(s){return [s[0].t,s[s.length-1].t];}):null;
   // offset chart
-  var offSegs=segs.map(function(s){return s.map(function(p){return {t:p.t,v:p.offset};});});
+  // the offset line breaks at a reset as well, where the offset jumps
+  var offSegs=[];segs.forEach(function(s){WatchData.pieces(s).forEach(function(pc){offSegs.push(pc.map(function(p){return {t:p.t,v:p.offset};}));});});
   var okOff=chartSVG(document.getElementById("chartOff"),offSegs,colOff,"s",null,tDomain,blocks);
   ow.style.display=okOff?"block":"none";
-  // rate chart: per segment, consecutive pairs >= 6h apart
-  var rateSegs=segs.map(function(s){
-    var pts=[],lastUsed=s[0];
-    for(var i=1;i<s.length;i++){
-      var dt=s[i].t-lastUsed.t;
+  // rate chart: per segment, consecutive pairs >= 6h apart; never across a reset
+  var rateSegs=[];segs.forEach(function(s){WatchData.pieces(s).forEach(function(pc){
+    var pts=[],lastUsed=pc[0];
+    for(var i=1;i<pc.length;i++){
+      var dt=pc[i].t-lastUsed.t;
       if(dt>=MIN_RATE_GAP){
-        pts.push({t:s[i].t,v:(s[i].offset-lastUsed.offset)/dt*86400000});
-        lastUsed=s[i];
+        pts.push({t:pc[i].t,v:(pc[i].offset-lastUsed.offset)/dt*86400000});
+        lastUsed=pc[i];
       }
     }
-    return pts;
-  }).filter(function(s){return s.length;});
+    if(pts.length)rateSegs.push(pts);
+  });});
   // timegrapher sessions only within the shown period (as in the Viewer); without a
   // rate point there is no rate chart, so a first measurement doesn't stack every session at one x
   var tgSessions=tgOf(w).filter(function(s){return s.t>=tDomain[0]&&s.t<=tDomain[1];});
@@ -885,6 +889,7 @@ function applyLang(){
   document.getElementById("noteIn").placeholder=t.optional;
   document.getElementById("recordBtn").textContent=t.record;
   document.getElementById("newStartLbl").textContent=t.newStart;
+  document.getElementById("restartLbl").textContent=t.restart;
   document.getElementById("chartOffTitle").textContent=t.chartOffset;
   document.getElementById("chartRateTitle").textContent=t.chartRate;
   document.getElementById("chartRateUnit").textContent="("+t.perDay+")";
@@ -908,6 +913,7 @@ function applyLang(){
   document.getElementById("tgFrameLabel").innerHTML='<i>\u25c8</i> '+t.tgFrameLabel;
   document.getElementById("alignHint").textContent=t.alignHint;
   document.getElementById("nsHint").textContent=t.nsHint;
+  document.getElementById("rsHint").textContent=t.rsHint;
   var tgOpen=document.getElementById("tgForm").style.display!=="none";
   document.getElementById("tgToggle").textContent=tgOpen?t.tgToggleClose:t.tgToggle;
   sampleBtnText();
@@ -948,6 +954,17 @@ document.getElementById("guideClose").onclick=function(){guideOpen=false;renderG
 
 function toggleInfo(id){var el=document.getElementById(id);el.style.display=el.style.display==="none"?"block":"none";}
 document.getElementById("nsHelp").onclick=function(ev){ev.preventDefault();toggleInfo("nsHint");};
+document.getElementById("rsHelp").onclick=function(ev){ev.preventDefault();toggleInfo("rsHint");};
+// New start and Reset exclude each other; a reset usually follows setting the watch, so the green clock goes to 0
+document.getElementById("newStartChk").onchange=function(e){
+  var rs=document.getElementById("restartChk");
+  if(e.target.checked&&rs.checked){rs.checked=false;seedOffset();renderMeter();}
+};
+document.getElementById("restartChk").onchange=function(e){
+  if(e.target.checked){document.getElementById("newStartChk").checked=false;offsetN=0;}
+  else seedOffset();
+  renderMeter();
+};
 document.getElementById("sessionSel").onchange=function(e){selectedSession=e.target.value;renderHistory();};
 
 document.getElementById("sampleBtn").onclick=function(){
@@ -1055,9 +1072,11 @@ document.getElementById("recordBtn").onclick=function(){
   var w=activeWatch();if(!w)return;
   var chk=document.getElementById("newStartChk");
   var m={id:uid(),t:Date.now(),offset:offsetN,position:document.getElementById("posSel").value,note:document.getElementById("noteIn").value.trim()};
+  var rs=document.getElementById("restartChk");
   if(chk.checked)m.newStart=true;
+  else if(rs.checked)m.restart=true;
   w.measurements.push(m);
-  document.getElementById("noteIn").value="";chk.checked=false;
+  document.getElementById("noteIn").value="";chk.checked=false;rs.checked=false;
   save();renderAll();showNudge();flashRecorded();
 };
 // Brief "✓ Recorded" on the button as confirmation, width kept so nothing shifts

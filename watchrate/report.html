@@ -9,7 +9,7 @@
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=8"></script>
+<script src="/watchdata.js?v=9"></script>
 <script src="sample.js?v=6"></script>
 <style>
   :root{
@@ -87,6 +87,7 @@
   .sheet .dim{color:var(--p-muted)}
   .sheet .nw{white-space:nowrap}
   .sheet .ns td{border-top:1.5px dashed var(--p-accent)}
+  .tag.rs{border-style:dashed}
   .tag{display:inline-block;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--p-accent);border:1px solid var(--p-accent);border-radius:3px;padding:0 3px;margin-left:5px;vertical-align:1px}
   .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
   .tgmark{display:inline-block;width:8px;height:8px;box-sizing:border-box;border:1.5px solid;transform:rotate(45deg);margin:0 6px 0 2px;vertical-align:0}
@@ -198,7 +199,7 @@ var I18N={
   positions:"Rate per position",positionsSub:"latest session",position:"Position",spread:"Spread between positions",
   timegrapher:"Timegrapher",date:"Date",avg:"Avg",readings:"Readings",note2:"Note",amp:"Amplitude",beat:"Beat error",
   powerReserve:"Power reserve",wound:"Wound",stopped:"Stopped",reserve:"Reserve",typical:"Typical",
-  allMeas:"All measurements",time:"Time",offset:"Offset",newStart:"new start",
+  allMeas:"All measurements",time:"Time",offset:"Offset",newStart:"new start",resetTag:"reset",
   offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
   tgLegend:"◇ timegrapher per position · ╌ session average",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
   footer:"watchcafe.eu · data from this browser only",sampleTag:"sample data",
@@ -225,7 +226,7 @@ var I18N={
   positions:"Gang per positie",positionsSub:"laatste sessie",position:"Positie",spread:"Spreiding tussen posities",
   timegrapher:"Timegrapher",date:"Datum",avg:"Gem.",readings:"Metingen",note2:"Notitie",amp:"Amplitude",beat:"Beat error",
   powerReserve:"Gangreserve",wound:"Opgewonden",stopped:"Gestopt",reserve:"Reserve",typical:"Typisch",
-  allMeas:"Alle metingen",time:"Tijdstip",offset:"Offset",newStart:"nieuwe start",
+  allMeas:"Alle metingen",time:"Tijdstip",offset:"Offset",newStart:"nieuwe start",resetTag:"doorstart",
   offsetChart:"Offset in de tijd (s)",rateChart:"Gang in de tijd (s/dag)",gapsRemoved:"sessies aaneengesloten, tijd ertussen weggelaten",
   tgLegend:"◇ timegrapher per positie · ╌ sessiegemiddelde",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
   footer:"watchcafe.eu · alleen data uit deze browser",sampleTag:"voorbeelddata",
@@ -337,14 +338,8 @@ function groups(){
     var c=Object.assign({},w);if(many)c._source=srcText(s);return {key:i+"|"+watchId(w),w:c};})};});
 }
 function isOn(it,g){return it.key in pick?pick[it.key]:!isEmptyWatch(it.w)&&!(g.src&&g.src.dev);}
-function linreg(pts){
-  var n=pts.length;if(n<2)return null;var x0=pts[0].t,sx=0,sy=0,sxx=0,sxy=0,syy=0;
-  pts.forEach(function(p){var x=(p.t-x0)/DAY,y=p.offset;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;syy+=y*y;});
-  var den=n*sxx-sx*sx;if(den===0)return null;
-  var slope=(n*sxy-sx*sy)/den,icpt=(sy-slope*sx)/n,ssTot=syy-sy*sy/n,ssRes=0;
-  pts.forEach(function(p){var f=icpt+slope*(p.t-x0)/DAY;ssRes+=(p.offset-f)*(p.offset-f);});
-  return {rate:slope,icpt:icpt,x0:x0,r2:ssTot>0?1-ssRes/ssTot:null};
-}
+// rate fit as on the Rate Meter: a reset ("Reset, same session") lets the offset jump, the rate stays one slope
+function linreg(pts){return pts.length>1?WatchData.rateOf(pts):null;}
 function analyse(w){
   var ms=(w.measurements||[]).filter(function(m){return isFinite(m.t)&&isFinite(m.offset);}).slice().sort(function(a,b){return a.t-b.t;});
   var sessions=[],cur=[];
@@ -354,7 +349,11 @@ function analyse(w){
   var last=sess[sess.length-1];
   var groups={},order=[];
   (last?last.pts:[]).forEach(function(m){var k=m.position||"";if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(m);});
-  var positions=order.filter(function(k){return k;}).map(function(k){var f=linreg(groups[k]);return {code:k,n:groups[k].length,rate:f?f.rate:null};})
+  // per position, still split at resets, so a jump in the offset never counts as drift
+  var lastPieces=last?WatchData.pieces(last.pts):[];
+  var positions=order.filter(function(k){return k;}).map(function(k){
+      var f=WatchData.fitPieces(lastPieces.map(function(pc){return pc.filter(function(m){return (m.position||"")===k;});}));
+      return {code:k,n:groups[k].length,rate:f?f.rate:null};})
     .sort(function(a,b){return (b.rate==null?-1e9:b.rate)-(a.rate==null?-1e9:a.rate);});
   var rated=positions.filter(function(p){return p.rate!=null;}).map(function(p){return p.rate;});
   var tg=(w.timegrapher||[]).filter(function(s){return s.readings&&s.readings.length;}).slice().sort(function(a,b){return a.t-b.t;});
@@ -479,26 +478,27 @@ function offsetChart(a){
   var blocks=layout(a);if(!blocks.length)return "";
   var ax=yAxis(a.ms.map(function(m){return m.offset;})),g=ax.g+frame(blocks);
   blocks.forEach(function(b){
-    var f=b.s.fit;
-    if(f){var ya=f.icpt,yb=f.icpt+f.rate*(b.s.t1-f.x0)/DAY;
-      g+='<line x1="'+b.X(b.s.t0).toFixed(1)+'" y1="'+ax.Y(ya).toFixed(1)+'" x2="'+b.X(b.s.t1).toFixed(1)+'" y2="'+ax.Y(yb).toFixed(1)+'" stroke="#b8532e" stroke-width="1.2" opacity=".75"/>';}
+    // one fitted line per piece between resets, all with the session's slope
+    if(b.s.fit)b.s.fit.lines.forEach(function(l){
+      g+='<line x1="'+b.X(l.t0).toFixed(1)+'" y1="'+ax.Y(l.o0).toFixed(1)+'" x2="'+b.X(l.t1).toFixed(1)+'" y2="'+ax.Y(l.o1).toFixed(1)+'" stroke="#b8532e" stroke-width="1.2" opacity=".75"/>';});
     b.s.pts.forEach(function(m){g+='<circle cx="'+b.X(m.t).toFixed(1)+'" cy="'+ax.Y(m.offset).toFixed(1)+'" r="2.4" fill="'+pos(m.position).color+'"/>';});
   });
   return '<svg viewBox="0 0 '+CW+' '+CH+'" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">'+g+'</svg>';
 }
-function ratePoints(s){var out=[],lu=s[0];for(var i=1;i<s.length;i++){var dt=s[i].t-lu.t;if(dt>=MIN_RATE_GAP){out.push({t:s[i].t,v:(s[i].offset-lu.offset)/dt*DAY});lu=s[i];}}return out;}
+// rate points per piece between resets (never across a jump in the offset)
+function ratePoints(s){return WatchData.pieces(s).map(function(pc){var out=[],lu=pc[0];for(var i=1;i<pc.length;i++){var dt=pc[i].t-lu.t;if(dt>=MIN_RATE_GAP){out.push({t:pc[i].t,v:(pc[i].offset-lu.offset)/dt*DAY});lu=pc[i];}}return out;});}
 function rateChart(a){
   var blocks=layout(a);if(!blocks.length)return "";
   var segs=blocks.map(function(b){return ratePoints(b.s.pts);});
   var tgIn=function(b){return a.tg.filter(function(s){return s.t>=b.s.t0&&s.t<=b.s.t1;});};
-  var vals=[];segs.forEach(function(s){s.forEach(function(p){vals.push(p.v);});});
+  var vals=[];segs.forEach(function(s){s.forEach(function(pc){pc.forEach(function(p){vals.push(p.v);});});});
   blocks.forEach(function(b){tgIn(b).forEach(function(s){s.readings.forEach(function(r){vals.push(+r.rate);});});});
   if(!vals.length)return "";
   var ax=yAxis(vals),g=ax.g+frame(blocks);
   blocks.forEach(function(b,i){
-    var pts=segs[i];
-    if(pts.length>1)g+='<polyline fill="none" stroke="#9a97a0" stroke-width="1" points="'+pts.map(function(p){return b.X(p.t).toFixed(1)+","+ax.Y(p.v).toFixed(1);}).join(" ")+'"/>';
-    pts.forEach(function(p){g+='<circle cx="'+b.X(p.t).toFixed(1)+'" cy="'+ax.Y(p.v).toFixed(1)+'" r="2.2" fill="#3f9a3f"/>';});
+    segs[i].forEach(function(pts){
+      if(pts.length>1)g+='<polyline fill="none" stroke="#9a97a0" stroke-width="1" points="'+pts.map(function(p){return b.X(p.t).toFixed(1)+","+ax.Y(p.v).toFixed(1);}).join(" ")+'"/>';
+      pts.forEach(function(p){g+='<circle cx="'+b.X(p.t).toFixed(1)+'" cy="'+ax.Y(p.v).toFixed(1)+'" r="2.2" fill="#3f9a3f"/>';});});
     tgIn(b).forEach(function(s){var cx=b.X(s.t),ya=ax.Y(s.avg).toFixed(1);
       if(s.readings.length>1)g+='<line x1="'+(cx-14).toFixed(1)+'" x2="'+(cx+14).toFixed(1)+'" y1="'+ya+'" y2="'+ya+'" stroke="#b8532e" stroke-width="1.4" stroke-dasharray="3 2"/>';
       s.readings.forEach(function(r){var cy=ax.Y(+r.rate);g+='<rect x="'+(cx-3.2).toFixed(1)+'" y="'+(cy-3.2).toFixed(1)+'" width="6.4" height="6.4" transform="rotate(45 '+cx.toFixed(1)+' '+cy.toFixed(1)+')" fill="#fff" stroke="'+pos(r.position).color+'" stroke-width="1.4"/>';});});
@@ -595,7 +595,7 @@ function watchPage(a,opt){
   if(opt.raw&&a.ms.length){
     h+='<h3>'+esc(t("allMeas"))+' ('+a.ms.length+')</h3><table><thead><tr><th>'+t("time")+'</th><th class="num">'+t("offset")+' (s)</th><th>'+t("position")+'</th><th>'+t("note2")+'</th></tr></thead><tbody>'
       +a.ms.map(function(m,i){var p=pos(m.position);
-        return '<tr'+(m.newStart&&i>0?' class="ns"':'')+'><td class="mono">'+esc(fDT(m.t))+(m.newStart?'<span class="tag">'+esc(t("newStart"))+'</span>':'')+'</td><td class="num mono">'+sgn(m.offset)+'</td><td>'+(m.position?'<span class="dot" style="background:'+p.color+'"></span>'+esc(p.label):t("none"))+'</td><td class="dim">'+esc(m.note||"")+'</td></tr>';}).join("")
+        return '<tr'+(m.newStart&&i>0?' class="ns"':'')+'><td class="mono">'+esc(fDT(m.t))+(m.newStart?'<span class="tag">'+esc(t("newStart"))+'</span>':m.restart?'<span class="tag rs">'+esc(t("resetTag"))+'</span>':'')+'</td><td class="num mono">'+sgn(m.offset)+'</td><td>'+(m.position?'<span class="dot" style="background:'+p.color+'"></span>'+esc(p.label):t("none"))+'</td><td class="dim">'+esc(m.note||"")+'</td></tr>';}).join("")
       +'</tbody></table>';
   }
   h+='<div class="foot"><span>'+esc(t("footer"))+'</span><span>'+esc(fDT(Date.now()))+'</span></div>';

@@ -212,6 +212,7 @@
   </div>
 </div>
 
+<script src="/watchdata.js?v=9"></script>
 <script src="sample.js?v=6"></script>
 <script>
 "use strict";
@@ -227,7 +228,7 @@ const T={
     pick:"Choose file", sample:"Show example",
     report:"Report of these backups", loaded:"Loaded:", merge:"Merge watches", mergeTip:"Combine watches with the same id/name across different files",
     sort:"Sort", sName:"by name", sRate:"largest deviation first", sCount:"most measurements", sRecent:"most recent",
-    rate:"Rate", sday:"s/day", noRate:"too few measurements for a rate",
+    rate:"Rate", sday:"s/day", resetTag:"reset", noRate:"too few measurements for a rate",
     posHead:"Position", n:"n", spread:"Spread between positions",
     active:"active", unnamed:"Unnamed watch", noValid:"no valid measurements", remove:"Remove",
     files:f=>f+(f===1?" file":" files"),
@@ -252,7 +253,7 @@ const T={
     pick:"Bestand kiezen", sample:"Toon voorbeeld",
     report:"Rapport van deze back-ups", loaded:"Geladen:", merge:"Horloges samenvoegen", mergeTip:"Voeg horloges met hetzelfde id/naam uit verschillende bestanden samen",
     sort:"Sorteer", sName:"op naam", sRate:"grootste afwijking eerst", sCount:"meeste metingen", sRecent:"recentst gemeten",
-    rate:"Gang", sday:"s/dag", noRate:"te weinig metingen voor een gang",
+    rate:"Gang", sday:"s/dag", resetTag:"doorstart", noRate:"te weinig metingen voor een gang",
     posHead:"Positie", n:"n", spread:"Spreiding tussen posities",
     active:"actief", unnamed:"Naamloos horloge", noValid:"geen geldige metingen", remove:"Verwijderen",
     files:f=>f+(f===1?" bestand":" bestanden"),
@@ -295,18 +296,9 @@ let FILES=[], merge=false, sortBy="name", sessionSel={},
     guideOpen=false;
 
 /* ---------- math ---------- */
-function linreg(pts){
-  const n=pts.length; if(n<2) return null;
-  const x0=pts[0].x; let sx=0,sy=0,sxx=0,sxy=0,syy=0;
-  for(const p of pts){const x=p.x-x0,y=p.y;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;syy+=y*y;}
-  const denom=n*sxx-sx*sx; if(denom===0) return null;
-  const slope=(n*sxy-sx*sy)/denom, intercept=(sy-slope*sx)/n;
-  const ssTot=syy-sy*sy/n; let ssRes=0;
-  for(const p of pts){const fit=intercept+slope*(p.x-x0);ssRes+=(p.y-fit)**2;}
-  const r2=ssTot>0?1-ssRes/ssTot:null;
-  return {ratePerDay:slope*MS_PER_DAY,slope,intercept,x0,r2,n};
-}
-function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||"",newStart:!!m.newStart};}
+// rate fit as on the Rate Meter: a reset ("Reset, same session") lets the offset jump, the rate stays one slope (WatchData.rateOf)
+function fitOf(pts){const f=pts.length>1?WatchData.rateOf(pts):null;return f&&{...f,ratePerDay:f.rate};}
+function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||"",newStart:!!m.newStart,restart:!!m.restart};}
 function normTG(sess){
   const readings=(sess.readings||[]).map(r=>({position:r.position||"unknown",rate:Number(r.rate),
     amplitude:(r.amplitude!=null&&isFinite(r.amplitude))?Number(r.amplitude):null,
@@ -362,16 +354,16 @@ function collectWatches(){
     w.shown=shown;
     // fit/positie-metrics op de getoonde selectie (bij "all": laatste sessie, zuiverst)
     const metricPts=isAllSel(selKey)?(sessions[sessions.length-1]||valid):shown;
-    w.fit=linreg(metricPts.map(m=>({x:m.t,y:m.offset})));
-    w.fitStart=metricPts.length?metricPts[0].t:null;
+    w.fit=fitOf(metricPts);
     w.hasReset=sessions.length>1;
     w.tMin=shown.length?shown[0].t:null; w.tMax=shown.length?shown[shown.length-1].t:null;
     const groups=new Map();
     metricPts.forEach(m=>{if(!groups.has(m.position))groups.set(m.position,[]);groups.get(m.position).push(m);});
     let pi=0; const positions=[];
     for(const [code,arr] of groups){
-      const info=posInfo(code,pi++); const f=linreg(arr.map(m=>({x:m.t,y:m.offset})));
-      positions.push({code,info,n:arr.length,ratePerDay:f?f.ratePerDay:null});
+      // per position, still split at resets, so a jump in the offset never counts as drift
+      const info=posInfo(code,pi++); const f=WatchData.fitPieces(WatchData.pieces(metricPts).map(pc=>pc.filter(m=>m.position===code)));
+      positions.push({code,info,n:arr.length,ratePerDay:f?f.rate:null});
     }
     positions.sort((a,b)=>(b.ratePerDay??-1e9)-(a.ratePerDay??-1e9));
     w.positions=positions;
@@ -455,24 +447,23 @@ function chartSVG(w){
   const Y=o=>CH-padB-(o-oMin)/(oMax-oMin)*(CH-padT-padB);
   const uniq=[...new Set(pts.map(q=>q.position))];
   let g=yGrid(Y,oMin,oMax,false)+axisSVG(ax);
-  const fitLine=(f,a,b)=>{const yAt=t=>f.intercept+f.slope*(t-f.x0);
-    return `<line x1="${X(a).toFixed(1)}" y1="${Y(yAt(a)).toFixed(1)}" x2="${X(b).toFixed(1)}" y2="${Y(yAt(b)).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`;};
+  // one fitted line per piece between resets, all with the session's slope
+  const fitLines=f=>f?f.lines.map(l=>`<line x1="${X(l.t0).toFixed(1)}" y1="${Y(l.o0).toFixed(1)}" x2="${X(l.t1).toFixed(1)}" y2="${Y(l.o1).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`).join(""):"";
   if(ax.comp){
-    // one regression line per session, each within its own block
-    w.sessions.forEach(s=>{const f=linreg(s.map(m=>({x:m.t,y:m.offset})));if(f)g+=fitLine(f,s[0].t,s[s.length-1].t);});
-  } else if(w.fit){
-    const b=ax.lay[0], fs=(w.selKey==="all")?Math.max(b.t0, w.fitStart??b.t0):b.t0;
-    g+=fitLine(w.fit,fs,b.t1);
-  }
+    // one regression per session, each within its own block
+    w.sessions.forEach(s=>{g+=fitLines(fitOf(s));});
+  } else g+=fitLines(w.fit);
   pts.forEach(p=>{const info=posInfo(p.position,uniq.indexOf(p.position));
-    const title=`${fmtDateTime(p.t)} · ${p.offset.toFixed(1)}s · ${info.label}${p.note?` · ${p.note}`:""}`;
-    g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.offset).toFixed(1)}" r="${p.newStart?4:3.4}" fill="${info.color}" stroke="${p.newStart?'var(--accent)':'#202026'}" stroke-width="${p.newStart?1.6:1}"><title>${esc(title)}</title></circle>`;});
+    const mark=p.newStart||p.restart;
+    const title=`${fmtDateTime(p.t)} · ${p.offset.toFixed(1)}s · ${info.label}${p.restart?` · ${t().resetTag}`:""}${p.note?` · ${p.note}`:""}`;
+    g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.offset).toFixed(1)}" r="${mark?4:3.4}" fill="${info.color}" stroke="${mark?'var(--accent)':'#202026'}" stroke-width="${mark?1.6:1}"><title>${esc(title)}</title></circle>`;});
   return g;
 }
 
 // Rate over time: one point per interval of >= 6h, placed at the interval's end (as on the Rate Meter page).
+// Never across a reset, where the offset jumps.
 function rateSegments(w){
-  return shownSessions(w).map(s=>{
+  return shownSessions(w).flatMap(s=>WatchData.pieces(s)).map(s=>{
     const out=[]; let lastUsed=s[0];
     for(let i=1;i<s.length;i++){const dt=s[i].t-lastUsed.t;
       if(dt>=MIN_RATE_GAP){out.push({t:s[i].t,v:(s[i].offset-lastUsed.offset)/dt*MS_PER_DAY,from:lastUsed.t});lastUsed=s[i];}}

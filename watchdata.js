@@ -218,7 +218,12 @@ var WatchData=(function(){
      Sessions start at measurements flagged newStart; the current rate is the
      least-squares slope of the last session, in s/day (same as the Rate Meter).
      previousRate is the rate of the latest earlier session that has one, for
-     while a new session has only its first measurement. */
+     while a new session has only its first measurement.
+     A measurement flagged restart ("Reset, same session") keeps the session but
+     lets the offset jump: the watch was set or had stopped. The session then
+     falls into pieces, each with its own intercept, and the rate is one common
+     slope over all pieces (pooled least squares). Without restarts this is the
+     plain regression. */
   function sessions(w){
     var pts=((w&&w.measurements)||[]).slice().sort(function(a,b){return a.t-b.t;}),segs=[],cur=[];
     pts.forEach(function(p){if(p.newStart&&cur.length){segs.push(cur);cur=[];}cur.push(p);});
@@ -232,13 +237,29 @@ var WatchData=(function(){
     for(var i=s.length-2;i>=0;i--){var r=rateOf(s[i]);if(r){r.end=s[i][s[i].length-1].t;return r;}}
     return null;
   }
-  function rateOf(pts){
-    var n=pts.length;if(n<2)return null;
-    var sT=0,sO=0,sTT=0,sTO=0;
-    pts.forEach(function(p){sT+=p.t;sO+=p.offset;sTT+=p.t*p.t;sTO+=p.t*p.offset;});
-    var den=n*sTT-sT*sT;if(den===0)return null;
-    return {rate:(n*sTO-sT*sO)/den*DAY,n:n,span:pts[n-1].t-pts[0].t};
+  // split time-sorted measurements at restart flags
+  function pieces(pts){
+    var out=[],cur=[];
+    pts.forEach(function(p){if(p.restart&&cur.length){out.push(cur);cur=[];}cur.push(p);});
+    if(cur.length)out.push(cur);
+    return out;
   }
+  // pooled fit over pieces of {t, offset}: rate in s/day, r2, and a fitted line per piece
+  function fitPieces(ps){
+    var n=0,sxx=0,sxy=0,syy=0,t0=Infinity,t1=-Infinity,ms=[];
+    ps.forEach(function(p){
+      var k=p.length,mt=0,mo=0;if(!k)return;
+      p.forEach(function(q){mt+=q.t;mo+=q.offset;t0=Math.min(t0,q.t);t1=Math.max(t1,q.t);});
+      mt/=k;mo/=k;n+=k;ms.push({p:p,mt:mt,mo:mo});
+      p.forEach(function(q){var x=q.t-mt,y=q.offset-mo;sxx+=x*x;sxy+=x*y;syy+=y*y;});
+    });
+    if(n<2||!sxx)return null;
+    var b=sxy/sxx,lines=ms.filter(function(m){return m.p.length>1;}).map(function(m){
+      var a=m.p[0].t,z=m.p[m.p.length-1].t;
+      return {t0:a,t1:z,o0:m.mo+b*(a-m.mt),o1:m.mo+b*(z-m.mt)};});
+    return {rate:b*DAY,n:n,span:t1-t0,r2:syy>0?1-(syy-b*sxy)/syy:null,lines:lines};
+  }
+  function rateOf(pts){return fitPieces(pieces(pts));}
 
   /* ----- session state -----
      w.rateEnd = {at, edited}: "End session" in the Rate Meter. at = when it was
@@ -267,5 +288,5 @@ var WatchData=(function(){
     backupName:backupName,backupData:backupData,
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
     markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,deletedAt:deletedAt,markRestored:markRestored,idTime:idTime,ensureIds:ensureIds,merge:merge,
-    currentRate:currentRate,previousRate:previousRate,rateSession:rateSession};
+    currentRate:currentRate,previousRate:previousRate,pieces:pieces,fitPieces:fitPieces,rateOf:rateOf,rateSession:rateSession};
 })();

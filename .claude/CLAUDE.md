@@ -34,7 +34,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
 | `cafe/index.html` + `meetings.txt`, `meetings.js`, `events.txt`, `events.js`, `cafe-log.txt` | Café-pagina |
 | `nav.js` | Gedeelde menubalk, taal-toggle, thema-keuze, verborgen Tools-sectie |
-| `watchdata.js` | Gedeeld: apparaatnaam, back-upnaam, verwijder-tombstones, samenvoegen, `currentRate(w)` (Rate Meter, Power Reserve, Collection, rapport) |
+| `watchdata.js` | Gedeeld: apparaatnaam, back-upnaam, verwijder-tombstones, samenvoegen, `currentRate(w)`, gangberekening `rateOf`/`pieces`/`fitPieces` (Rate Meter, Power Reserve, Collection, rapport, Viewer) |
 | `brands.js` + `brands.txt` | Merk-woordmerken (Collection-kaarten), plus een wijzerplaat-badge voor later |
 | `theme.css` | Alle thema-overrides |
 | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Favicon (klokje op 10:10) |
@@ -53,7 +53,7 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 - Horloge: `{ id, name, measurements, timegrapher?, powerReserve?, prCurrent?, rateEnd?, info?, edited?, log?, worn?, sample? }`.
 - `sample: true`: voorbeeldhorloge (zie Voorbeeldhorloges).
 - `rateEnd`: `{ at, edited }` van "End session" in de Rate Meter; `at` = null na Undo. Samenvoegen: hoogste `edited` wint.
-- Meting: `{ id, t, offset, position, note, newStart? }` met `t` in epoch-ms en `offset` in seconden.
+- Meting: `{ id, t, offset, position, note, newStart?, restart? }` met `t` in epoch-ms en `offset` in seconden. `restart` = Doorstart (zie Watch Rate Meter).
 - `info`: gegevens uit de Collection (`brand, model, ref, caliber, year, serial, caseSize, lugWidth, boxPapers, serviceYears`, alle vrije tekst, alleen ingevulde velden); `edited` = tijdstip van de laatste wijziging van naam of gegevens.
 - `log`: `[{ id, t, type, where?, cost?, note?, edited? }]`; `worn`: `[{ id, t }]`; bij beide is `t` de dag om 00:00 UTC.
 - Prijzen en serienummers staan dus altijd in de back-up, ook als het rapport ze weglaat. De Backup Viewer toont alleen de meetgegevens; gegevens, logboek en draagdagen alleen via het rapport.
@@ -132,7 +132,9 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 - Horlogekeuze is een pulldown (zoals Power Reserve) met onderaan "+ Add watch" als snelle weg (alleen een naam); die zet een naamveld op de plek van de select (Enter/Escape). Zonder horloges staat het naamveld er meteen. Ernaast een i-knop naar het horloge in de Collection; hernoemen en verwijderen gebeuren daar, niet hier.
 - Een ● achter de naam in de pulldown = lopende rate-sessie (niet afgerond en niet stil, dezelfde definitie als de accentrand in de Collection). Power Reserve doet hetzelfde voor een lopende gangreservemeting. Een `<option>` is niet op te maken, dus het is een teken (`LIVE_MARK`, en-spatie + U+25CF).
 - Meten: groene "jouw horloge"-klok met ▲/▼ gelijkzetten, dan vastleggen. Bevestiging "✓ Recorded" / "Vastgelegd" (niet "Saved": de knop heet Record). Hele seconden; tik-sync is bewust verwijderd.
-- "Nieuwe start" is een handmatige checkbox. Geen automatische gat-detectie.
+- "Nieuwe start" is een handmatige checkbox. Geen automatische gat-detectie. Bedoeld voor een nieuwe meetperiode (na een service, na een tijd in de la).
+- "Doorstart" / "Reset, same session" is een tweede checkbox eronder (sluiten elkaar uit; na "End session" uitgeschakeld): voor gelijkzetten (ook zomer-/wintertijd) of na stilstand, als de sessie moet doorlopen. Zet `restart: true` op de meting. Aanvinken zet de groene klok op ±0 s (uitvinken terug naar de vorige offset); de offset mag een paar seconden afwijken (horloge zonder stopseconde), die afwijking wordt gewoon gemeten. Bewust niet achteraf te markeren.
+- Gang met doorstarts (`WatchData.rateOf`): de sessie valt uiteen in stukken (`pieces`), elk met een eigen beginpunt, en de gang is één gemeenschappelijke helling over alle stukken (gepoolde kleinste kwadraten, `fitPieces`; zonder doorstart gelijk aan de gewone regressie). Hoe lang het horloge stilstond doet er niet toe. Rate Meter, Viewer, rapport en Collection gebruiken dezelfde functie; de Viewer laadt daarvoor nu ook `watchdata.js`. Offsetlijn, gangpunten en ganglijn lopen nooit over een doorstart heen; gang per positie ook per stuk. Label "doorstart"/"reset" gestippeld in de metingenlijst en het rapport.
 - "End session" / "Sessie afronden" onder de gangsamenvatting: expliciete vlag `w.rateEnd`, in twee stappen (5 s), daarna een melding met Undo. Een sessie is afgerond zolang de laatste meting niet na `rateEnd.at` ligt; tot dan staat "Nieuwe start" aangevinkt en vast, dus de volgende meting start een nieuwe sessie. Bedoeld voor de Collection (actief/niet actief); bewust geen automatisch afronden.
 - Sessies worden afgeleid uit nieuwe-start-vlaggen (datastructuur ongewijzigd). Pulldown boven de grafiek bij >1 sessie, standaard de laatste, plus "Alle sessies" en "Alle sessies, zonder tussenpozen" (`allc`: sessies als aaneengesloten blokken op de tijd-as met gestippelde breuklijn).
 - Rate- en offsetgrafiek delen dezelfde tijd-as. Timegrapher-ruitjes alleen binnen de getoonde periode (zoals de Viewer); de ganggrafiek alleen met minstens één gangpunt, dus bij een sessie met één meting geen grafieken.
