@@ -24,6 +24,7 @@ Bulgari | Bvlgari | wide | B
 Carl F. Bucherer | Bucherer | roman | CFB
 Cartier | | italic | C
 Casio | G-Shock | grotesk | C
+casio digital | casio digi | led | CD
 Certina | | grotesk | C
 Chopard | | italic | C
 Christopher Ward | | wide | CW
