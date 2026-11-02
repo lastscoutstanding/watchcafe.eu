@@ -13,6 +13,7 @@
 <script src="/watchdata.js?v=9"></script>
 <script src="/watchrate/sample.js?v=7"></script>
 <script src="/brands.js?v=2"></script>
+<script src="/standards.js?v=1"></script>
 <style>
   :root{
     --page:#121215; --card:#1c1c21; --card2:#202026; --border:#33333c;
@@ -99,6 +100,11 @@
   .grid .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .grid .v{font-size:15px;margin-top:3px;overflow-wrap:anywhere}
   .grid .v.none{color:#6d6a73}
+  .grid .v small{color:var(--muted);font-size:13px}
+  /* a last cell alone on its row fills the row, so no empty grey cell shows */
+  .grid>div:last-child:nth-child(3n+1){grid-column:span 3}
+  .grid>div:last-child:nth-child(3n+2){grid-column:span 2}
+  @media(max-width:700px){.grid>div:last-child{grid-column:auto!important}.grid>div:last-child:nth-child(odd){grid-column:span 2!important}}
   .serial{background:none;border:none;padding:0;color:var(--ink);font-size:15px}
   .serial:hover{background:none;color:var(--accent)}
   .detbtns{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
@@ -407,8 +413,8 @@ var I18N={
   reserveNone:"Not measured yet", tgD:function(d){return "Last session "+d;},
   tgN:function(n){return n+(n===1?" session":" sessions");}, tgNone:"No sessions yet",
   openRM:"Open in Rate Meter →", openPR:"Open in Power Reserve →",
-  fields:{brand:"Brand",model:"Model",ref:"Reference",caliber:"Caliber / movement",year:"Year",serial:"Serial number",caseSize:"Case size",lugWidth:"Lug width",boxPapers:"Box & papers",serviceYears:"Service interval"},
-  ph:{caliber:"e.g. 861, manual wind",year:"e.g. 1969",caseSize:"e.g. 42 mm",lugWidth:"e.g. 20 mm"},
+  fields:{brand:"Brand",model:"Model",ref:"Reference",caliber:"Caliber / movement",spec:"Accuracy spec",year:"Year",serial:"Serial number",caseSize:"Case size",lugWidth:"Lug width",boxPapers:"Box & papers",serviceYears:"Service interval"},
+  ph:{caliber:"e.g. 861, manual wind",spec:"e.g. COSC or −2/+4",year:"e.g. 1969",caseSize:"e.g. 42 mm",lugWidth:"e.g. 20 mm"},
   bp:{"":"—",full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},
   refPfx:"Ref. ", calPfx:"Cal. ",
   showSerial:"Click to show", edit:"Edit details", del:"Delete watch…",
@@ -489,8 +495,8 @@ var I18N={
   reserveNone:"Nog niet gemeten", tgD:function(d){return "Laatste sessie "+d;},
   tgN:function(n){return n+(n===1?" sessie":" sessies");}, tgNone:"Nog geen sessies",
   openRM:"Open in Rate Meter →", openPR:"Open in Gangreserve →",
-  fields:{brand:"Merk",model:"Model",ref:"Referentie",caliber:"Kaliber / uurwerk",year:"Jaar",serial:"Serienummer",caseSize:"Kastmaat",lugWidth:"Bandaanzet",boxPapers:"Doos & papieren",serviceYears:"Onderhoudsinterval"},
-  ph:{caliber:"bijv. 861, handopwind",year:"bijv. 1969",caseSize:"bijv. 42 mm",lugWidth:"bijv. 20 mm"},
+  fields:{brand:"Merk",model:"Model",ref:"Referentie",caliber:"Kaliber / uurwerk",spec:"Nauwkeurigheidsnorm",year:"Jaar",serial:"Serienummer",caseSize:"Kastmaat",lugWidth:"Bandaanzet",boxPapers:"Doos & papieren",serviceYears:"Onderhoudsinterval"},
+  ph:{caliber:"bijv. 861, handopwind",spec:"bijv. COSC of −2/+4",year:"bijv. 1969",caseSize:"bijv. 42 mm",lugWidth:"bijv. 20 mm"},
   bp:{"":"—",full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},
   refPfx:"Ref. ", calPfx:"Kal. ",
   showSerial:"Klik om te tonen", edit:"Gegevens bewerken", del:"Horloge verwijderen…",
@@ -506,7 +512,7 @@ var I18N={
   gears:"Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — ", gearsLink:"zie het zelf →"
  }
 };
-var FIELDS=["brand","model","ref","caliber","year","serial","caseSize","lugWidth","boxPapers","serviceYears"];
+var FIELDS=["brand","model","ref","caliber","spec","year","serial","caseSize","lugWidth","boxPapers","serviceYears"];
 var TYPES=["purchase","service","repair","strap","event","sold","note"];
 var lang=(function(){try{return localStorage.getItem("siouxWatchRateMeterLang")||"en";}catch(e){return "en";}})();
 function T(){return I18N[lang]||I18N.en;}
@@ -947,6 +953,13 @@ function renderOv(w){
     a.onclick=function(){state.activeWatch=w.id;save();};
   });
 }
+// "COSC · −4 / +6 s/day"; a range of its own as typed, plus the range read from it
+function specHTML(v){
+  var s=window.Standards&&Standards.spec(v),u=" "+(lang==="nl"?"s/dag":"s/day");
+  if(!s)return esc(v);
+  if(s.label)return esc(s.label)+' <small>\u00b7 '+esc(Standards.fmt(s)+u)+'</small>';
+  return esc(Standards.fmt(s)+u)+(/month|maand|mnd|year|jaar/i.test(v)?' <small>\u00b7 '+esc(v)+'</small>':'');
+}
 var serialShown=false;
 function renderDet(w){
   var t=T(),i=info(w),el=document.getElementById("paneDet");
@@ -959,8 +972,9 @@ function renderDet(w){
         if(opts)return '<div><label class="fld" for="e_'+f+'">'+esc(t.fields[f])+'</label><select id="e_'+f+'">'
           +keys.map(function(k){return '<option value="'+k+'"'+((i[f]||"")===k?" selected":"")+'>'+esc(opts[k])+'</option>';}).join("")+'</select></div>';
         return '<div><label class="fld" for="e_'+f+'">'+esc(t.fields[f])+'</label><input type="text" id="e_'+f+'" value="'+esc(i[f]||"")+'"'
-          +(t.ph[f]?' placeholder="'+esc(t.ph[f])+'"':'')+' autocomplete="off"></div>';
+          +(t.ph[f]?' placeholder="'+esc(t.ph[f])+'"':'')+(f==="spec"?' list="specList"':'')+' autocomplete="off"></div>';
       }).join("")
+      +'<datalist id="specList">'+(window.Standards?Standards.list():[]).map(function(s){return '<option value="'+esc(s.label)+'">'+esc(s.name+" \u00b7 "+Standards.fmt(s))+'</option>';}).join("")+'</datalist>'
       +'</div><p class="note" id="detNote"></p>'
       +'<div class="formbtns"><button class="sm" id="eCancel">'+esc(t.cancel)+'</button><button class="sm primary" id="eSave">'+esc(t.save)+'</button></div>';
     document.getElementById("eCancel").onclick=function(){editing=false;render();};
@@ -974,6 +988,7 @@ function renderDet(w){
       if(!v)html='<div class="v none">—</div>';
       else if(f==="boxPapers")html='<div class="v">'+esc(t.bp[v]||v)+'</div>';
       else if(f==="serviceYears")html='<div class="v">'+esc(t.svc[v]||v)+'</div>';
+      else if(f==="spec")html='<div class="v">'+specHTML(v)+'</div>';
       else if(f==="serial"&&!serialShown)html='<div class="v"><button class="serial" id="serialBtn" title="'+esc(t.showSerial)+'">•••• '+esc(v.slice(-4))+'</button></div>';
       else html='<div class="v">'+esc(v)+'</div>';
       return '<div><div class="k">'+esc(t.fields[f])+'</div>'+html+'</div>';
@@ -1336,6 +1351,7 @@ window.addEventListener("storage",function(e){if(e.key===KEY&&!editing&&!logForm
 // then; read it again, or the next save would overwrite changes made elsewhere
 window.addEventListener("pageshow",function(e){if(e.persisted&&!editing&&!logForm){reload();render();}});
 window.addEventListener("swcbrands",function(){if(!currentId())renderOverview();});
+window.addEventListener("swcstandards",function(){if(currentId()&&!editing)render();});
 window.addEventListener("swclang",function(e){lang=e.detail;closeImport();applyLang();render();});
 
 reload();

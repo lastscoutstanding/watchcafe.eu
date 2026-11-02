@@ -122,6 +122,35 @@
   .chart-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#999;margin:0 0 8px 4px}
   .chart-wrap svg{display:block;width:100%}
   .chart-title .cunit{text-transform:none;letter-spacing:0;color:#777;margin-left:4px}
+  /* How it compares: folded by default; open, it adds a table and a band in the rate chart */
+  .stdtog{display:flex;align-items:center;gap:8px;width:100%;margin-top:14px;background:transparent;border-style:dashed;color:var(--muted);font-size:13.5px;text-align:left}
+  .stdtog:hover{background:transparent;color:var(--ink)}
+  .stdtog .chev{display:inline-block;transition:transform .15s}
+  .stdtog.open .chev{transform:rotate(90deg)}
+  .stdtog .vd{margin-left:auto}
+  .ok{color:#3be35b}
+  table.std{margin-top:6px;font-size:13.5px}
+  table.std th{padding:6px 8px;border-bottom:1px solid var(--border);font-weight:700}
+  table.std td{padding:7px 8px;border-bottom:1px solid #26262c;vertical-align:middle}
+  table.std tr[data-std]{cursor:pointer}
+  table.std tr[data-std]:hover td{background:#18181d}
+  table.std tr.sel td{background:#0e0e12}
+  table.std .nm small{display:block;color:var(--muted);font-size:12px}
+  table.std .nm small .mr{display:none}
+  table.std td.rng{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--muted)}
+  table.std td.bar{width:42%}
+  table.std td.bar svg{display:block;width:100%;height:22px}
+  table.std td.v{width:28px;text-align:center;font-weight:700;color:var(--muted)}
+  table.std td.v.ok{color:#3be35b}
+  table.std tr.me td{border-bottom:none}
+  table.std tr.me .nm{color:var(--accent);font-weight:700}
+  table.std tr.me .nm small{font-weight:400}
+  table.std .own{color:var(--accent)}
+  @media(max-width:600px){
+    table.std thead,table.std td.rng{display:none}
+    table.std .nm small .mr{display:inline}
+    table.std td.bar{width:45%}
+  }
 
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:18px}
   /* Your data: backup status, backup/share, report + viewer tiles, restore */
@@ -204,6 +233,7 @@
   <script src="/nav.js" defer></script>
   <script src="/watchdata.js?v=9"></script>
   <script src="sample.js?v=7"></script>
+  <script src="/standards.js?v=1"></script>
 </head>
 <body>
 <div class="wrap">
@@ -360,6 +390,7 @@
       </div>
       <div class="hint" id="tgLegend" style="display:none"></div>
       <p class="hint" id="rateChartHint" style="display:none"></p>
+      <div id="stdBox" style="display:none"></div>
       <div class="tgcmp" id="tgCompare" style="display:none"></div>
       <div id="tgList"></div>
 
@@ -400,6 +431,10 @@ var I18N={
   thTime:"Time", thOffset:"Offset", thPosition:"Position", thNote:"Note", del:"delete",
   newStartTag:"new start", restartTag:"reset",
   chartOffset:"Offset over time", chartRate:"Rate over time",
+  stdTitle:"How it compares", stdWithin:function(l){return "\u2713 Within "+l;}, stdOutside:function(l){return "Outside "+l;},
+  stdSpec:"your spec", stdOwn:"Your spec", stdOwnSub:"from Details", stdThis:"This watch", stdThisSub:"rate of this session",
+  stdThStd:"Standard", stdThRange:"Range",
+  stdNote:"Click a standard to show it in the rate chart. Standards are lab tests (COSC: 15 days, five positions, three temperatures); your rate is measured in daily use, so this is an indication, not a certificate. Set a watch's own spec under Details in the Collection.",
   rateChartHint:"Rate points are calculated from consecutive measurements at least 6 hours apart. Lines break at a new start or a reset.",
   guideTitle:"How it works", guideIntro:"Track how fast or slow your watch runs, in seconds per day.",
   gStep1:"<b>Add a watch</b> \u2014 type its name above and tap Add.",
@@ -458,6 +493,10 @@ var I18N={
   thTime:"Tijdstip", thOffset:"Offset", thPosition:"Positie", thNote:"Notitie", del:"verwijder",
   newStartTag:"nieuwe start", restartTag:"doorstart",
   chartOffset:"Offset in de tijd", chartRate:"Gang in de tijd",
+  stdTitle:"Vergelijking met normen", stdWithin:function(l){return "\u2713 Binnen "+l;}, stdOutside:function(l){return "Buiten "+l;},
+  stdSpec:"jouw norm", stdOwn:"Jouw norm", stdOwnSub:"uit Gegevens", stdThis:"Dit horloge", stdThisSub:"gang van deze sessie",
+  stdThStd:"Norm", stdThRange:"Bereik",
+  stdNote:"Klik op een norm om hem in de ganggrafiek te tonen. Normen zijn labtests (COSC: 15 dagen, vijf posities, drie temperaturen); jouw gang is gemeten bij gewoon gebruik, dus dit is een indicatie, geen certificaat. De eigen norm van een horloge zet je bij Gegevens in de Collectie.",
   rateChartHint:"Gangpunten worden berekend uit opeenvolgende metingen die minstens 6 uur uit elkaar liggen. Lijnen breken bij een nieuwe start of doorstart.",
   guideTitle:"Zo werkt het", guideIntro:"Meet hoeveel je horloge per dag voor- of achterloopt.",
   gStep1:"<b>Voeg een horloge toe</b> \u2014 typ de naam hierboven en tik op Toevoegen.",
@@ -662,12 +701,12 @@ function renderHistory(){
   var t=I18N[lang],w=activeWatch(),wrap=document.getElementById("historyWrap"),sum=document.getElementById("rateSummary");
   document.getElementById("histH2").innerHTML=escapeHtml(t.measurements)+watchSuffix(w);
   renderSessionPicker(w);
-  if(!w||!w.measurements.length){document.getElementById("sessEnd").style.display="none";wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderTG(w||null);return;}
+  if(!w||!w.measurements.length){document.getElementById("sessEnd").style.display="none";wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderStd(null,null);renderTG(w||null);return;}
   renderSessEnd(w);
   var pts=selectedMeas(w).slice().sort(function(a,b){return b.t-a.t;}),r=rateOf(w);
   if(r){var rstr=(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" "+t.perDay;
     var since=r.partial?(" ("+t.sinceStart+")"):"";
-    sum.innerHTML=(lang==="nl"?"Gang: <b>"+rstr+"</b> &mdash; uit "+r.n+" metingen over "+humanSpan(r.span):"Rate: <b>"+rstr+"</b> &mdash; from "+r.n+" measurements over "+humanSpan(r.span))+since+".";}
+    sum.innerHTML=(lang==="nl"?"Gang: <b>"+rstr+"</b> &mdash; uit "+r.n+" metingen over "+humanSpan(r.span):"Rate: <b>"+rstr+"</b> &mdash; from "+r.n+" measurements over "+humanSpan(r.span))+since+"."+(stdOpen?stdVerdict(w,r,true):"");}
   else sum.textContent=t.needTwo;
   var html='<h2 style="margin-top:22px">'+escapeHtml(t.measLog)+watchSuffix(w)+'</h2><table class="mtab"><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
   pts.forEach(function(m){
@@ -678,6 +717,7 @@ function renderHistory(){
   html+="</tbody></table>";wrap.innerHTML=html;
   wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");WatchData.markDeleted(state,id);w.measurements=w.measurements.filter(function(x){return x.id!==id;});save();renderAll();};});
   drawCharts(w);
+  renderStd(w,r);
   renderTG(w);
 }
 
@@ -753,7 +793,7 @@ function timeLayout(blocks,x0,x1){
   }
   return {X:X,lay:lay};
 }
-function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
+function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks,band){
   // seriesSegs: array of segments; each segment: array of {t,v}
   var all=[];seriesSegs.forEach(function(s){all=all.concat(s);});
   (tgSessions||[]).forEach(function(sess){sess.readings.forEach(function(r){all.push({t:sess.t,v:r.rate});});});
@@ -766,6 +806,8 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
   else{t0=all[0].t;t1=all[all.length-1].t;all.forEach(function(p){if(p.t<t0)t0=p.t;if(p.t>t1)t1=p.t;});}
   var vs=all.map(function(p){return p.v;});
   var mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs);
+  // a standard's band widens the range, but a very wide one (Seiko 4R) stops 8 s/day past the data
+  if(band){var dmn=mn,dmx=mx;mn=Math.min(mn,Math.max(band.lo,dmn-8),band.rate);mx=Math.max(mx,Math.min(band.hi,dmx+8),band.rate);}
   // a flat series (quartz: every rate 0.1 with float noise) gets a range of 2, like the Viewer;
   // otherwise the grid step becomes ~1e-17 and the gridline loop runs for millions of rounds
   if(mx-mn<0.5){var mid=(mn+mx)/2;mn=mid-1;mx=mid+1;}
@@ -775,6 +817,13 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
   function Y(v){return H-B-((v-mn)/(mx-mn))*(H-T-B);}
   var FS=' font-size="12" fill="#999"';
   var out="";
+  if(band){
+    var by1=Y(Math.min(band.hi,mx)),by0=Y(Math.max(band.lo,mn));
+    out+='<rect x="'+L+'" y="'+by1.toFixed(1)+'" width="'+(W-L-R)+'" height="'+(by0-by1).toFixed(1)+'" fill="#3be35b" opacity=".07"/>';
+    if(band.hi<=mx)out+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+by1.toFixed(1)+'" y2="'+by1.toFixed(1)+'" stroke="#3be35b" stroke-opacity=".45" stroke-dasharray="2 4"/>';
+    if(band.lo>=mn)out+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+by0.toFixed(1)+'" y2="'+by0.toFixed(1)+'" stroke="#3be35b" stroke-opacity=".45" stroke-dasharray="2 4"/>';
+    out+='<text x="'+(W-R-6)+'" y="'+(by1+14).toFixed(1)+'" text-anchor="end" font-size="11" fill="#3be35b" fill-opacity=".75">'+escapeHtml(band.label)+'</text>';
+  }
   // gridlines on round steps (1/2/5 x 10^k), three to five of them
   var raw=(mx-mn)/(H<200?4:5),mag=Math.pow(10,Math.floor(Math.log10(raw)));
   var step=[1,2,5,10].map(function(k){return k*mag;}).filter(function(k){return k>=raw;})[0];
@@ -799,6 +848,8 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks){
       if(b.x0-prev>=LW&&(W-R)-b.x0>=2*LW){out+='<text x="'+b.x0.toFixed(1)+'" y="'+(H-8)+'"'+FS+'>'+dstr(b.t0)+'</text>';prev=b.x0;}
     }
   }
+  // the session rate as a dashed line, to read against the band
+  if(band)out+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(band.rate).toFixed(1)+'" y2="'+Y(band.rate).toFixed(1)+'" stroke="#d96a41" stroke-opacity=".6" stroke-dasharray="6 4"/>';
   // segments: line per segment + colored dots
   seriesSegs.forEach(function(s){
     if(s.length>1){
@@ -857,11 +908,71 @@ function drawCharts(w){
   // timegrapher sessions only within the shown period (as in the Viewer); without a
   // rate point there is no rate chart, so a first measurement doesn't stack every session at one x
   var tgSessions=tgOf(w).filter(function(s){return s.t>=tDomain[0]&&s.t<=tDomain[1];});
-  var okRate=rateSegs.length>0&&chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain,blocks);
+  var okRate=rateSegs.length>0&&chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain,blocks,stdBand(w));
   rw.style.display=okRate?"block":"none";
   rh.style.display=(okOff||okRate)?"block":"none";
   document.getElementById("tgLegend").style.display=(okRate&&tgSessions.length)?"block":"none";
   document.getElementById("tgLegend").textContent=I18N[lang].tgLegendTxt;
+}
+
+/* ===== how it compares: accuracy standards from /standards.txt ===== */
+var STDKEY="siouxWatchStdOpen",stdSel=null;
+var stdOpen=(function(){try{return localStorage.getItem(STDKEY)==="1";}catch(e){return false;}})();
+// the watch's own spec (Details) first, then the list in file order
+function stdRows(w){
+  var own=w&&w.info&&w.info.spec&&Standards.spec(w.info.spec),rows=Standards.list();
+  if(own){rows=rows.filter(function(s){return s.id!==own.id;});rows.unshift(Object.assign({own:true},own));}
+  return rows;
+}
+function stdLabel(s){return s.label||I18N[lang].stdSpec;}
+function stdCur(w){
+  var rows=stdRows(w);
+  return rows.filter(function(s){return s.id===stdSel;})[0]||rows[0]||null;
+}
+function stdIn(s,v){return v>=s.lo-1e-9&&v<=s.hi+1e-9;}
+// "✓ Within COSC (−4 / +6)" behind the summary while open; only for the own spec when folded
+function stdVerdict(w,r,long){
+  var s=stdOpen?stdCur(w):stdRows(w).filter(function(x){return x.own;})[0];
+  if(!s||!r)return "";var t=I18N[lang],ok=stdIn(s,r.rate),l=stdLabel(s)+(long?" ("+Standards.fmt(s)+")":"");
+  return ' <span class="'+(ok?"ok":"")+'">'+escapeHtml(ok?t.stdWithin(l):t.stdOutside(l))+'</span>';
+}
+function stdBand(w){
+  if(!stdOpen)return null;var r=rateOf(w),s=stdCur(w);
+  return r&&s?{lo:s.lo,hi:s.hi,rate:r.rate,label:stdLabel(s)+" "+Standards.fmt(s)}:null;
+}
+// mini scale, symmetric around 0 and at least ±10 s/day; wider ranges run off the edge
+function stdBar(s,v,S){
+  var W=300;function X(x){return (Math.max(-S,Math.min(S,x))+S)/(2*S)*W;}
+  var o='<svg viewBox="0 0 '+W+' 22" preserveAspectRatio="none"><line x1="0" x2="'+W+'" y1="11" y2="11" stroke="#2c2c2c" stroke-width="2"/>'
+    +'<line x1="'+X(0)+'" x2="'+X(0)+'" y1="4" y2="18" stroke="#555" stroke-dasharray="2 2"/>';
+  if(s){var c=stdIn(s,v)?"#3be35b":"#a09da6";
+    o+='<rect x="'+X(s.lo).toFixed(1)+'" y="6" width="'+Math.max(2,X(s.hi)-X(s.lo)).toFixed(1)+'" height="10" fill="'+c+'" fill-opacity=".28" stroke="'+c+'" stroke-opacity=".6"/>';}
+  return o+'<line x1="'+X(v).toFixed(1)+'" x2="'+X(v).toFixed(1)+'" y1="1" y2="21" stroke="#d96a41" stroke-width="3"/></svg>';
+}
+function renderStd(w,r){
+  var box=document.getElementById("stdBox"),t=I18N[lang],rows=w?stdRows(w):[];
+  if(!r||!rows.length){box.style.display="none";return;}
+  box.style.display="";
+  var html='<button class="sm stdtog'+(stdOpen?' open':'')+'" id="stdTog"><span class="chev">\u25b8</span>'+escapeHtml(t.stdTitle)
+    +(stdOpen?'':'<span class="vd">'+stdVerdict(w,r,false)+'</span>')+'</button>';
+  if(stdOpen){
+    var cur=stdCur(w),S=Math.max(10,Math.ceil((Math.abs(r.rate)+1)/5)*5),fr=(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1);
+    html+='<table class="std"><thead><tr><th>'+t.stdThStd+'</th><th>'+t.stdThRange+'</th><th>\u2212'+S+' \u2026 0 \u2026 +'+S+' '+t.perDay+'</th><th></th></tr></thead><tbody>';
+    rows.forEach(function(s){
+      var ok=stdIn(s,r.rate),rng=Standards.fmt(s);
+      var nm=s.own&&!s.label?t.stdOwn:s.name,sub=s.own?(s.label?escapeHtml(s.label)+' \u00b7 <span class="own">'+t.stdSpec+'</span>':t.stdOwnSub):escapeHtml(s.label);
+      html+='<tr data-std="'+escapeHtml(s.id)+'"'+(s===cur?' class="sel"':'')+'><td class="nm">'+escapeHtml(nm)+'<small>'+sub+'<span class="mr"> \u00b7 '+rng+'</span></small></td>'
+        +'<td class="rng">'+rng+'</td><td class="bar">'+stdBar(s,r.rate,S)+'</td><td class="v'+(ok?' ok':'')+'">'+(ok?'\u2713':'\u2013')+'</td></tr>';
+    });
+    html+='<tr class="me"><td class="nm">'+escapeHtml(t.stdThis)+'<small>'+escapeHtml(t.stdThisSub)+'<span class="mr"> \u00b7 '+fr+'</span></small></td><td class="rng">'+fr+'</td><td class="bar">'+stdBar(null,r.rate,S)+'</td><td></td></tr>';
+    html+='</tbody></table><p class="hint">'+escapeHtml(t.stdNote)+'</p>';
+  }
+  box.innerHTML=html;
+  document.getElementById("stdTog").onclick=function(){
+    stdOpen=!stdOpen;try{localStorage.setItem(STDKEY,stdOpen?"1":"0");}catch(e){}
+    renderHistory();
+  };
+  box.querySelectorAll("tr[data-std]").forEach(function(tr){tr.onclick=function(){stdSel=tr.getAttribute("data-std");renderHistory();};});
 }
 
 /* ===== timegrapher helpers ===== */
@@ -964,6 +1075,7 @@ function tick(){var now=Date.now();setClock(refDigs,fmtAms(now));setClock(watchD
 tick();setInterval(tick,200);
 
 /* ===== events ===== */
+window.addEventListener("swcstandards",function(){if(window.__rmReady)renderHistory();});
 window.addEventListener("swclang",function(e){lang=e.detail;if(!window.__rmReady)return;hideNudge();applyLang();renderAll();});
 // back/forward restores the page from the browser cache with the data as it was
 // then; read it again, or the next save would overwrite changes made elsewhere

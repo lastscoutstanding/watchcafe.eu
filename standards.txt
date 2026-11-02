@@ -1,0 +1,18 @@
+# watchcafe.eu - accuracy standards for "How it compares" in the Rate Meter
+# One standard per line:  Label | Name | min | max | aliases
+#   Label    short name, used in the chart band and the summary line
+#   Name     longer name in the table
+#   min/max  allowed average daily rate in s/day, e.g. -4 and +6
+#   aliases  other names a watch's spec may use, separated by ;  (optional)
+# A watch's spec (Collection, Details) can be a label, name or alias from this
+# list, or a range of its own: "-2/+4", "±2" or "±15 s/month".
+# The table follows this order; a watch's own spec always comes first, and is
+# the band shown in the chart until another standard is clicked.
+# Matching ignores case, accents, spaces and punctuation.
+# Lines starting with # are ignored.
+COSC | Chronometer | -4 | +6 | chronometer; COSC chronometer; ISO 3159
+METAS | Master Chronometer | 0 | +5 | master chronometer; METAS master chronometer
+Superlative | Superlative Chronometer (Rolex) | -2 | +2 | superlative chronometer; Rolex superlative
+Grand Seiko | Grand Seiko mechanical | -3 | +5 | GS; GS mechanical
+Seiko 6R | Seiko 6R calibres | -15 | +25 | 6R; 6R15; 6R35
+Seiko 4R | Seiko 4R calibres | -35 | +45 | 4R; 4R35; 4R36
