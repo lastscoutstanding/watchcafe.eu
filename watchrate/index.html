@@ -119,11 +119,14 @@
   .tag.rs{background:transparent;border:1px dashed #eda57f;padding:1px 6px}
 
   .chart-wrap{background:#0e0e12;border-radius:12px;padding:14px 12px 10px;margin-top:14px}
-  .chart-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#999;margin:0 0 8px 4px}
+  .chart-title{display:flex;align-items:center;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#999;margin:0 0 8px 4px}
   .chart-wrap svg{display:block;width:100%}
   .chart-title .cunit{text-transform:none;letter-spacing:0;color:#777;margin-left:4px}
+  .chart-title .qbtn{margin-left:auto;letter-spacing:0}
+  .chart-wrap .infobox{background:#16161b;margin:8px 0 4px}
   /* How it compares: folded by default; open, it adds a table and a band in the rate chart */
-  .stdtog{display:flex;align-items:center;gap:8px;width:100%;margin-top:14px;background:transparent;border-style:dashed;color:var(--muted);font-size:13.5px;text-align:left}
+  .stdbar{display:flex;align-items:center;gap:8px;margin-top:14px;border:1px dashed var(--border);border-radius:8px;padding-right:9px}
+  .stdtog{flex:1;display:flex;align-items:center;gap:8px;min-width:0;background:transparent;border:none;color:var(--muted);font-size:13.5px;text-align:left}
   .stdtog:hover{background:transparent;color:var(--ink)}
   .stdtog .chev{display:inline-block;transition:transform .15s}
   .stdtog.open .chev{transform:rotate(90deg)}
@@ -385,11 +388,11 @@
         <svg id="chartOff"></svg>
       </div>
       <div class="chart-wrap" id="chartRateWrap" style="display:none">
-        <p class="chart-title"><span id="chartRateTitle"></span><span class="cunit" id="chartRateUnit"></span></p>
+        <p class="chart-title"><span id="chartRateTitle"></span><span class="cunit" id="chartRateUnit"></span><button class="qbtn" id="rateHelp" aria-label="?">?</button></p>
         <svg id="chartRate"></svg>
+        <p class="hint infobox" id="rateChartHint" style="display:none"></p>
       </div>
       <div class="hint" id="tgLegend" style="display:none"></div>
-      <p class="hint" id="rateChartHint" style="display:none"></p>
       <div id="stdBox" style="display:none"></div>
       <div class="tgcmp" id="tgCompare" style="display:none"></div>
       <div id="tgList"></div>
@@ -910,13 +913,12 @@ function drawCharts(w){
   var tgSessions=tgOf(w).filter(function(s){return s.t>=tDomain[0]&&s.t<=tDomain[1];});
   var okRate=rateSegs.length>0&&chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain,blocks,stdBand(w));
   rw.style.display=okRate?"block":"none";
-  rh.style.display=(okOff||okRate)?"block":"none";
   document.getElementById("tgLegend").style.display=(okRate&&tgSessions.length)?"block":"none";
   document.getElementById("tgLegend").textContent=I18N[lang].tgLegendTxt;
 }
 
 /* ===== how it compares: accuracy standards from /standards.txt ===== */
-var STDKEY="siouxWatchStdOpen",stdSel=null;
+var STDKEY="siouxWatchStdOpen",stdSel=null,stdHelp=false;
 var stdOpen=(function(){try{return localStorage.getItem(STDKEY)==="1";}catch(e){return false;}})();
 // the watch's own spec (Details) first, then the list in file order
 function stdRows(w){
@@ -953,8 +955,9 @@ function renderStd(w,r){
   var box=document.getElementById("stdBox"),t=I18N[lang],rows=w?stdRows(w):[];
   if(!r||!rows.length){box.style.display="none";return;}
   box.style.display="";
-  var html='<button class="sm stdtog'+(stdOpen?' open':'')+'" id="stdTog"><span class="chev">\u25b8</span>'+escapeHtml(t.stdTitle)
-    +(stdOpen?'':'<span class="vd">'+stdVerdict(w,r,false)+'</span>')+'</button>';
+  var html='<div class="stdbar"><button class="sm stdtog'+(stdOpen?' open':'')+'" id="stdTog"><span class="chev">\u25b8</span>'+escapeHtml(t.stdTitle)
+    +(stdOpen?'':'<span class="vd">'+stdVerdict(w,r,false)+'</span>')+'</button>'
+    +(stdOpen?'<button class="qbtn" id="stdHelp" aria-label="?">?</button>':'')+'</div>';
   if(stdOpen){
     var cur=stdCur(w),S=Math.max(10,Math.ceil((Math.abs(r.rate)+1)/5)*5),fr=(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1);
     html+='<table class="std"><thead><tr><th>'+t.stdThStd+'</th><th>'+t.stdThRange+'</th><th>\u2212'+S+' \u2026 0 \u2026 +'+S+' '+t.perDay+'</th><th></th></tr></thead><tbody>';
@@ -965,13 +968,14 @@ function renderStd(w,r){
         +'<td class="rng">'+rng+'</td><td class="bar">'+stdBar(s,r.rate,S)+'</td><td class="v'+(ok?' ok':'')+'">'+(ok?'\u2713':'\u2013')+'</td></tr>';
     });
     html+='<tr class="me"><td class="nm">'+escapeHtml(t.stdThis)+'<small>'+escapeHtml(t.stdThisSub)+'<span class="mr"> \u00b7 '+fr+'</span></small></td><td class="rng">'+fr+'</td><td class="bar">'+stdBar(null,r.rate,S)+'</td><td></td></tr>';
-    html+='</tbody></table><p class="hint">'+escapeHtml(t.stdNote)+'</p>';
+    html+='</tbody></table><p class="hint infobox" id="stdNote"'+(stdHelp?'':' style="display:none"')+'>'+escapeHtml(t.stdNote)+'</p>';
   }
   box.innerHTML=html;
   document.getElementById("stdTog").onclick=function(){
     stdOpen=!stdOpen;try{localStorage.setItem(STDKEY,stdOpen?"1":"0");}catch(e){}
     renderHistory();
   };
+  var sh=document.getElementById("stdHelp");if(sh)sh.onclick=function(){stdHelp=!stdHelp;toggleInfo("stdNote");};
   box.querySelectorAll("tr[data-std]").forEach(function(tr){tr.onclick=function(){stdSel=tr.getAttribute("data-std");renderHistory();};});
 }
 
@@ -1089,6 +1093,7 @@ document.getElementById("guideClose").onclick=function(){guideOpen=false;renderG
 
 function toggleInfo(id){var el=document.getElementById(id);el.style.display=el.style.display==="none"?"block":"none";}
 document.getElementById("nsHelp").onclick=function(ev){ev.preventDefault();toggleInfo("nsHint");};
+document.getElementById("rateHelp").onclick=function(){toggleInfo("rateChartHint");};
 document.getElementById("rsHelp").onclick=function(ev){ev.preventDefault();toggleInfo("rsHint");};
 // New start and Reset exclude each other; a reset usually follows setting the watch, so the green clock goes to 0
 document.getElementById("newStartChk").onchange=function(e){
