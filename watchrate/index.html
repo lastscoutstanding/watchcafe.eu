@@ -187,6 +187,19 @@
   .tglabel{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted)}
   .tgbox{background:transparent;border:none;padding:14px 0 2px;margin-top:0}
   @media(max-width:600px){.card{padding:22px 16px 26px}.tgcmp{grid-template-columns:1fr 1fr}}
+  /* measurement and timegrapher lists: two lines per row on narrow screens, so nothing runs off to the right */
+  .mnote{display:none}
+  @media(max-width:600px){
+    table.mtab,table.mtab tbody{display:block}
+    table.mtab thead,table.mtab td:nth-child(4),table.mtab .dsk{display:none}
+    table.mtab tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:9px 0;border-bottom:1px solid var(--border)}
+    table.mtab td{padding:0;border:0}
+    table.mtab td:nth-child(2),table.mtab td:nth-child(5){text-align:right}
+    table.mtab td:nth-child(2){font-weight:600}
+    table.mtab td:nth-child(5) button{padding:3px 9px}
+    table.mtab td:nth-child(3){color:var(--muted);font-size:13px}
+    .mnote{display:inline}
+  }
 </style>
   <script src="/nav.js" defer></script>
   <script src="/watchdata.js?v=9"></script>
@@ -638,6 +651,11 @@ function renderSessionPicker(w){
   var val=(selectedSession==="last")?(segs.length-1):selectedSession;
   sel.value=String(val);
 }
+// third cell: on narrow screens the note column is hidden and the note follows the main text ("Worn · note")
+function withNote(main,note){
+  if(!note)return main||"\u2014";
+  return (main||'<span class="dsk">\u2014</span>')+'<span class="mnote">'+(main?" \u00b7 ":"")+escapeHtml(note)+'</span>';
+}
 // " — <watch name>" after a section heading, so the active watch is always in view
 function watchSuffix(w){return w?' &mdash; <span class="wname">'+escapeHtml(w.name)+'</span>':'';}
 function renderHistory(){
@@ -651,11 +669,11 @@ function renderHistory(){
     var since=r.partial?(" ("+t.sinceStart+")"):"";
     sum.innerHTML=(lang==="nl"?"Gang: <b>"+rstr+"</b> &mdash; uit "+r.n+" metingen over "+humanSpan(r.span):"Rate: <b>"+rstr+"</b> &mdash; from "+r.n+" measurements over "+humanSpan(r.span))+since+".";}
   else sum.textContent=t.needTwo;
-  var html='<h2 style="margin-top:22px">'+escapeHtml(t.measLog)+watchSuffix(w)+'</h2><table><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
+  var html='<h2 style="margin-top:22px">'+escapeHtml(t.measLog)+watchSuffix(w)+'</h2><table class="mtab"><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
   pts.forEach(function(m){
     var d=new Date(m.t).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
     var tag=m.newStart?('<span class="tag">'+t.newStartTag+'</span>'):m.restart?('<span class="tag rs">'+t.restartTag+'</span>'):"";
-    html+='<tr><td class="num">'+d+tag+'</td><td class="num">'+signSec(m.offset,true)+'</td><td>'+(m.position?escapeHtml(posLabel(m.position)):"\u2014")+'</td><td>'+escapeHtml(m.note||"")+'</td><td><button class="sm danger ghost" data-id="'+m.id+'">'+t.del+'</button></td></tr>';
+    html+='<tr><td class="num">'+d+tag+'</td><td class="num">'+signSec(m.offset,true)+'</td><td>'+withNote(m.position?escapeHtml(posLabel(m.position)):"",m.note)+'</td><td>'+escapeHtml(m.note||"")+'</td><td><button class="sm danger ghost" data-id="'+m.id+'">'+t.del+'</button></td></tr>';
   });
   html+="</tbody></table>";wrap.innerHTML=html;
   wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");WatchData.markDeleted(state,id);w.measurements=w.measurements.filter(function(x){return x.id!==id;});save();renderAll();};});
@@ -699,13 +717,13 @@ function renderTG(w){
   cmp.style.display="grid";
   // sessielijst
   var loc=lang==="nl"?"nl-NL":"en-GB";
-  var html='<h2 style="margin-top:22px">'+escapeHtml(t.tgSessions)+watchSuffix(w)+'</h2><table><thead><tr><th>'+t.tgDate+'</th><th>'+t.tgAvg+'</th><th>'+t.tgReadings+'</th><th>'+t.tgNote2+'</th><th></th></tr></thead><tbody>';
+  var html='<h2 style="margin-top:22px">'+escapeHtml(t.tgSessions)+watchSuffix(w)+'</h2><table class="mtab"><thead><tr><th>'+t.tgDate+'</th><th>'+t.tgAvg+'</th><th>'+t.tgReadings+'</th><th>'+t.tgNote2+'</th><th></th></tr></thead><tbody>';
   sessions.slice().reverse().forEach(function(sess){
     var d=new Date(sess.t).toLocaleDateString(loc,{day:"2-digit",month:"short",year:"numeric"});
     var reads=sess.readings.map(function(r){
       return '<span title="'+escapeHtml(r.title)+'" style="white-space:nowrap"><span class="tgdot" style="border-color:'+posColor(r.position)+'"></span>'+posAbbr(r.position)+' '+(r.rate>0?"+":"")+r.rate+'</span>';
     }).join(" \u00b7 ");
-    html+='<tr><td class="num">'+d+'</td><td class="num">'+fr(sess.avg)+'</td><td>'+reads+'</td><td>'+escapeHtml(sess.note)+'</td><td><button class="sm danger ghost" data-tid="'+sess.id+'">'+t.del+'</button></td></tr>';
+    html+='<tr><td class="num">'+d+'</td><td class="num">'+fr(sess.avg)+'</td><td>'+withNote(reads,sess.note)+'</td><td>'+escapeHtml(sess.note)+'</td><td><button class="sm danger ghost" data-tid="'+sess.id+'">'+t.del+'</button></td></tr>';
   });
   html+='</tbody></table>';
   list.innerHTML=html;
