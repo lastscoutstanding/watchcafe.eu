@@ -11,13 +11,14 @@
 <script src="/nav.js" defer></script>
 <script src="/watchdata.js?v=9"></script>
 <script src="sample.js?v=7"></script>
+<script src="/standards.js?v=1"></script>
 <style>
   :root{
     --page:#121215; --card:#1c1c21; --border:#33333c;
     --accent:#d96a41; --ink:#e9e7e2; --muted:#a09da6;
     --nav-bg:#17171b; --nav-border:#2a2a31; --nav-hover:#22222a; --accent-glow:rgba(217,106,65,.7);
     /* the report itself is always light: paper, ink, a print-safe accent */
-    --paper:#ffffff; --p-ink:#1d1d22; --p-muted:#6b6872; --p-line:#dcdae0; --p-soft:#f4f3f6; --p-accent:#b8532e;
+    --paper:#ffffff; --p-ink:#1d1d22; --p-muted:#6b6872; --p-line:#dcdae0; --p-soft:#f4f3f6; --p-accent:#b8532e; --p-ok:#2f8a57;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -102,6 +103,21 @@
   .kpi .v small{font-size:9pt;font-weight:400;color:var(--p-muted)}
   .kpi.main .v{color:var(--p-accent)}
   .kpi .v .nw{white-space:nowrap}
+  .ovsp{display:block;font-size:8pt;color:var(--p-muted);white-space:nowrap}
+  .kpi .sp{font-size:8.5pt;font-weight:600;color:var(--p-muted);margin-top:2px}
+  .kpi .sp.ok,.sheet .ok{color:var(--p-ok)}
+  .kpi .sp span{font-weight:400;color:var(--p-muted)}
+
+  /* accuracy standards: own spec as a band in the rate chart, the comparison table */
+  .sw{display:inline-block;width:14px;height:8px;background:rgba(63,160,106,.22);border:1px solid rgba(63,160,106,.6);margin-right:5px;vertical-align:0}
+  .stdt td{vertical-align:middle}
+  .stdt td.sc{width:46mm}
+  .stdt svg{display:block;width:100%;height:auto}
+  .stdt td.v{text-align:center;font-weight:700;color:var(--p-muted);width:14mm}
+  .stdt td.v.ok{color:var(--p-ok)}
+  .stdt tr.own td{background:#f5faf7}
+  .sheet .tag.ok{color:var(--p-ok);border-color:var(--p-ok)}
+  .disc{font-size:8pt;color:var(--p-muted);font-style:italic;margin:4px 0 0}
 
   .watch{break-before:page}
   .watch-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:2px solid var(--p-accent);padding-bottom:6px;margin-bottom:6px}
@@ -110,8 +126,8 @@
   .chart{border:1px solid var(--p-line);border-radius:6px;padding:6px 6px 2px;break-inside:avoid}
   .chart .ct{font-size:7.5pt;text-transform:uppercase;letter-spacing:.06em;color:var(--p-muted);margin:0 0 2px 2px}
   .chart svg{display:block;width:100%;height:auto}
-  .legend{font-size:8.5pt;color:var(--p-muted);margin:4px 0 0}
-  .legend span{margin-right:10px;white-space:nowrap}
+  .legend{font-size:8.5pt;color:var(--p-muted);margin:4px 0 0;display:flex;flex-wrap:wrap;gap:1px 10px}
+  .legend span{white-space:nowrap}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .ident{color:var(--p-muted);font-size:9.5pt;margin:-2px 0 8px}
   .kv{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin:0 0 4px}
@@ -144,7 +160,7 @@
     .top,.panel,.hint,.papercap{display:none !important}
     .sheet{box-shadow:none;border-radius:0;margin:0;padding:0;max-width:none}
     .sheet + .sheet{break-before:page}
-    .kpi,.chart{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .kpi,.chart,.sw,.stdt tr.own td{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .dot,.tag,.heat{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
@@ -171,6 +187,7 @@
           <label id="lblPrice"><input type="checkbox" id="optPrice"> <span id="t-optPrice"></span><span class="nofill" id="noPrice" hidden></span></label>
           <label id="lblSerial"><input type="checkbox" id="optSerial"> <span id="t-optSerial"></span><span class="nofill" id="noSerial" hidden></span></label>
         </span>
+        <label><input type="checkbox" id="optStd"> <span id="t-optStd"></span></label>
       </div>
     </div>
     <div class="psep"></div>
@@ -210,7 +227,11 @@ var I18N={
   purchased:"Purchased",price:"Price",nextService:"Next service",serviceDue:"service due",soldTag:"sold or gifted",
   bp:{full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},yearsN:function(n){return n+" years";},
   types:{purchase:"Purchase",service:"Service",repair:"Repair",strap:"Strap / bracelet",event:"Event",sold:"Sold or gifted",note:"Note"},
-  wornN:function(n){return n+(n===1?" day":" days");},lastWorn:"last worn",serialPfx:"Serial ",noneFilled:"none filled in",wornCol:"Worn",wornUnit:"days, 12 mo"},
+  wornN:function(n){return n+(n===1?" day":" days");},lastWorn:"last worn",serialPfx:"Serial ",noneFilled:"none filled in",wornCol:"Worn",wornUnit:"days, 12 mo",
+  optStd:"Accuracy standards",f_spec:"Accuracy spec",specUnit:"vs own spec",ownSpec:"own spec",ownRange:"own range",ownName:"Own spec",ownSub:"from Details",
+  within:function(l){return "✓ Within "+l;},outside:function(l){return "Outside "+l;},short:"short session",
+  stdTitle:"How it compares",stdSub:function(r){return "latest session, "+r+" s/day";},stdStd:"Standard",stdRange:"Range",stdScale:"Scale",stdIn:"Within",
+  stdNote:"Standards are laboratory tests (COSC: 15 days, five positions, three temperatures). This rate was measured in daily use, so it is an indication, not a certificate."},
  nl:{title:"Horlogerapport",sub:"Een leesbare, printbare kopie van je horloges",subViewer:"Een leesbare, printbare kopie van je back-ups",print:"Printen / Opslaan als PDF",back:"← Collectie",backViewer:"← Backup Viewer",sources:"Bronnen",
   include:"Opnemen",papercap:"Voorbeeld · even breed als de PDF-pagina",
   inReport:"Horloges",of:"van",all:"Alle",noneSel:"Geen",empty:"leeg",thisDevice:"Dit apparaat",now:"nu",
@@ -237,7 +258,11 @@ var I18N={
   purchased:"Gekocht",price:"Prijs",nextService:"Volgende onderhoudsbeurt",serviceDue:"onderhoud nodig",soldTag:"verkocht of weggegeven",
   bp:{full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},yearsN:function(n){return n+" jaar";},
   types:{purchase:"Aankoop",service:"Onderhoud",repair:"Reparatie",strap:"Band",event:"Evenement",sold:"Verkocht of weggegeven",note:"Notitie"},
-  wornN:function(n){return n+(n===1?" dag":" dagen");},lastWorn:"laatst gedragen",serialPfx:"Serienr. ",noneFilled:"nergens ingevuld",wornCol:"Gedragen",wornUnit:"dagen, 12 mnd"}
+  wornN:function(n){return n+(n===1?" dag":" dagen");},lastWorn:"laatst gedragen",serialPfx:"Serienr. ",noneFilled:"nergens ingevuld",wornCol:"Gedragen",wornUnit:"dagen, 12 mnd",
+  optStd:"Normen",f_spec:"Nauwkeurigheidsnorm",specUnit:"t.o.v. eigen norm",ownSpec:"eigen norm",ownRange:"eigen bereik",ownName:"Eigen norm",ownSub:"uit Gegevens",
+  within:function(l){return "✓ Binnen "+l;},outside:function(l){return "Buiten "+l;},short:"korte sessie",
+  stdTitle:"Vergelijking met normen",stdSub:function(r){return "laatste sessie, "+r+" s/dag";},stdStd:"Norm",stdRange:"Bereik",stdScale:"Schaal",stdIn:"Binnen",
+  stdNote:"Normen zijn labtests (COSC: 15 dagen, vijf posities, drie temperaturen). Deze gang is gemeten bij gewoon gebruik, dus dit is een indicatie, geen certificaat."}
 };
 var POS={
   dial_up:{en:"Dial up",nl:"Wijzerplaat boven",abbr:"DU",color:"#e0921f"},
@@ -382,6 +407,44 @@ function identLine(w,opt){
   if(opt&&opt.log&&opt.serial&&i.serial)parts.push(t("serialPfx")+i.serial);
   return parts.filter(Boolean).join(" · ");
 }
+/* ---------- accuracy standards (as "How it compares" in the Rate Meter) ---------- */
+// the watch's own spec from Details; null when empty or unreadable
+function ownStd(w){var sp=infoOf(w).spec,s=sp&&window.Standards&&Standards.spec(sp);return s?Object.assign({own:true},s):null;}
+// own spec first, then the list in file order
+function stdRows(w){var own=ownStd(w),rows=Standards.list();if(own){rows=rows.filter(function(s){return s.id!==own.id;});rows.unshift(own);}return rows;}
+function stdIn(s,v){return v>=s.lo-1e-9&&v<=s.hi+1e-9;}
+// a rate from under 3 days or fewer than 3 measurements says little: still shown, but marked
+function isShort(a){return !!a.last&&(a.last.t1-a.last.t0<3*DAY||a.last.pts.length<3);}
+// the latest session against the own spec: "Performance" + "−2 / +4", or only the range for a range of its own
+function ownVerdict(a){var s=ownStd(a.w);if(!s||a.current==null)return null;
+  return {s:s,ok:stdIn(s,a.current),name:s.label||Standards.fmt(s),range:s.label?Standards.fmt(s):"",short:isShort(a)};}
+function verdictKpi(v){if(!v)return "";
+  return '<div class="sp'+(v.ok?' ok':'')+'">'+esc(v.ok?t("within")(v.name):t("outside")(v.name))+(v.range?' <span>'+esc(v.range)+'</span>':'')+(v.short?' <span>· '+esc(t("short"))+'</span>':'')+'</div>';}
+function verdictCell(a){
+  var v=ownVerdict(a),sp=infoOf(a.w).spec;
+  if(!v)return sp?esc(sp):"";
+  return (v.ok?'<span class="ok">✓</span> ':'– ')+esc(v.name)+(v.short?'<br>'+esc(t("short")):'');
+}
+// mini scale, symmetric around 0 and at least ±10 s/day; wider ranges run off the edge
+function stdBar(s,v,S){
+  var W=160;function X(x){return 4+(Math.max(-S,Math.min(S,x))+S)/(2*S)*(W-8);}
+  var c=stdIn(s,v)?"#3fa06a":"#9a97a0";
+  return '<svg viewBox="0 0 '+W+' 16" xmlns="http://www.w3.org/2000/svg"><line x1="4" x2="'+(W-4)+'" y1="8" y2="8" stroke="#dcdae0"/>'
+    +'<line x1="'+X(0)+'" x2="'+X(0)+'" y1="3" y2="13" stroke="#b9b6bf" stroke-dasharray="2 2"/>'
+    +'<rect x="'+X(s.lo).toFixed(1)+'" y="4" width="'+Math.max(2,X(s.hi)-X(s.lo)).toFixed(1)+'" height="8" rx="1.5" fill="'+c+'" fill-opacity=".28" stroke="'+c+'" stroke-opacity=".6"/>'
+    +'<line x1="'+X(v).toFixed(1)+'" x2="'+X(v).toFixed(1)+'" y1="1" y2="15" stroke="#e07020" stroke-width="2.2"/></svg>';
+}
+function stdBlock(a){
+  var rows=stdRows(a.w),r=a.current;if(!rows.length)return "";
+  var S=Math.max(10,Math.ceil((Math.abs(r)+1)/5)*5);
+  return '<div style="break-inside:avoid"><h3>'+esc(t("stdTitle"))+' <span style="text-transform:none;letter-spacing:0;font-weight:400">('+esc(t("stdSub")(sgn(r,2)))+(isShort(a)?' · '+esc(t("short")):'')+')</span></h3>'
+    +'<table class="stdt"><thead><tr><th>'+t("stdStd")+'</th><th class="num">'+t("stdRange")+'<small>'+t("perDay")+'</small></th><th>'+t("stdScale")+'<small>−'+S+' … 0 … +'+S+'</small></th><th style="text-align:center">'+t("stdIn")+'</th></tr></thead><tbody>'
+    +rows.map(function(s){var ok=stdIn(s,r);
+      var nm=s.label?'<b>'+esc(s.label)+'</b>'+(s.name&&s.name!==s.label?' <span class="dim">'+esc(s.name)+'</span>':''):'<b>'+esc(t("ownName"))+'</b> <span class="dim">'+esc(t("ownSub"))+'</span>';
+      return '<tr'+(s.own?' class="own"':'')+'><td>'+nm+(s.own&&s.label?'<span class="tag ok">'+esc(t("ownSpec"))+'</span>':'')+'</td><td class="num">'+esc(Standards.fmt(s))+'</td><td class="sc">'+stdBar(s,r,S)+'</td><td class="v'+(ok?' ok':'')+'">'+(ok?'✓':'–')+'</td></tr>';}).join("")
+    +'</tbody></table><p class="disc">'+esc(t("stdNote"))+'</p></div>';
+}
+
 function logOf(w){return (w.log||[]).slice().sort(function(a,b){return b.t-a.t;});}
 function lastOf(w,types){return logOf(w).find(function(e){return types.indexOf(e.type)>-1;})||null;}
 function isFormer(w){var e=lastOf(w,["purchase","sold"]);return !!(e&&e.type==="sold");}
@@ -421,7 +484,7 @@ function wornHeat(days,end){
 function detailsBlock(w,opt){
   var i=infoOf(w),rows=[];
   function row(k,v){if(v)rows.push('<tr><td class="k">'+esc(k)+'</td><td>'+esc(v)+'</td></tr>');}
-  row(t("f_brand"),i.brand);row(t("f_model"),i.model);row(t("f_ref"),i.ref);row(t("f_caliber"),i.caliber);row(t("f_year"),i.year);
+  row(t("f_brand"),i.brand);row(t("f_model"),i.model);row(t("f_ref"),i.ref);row(t("f_caliber"),i.caliber);row(t("f_year"),i.year);row(t("f_spec"),i.spec);
   if(opt.serial)row(t("f_serial"),i.serial);
   row(t("f_caseSize"),i.caseSize);row(t("f_lugWidth"),i.lugWidth);row(t("f_boxPapers"),i.boxPapers?(t("bp")[i.boxPapers]||i.boxPapers):"");
   var p=lastOf(w,["purchase"]);
@@ -466,7 +529,7 @@ function yAxis(vals){
   for(var v=lo;v<=hi+1e-9;v+=step){var y=Y(v).toFixed(1);
     g+='<line x1="'+PAD.l+'" x2="'+(CW-PAD.r)+'" y1="'+y+'" y2="'+y+'" stroke="'+(Math.abs(v)<1e-9?"#9a97a0":"#e6e4ea")+'" stroke-width="'+(Math.abs(v)<1e-9?1:.8)+'"'+(Math.abs(v)<1e-9?' stroke-dasharray="3 3"':'')+'/>';
     g+='<text x="'+(PAD.l-4)+'" y="'+(+y+3)+'" text-anchor="end" font-size="8.5" fill="#6b6872">'+(v>0?"+":"")+(+v.toFixed(2))+'</text>';}
-  return {Y:Y,g:g};
+  return {Y:Y,g:g,lo:lo,hi:hi};
 }
 function frame(blocks){
   var g="";
@@ -497,7 +560,21 @@ function rateChart(a){
   var vals=[];segs.forEach(function(s){s.forEach(function(pc){pc.forEach(function(p){vals.push(p.v);});});});
   blocks.forEach(function(b){tgIn(b).forEach(function(s){s.readings.forEach(function(r){vals.push(+r.rate);});});});
   if(!vals.length)return "";
-  var ax=yAxis(vals),g=ax.g+frame(blocks);
+  // the own spec as a band; a very wide one (Seiko 4R) stops 8 s/day past the data, as on the Rate Meter
+  var v=ownVerdict(a),ext=vals.slice();
+  if(v){var dmn=Math.min.apply(null,vals),dmx=Math.max.apply(null,vals);ext.push(Math.max(v.s.lo,dmn-8),Math.min(v.s.hi,dmx+8),a.current);}
+  var ax=yAxis(ext),g="";
+  if(v){
+    var hi=Math.min(v.s.hi,ax.hi),lo=Math.max(v.s.lo,ax.lo),y1=ax.Y(hi),y0=ax.Y(lo),xr=CW-PAD.r;
+    g+='<rect x="'+PAD.l+'" y="'+y1.toFixed(1)+'" width="'+(xr-PAD.l)+'" height="'+(y0-y1).toFixed(1)+'" fill="#3fa06a" fill-opacity=".14"/>';
+    if(v.s.hi<=ax.hi)g+='<line x1="'+PAD.l+'" x2="'+xr+'" y1="'+y1.toFixed(1)+'" y2="'+y1.toFixed(1)+'" stroke="#3fa06a" stroke-opacity=".55" stroke-width=".8"/>';
+    if(v.s.lo>=ax.lo)g+='<line x1="'+PAD.l+'" x2="'+xr+'" y1="'+y0.toFixed(1)+'" y2="'+y0.toFixed(1)+'" stroke="#3fa06a" stroke-opacity=".55" stroke-width=".8"/>';
+    g+='<text x="'+(xr-4)+'" y="'+(y1+9).toFixed(1)+'" text-anchor="end" font-size="7.5" fill="#2f8a57">'+esc(v.name+(v.range?" "+v.range:""))+'</text>';
+  }
+  g+=ax.g+frame(blocks);
+  // the latest session's rate, over its own block
+  if(v){var lb=blocks[blocks.length-1],yr=ax.Y(a.current).toFixed(1);
+    g+='<line x1="'+lb.x0.toFixed(1)+'" x2="'+lb.x1.toFixed(1)+'" y1="'+yr+'" y2="'+yr+'" stroke="#e07020" stroke-width="1.3" stroke-dasharray="4 3"/>';}
   blocks.forEach(function(b,i){
     segs[i].forEach(function(pts){
       if(pts.length>1)g+='<polyline fill="none" stroke="#9a97a0" stroke-width="1" points="'+pts.map(function(p){return b.X(p.t).toFixed(1)+","+ax.Y(p.v).toFixed(1);}).join(" ")+'"/>';
@@ -510,12 +587,13 @@ function rateChart(a){
 }
 
 /* ---------- report ---------- */
-function kpi(label,val,unit,main){return '<div class="kpi'+(main?' main':'')+'"><div class="l">'+esc(label)+'</div><div class="v">'+val+(unit?' <small>'+esc(unit)+'</small>':'')+'</div></div>';}
+function kpi(label,val,unit,main,extra){return '<div class="kpi'+(main?' main':'')+'"><div class="l">'+esc(label)+'</div><div class="v">'+val+(unit?' <small>'+esc(unit)+'</small>':'')+'</div>'+(extra||'')+'</div>';}
 function tgReadings(s){return s.readings.map(function(r){var p=pos(r.position);return '<span style="white-space:nowrap"><span class="tgmark" style="border-color:'+p.color+'"></span>'+p.abbr+' '+sgn(+r.rate,0)+'</span>';}).join(" &nbsp;");}
 
 function overview(list,info,isSample,opt){
   var showWorn=opt.log&&list.some(function(a){return (a.w.worn||[]).length;});
   var showPrice=opt.log&&opt.price&&list.some(function(a){var p=lastOf(a.w,["purchase"]);return p&&p.cost;});
+  var showSpec=list.some(function(a){return infoOf(a.w).spec;});
   var all=[];list.forEach(function(a){if(a.t0!=null){all.push(a.t0,a.t1);}});
   var nMeas=list.reduce(function(x,a){return x+a.ms.length;},0);
   var rows=list.map(function(a){
@@ -523,7 +601,7 @@ function overview(list,info,isSample,opt){
     var pu=lastOf(a.w,["purchase"]);
     return '<tr><td><b>'+esc(a.w.name)+'</b>'+(isFormer(a.w)?'<span class="tag">'+esc(t("soldTag"))+'</span>':'')+(a.w._source?'<br><span class="dim" style="font-size:8pt">'+esc(a.w._source)+'</span>':'')+'</td><td class="num">'+a.ms.length+'</td><td class="num">'+a.sess.length+'</td>'
       +'<td style="white-space:nowrap">'+(a.t0!=null?esc(fShort(a.t0))+' – '+esc(fShort(a.t1)):t("none"))+'</td>'
-      +'<td class="num"><b>'+sgn(a.current,2)+'</b></td>'
+      +'<td class="num"><b>'+sgn(a.current,2)+'</b>'+(showSpec&&infoOf(a.w).spec?'<span class="ovsp">'+verdictCell(a)+'</span>':'')+'</td>'
       +'<td class="num">'+(tgL?sgn(tgL.avg):t("none"))+'</td>'
       +'<td class="num">'+(a.prAvg!=null?fHM(a.prAvg):t("none"))+'</td>'
       +(showWorn?'<td class="num">'+wornInfo(a.w).year+'</td>':'')
@@ -539,7 +617,7 @@ function overview(list,info,isSample,opt){
     +kpi(t("timegrapher"),list.reduce(function(x,a){return x+a.tg.length;},0))+'</div>'
     +'<h3>'+esc(t("overview"))+'</h3>'
     // short headings with the unit small underneath, so the watch name gets the room
-    +'<table class="ovt"><thead><tr><th>'+t("watch")+'</th><th class="num">'+t("meas")+'</th><th class="num">'+t("sessShort")+'</th><th>'+t("period")+'</th><th class="num">'+t("rate")+'<small>'+t("perDay")+'</small></th><th class="num">'+t("tgShort")+'<small>'+t("perDay")+'</small></th><th class="num">'+t("pr")+'</th>'
+    +'<table class="ovt"><thead><tr><th>'+t("watch")+'</th><th class="num">'+t("meas")+'</th><th class="num">'+t("sessShort")+'</th><th>'+t("period")+'</th><th class="num">'+t("rate")+'<small>'+t("perDay")+(showSpec?' · '+t("specUnit"):'')+'</small></th><th class="num">'+t("tgShort")+'<small>'+t("perDay")+'</small></th><th class="num">'+t("pr")+'</th>'
     +(showWorn?'<th class="num">'+t("wornCol")+'<small>'+t("wornUnit")+'</small></th>':'')
     +(showPrice?'<th class="num">'+t("price")+'</th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table>'
     +'</section>';
@@ -550,15 +628,16 @@ function watchPage(a,opt){
   h+='<div class="watch-head"><h2>'+esc(a.w.name)+(isFormer(a.w)?'<span class="tag">'+esc(t("soldTag"))+'</span>':'')+'</h2><span class="meta" style="margin:0;text-align:right">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+(a.w._source?'<br>'+esc(a.w._source):'')+'</span></div>';
   var idl=identLine(a.w,opt);if(idl)h+='<p class="ident">'+esc(idl)+'</p>';
   var lastTg=a.tg[a.tg.length-1];
-  h+='<div class="kpis">'+kpi(t("current"),sgn(a.current,2),t("perDay"),true)
+  h+='<div class="kpis">'+kpi(t("current"),sgn(a.current,2),t("perDay"),true,verdictKpi(ownVerdict(a)))
     +kpi(t("sessions"),a.sess.length)+kpi(t("measurements"),a.ms.length)
     +(a.prAvg!=null?kpi(t("powerReserve"),fHM(a.prAvg)):kpi(t("timegrapher"),lastTg?sgn(lastTg.avg):t("none"),lastTg?t("perDay"):""))+'</div>';
 
   if(a.ms.length>=2){
-    var used={};a.ms.forEach(function(m){if(m.position)used[m.position]=1;});
+    var used={},ov=ownVerdict(a);a.ms.forEach(function(m){if(m.position)used[m.position]=1;});
     h+='<div class="charts"><div class="chart"><div class="ct">'+esc(t("offsetChart"))+'</div>'+offsetChart(a)+'</div>'
       +'<div class="chart"><div class="ct">'+esc(t("rateChart"))+'</div>'+rateChart(a)+'</div></div>';
     h+='<p class="legend">'+Object.keys(used).map(function(k){var p=pos(k);return '<span><span class="dot" style="background:'+p.color+'"></span>'+esc(p.label)+'</span>';}).join("")
+      +(ov?'<span><span class="sw"></span>'+esc(ov.name+(ov.range?" "+ov.range:"")+" ("+t("ownSpec")+")")+'</span>':'')
       +(a.tg.length?'<span>'+esc(t("tgLegend"))+'</span>':'')+(a.sess.length>1?'<span>┆ '+esc(t("gapsRemoved"))+'</span>':'')+'</p>';
   } else h+='<p class="empty">'+esc(t("noData"))+'</p>';
 
@@ -567,6 +646,7 @@ function watchPage(a,opt){
       +a.sess.map(function(s,i){return '<tr><td>'+(i+1)+'</td><td class="nw">'+esc(fDTs(s.t0))+'</td><td class="nw">'+esc(fDTs(s.t1))+'</td><td class="num">'+fDur(s.t1-s.t0)+'</td><td class="num">'+s.pts.length+'</td><td class="num"><b>'+(s.fit?sgn(s.fit.rate,2):t("none"))+'</b></td><td class="num dim">'+(s.fit&&s.fit.r2!=null?s.fit.r2.toFixed(3):t("none"))+'</td><td class="dim">'+esc(s.pts[0].note||"")+'</td></tr>';}).join("")
       +'</tbody></table>';
   }
+  if(opt.std&&a.current!=null)h+=stdBlock(a);
 
   var side=[];
   if(a.positions.length>1){
@@ -641,13 +721,14 @@ document.getElementById("pick").onclick=function(e){
 
 function render(){
   document.documentElement.lang=lang;
-  ["title","sub","raw","back","note","optLog","optPrice","optSerial","include","papercap"].forEach(function(k){document.getElementById("t-"+k).textContent=t(k);});
+  ["title","sub","raw","back","note","optLog","optPrice","optSerial","optStd","include","papercap"].forEach(function(k){document.getElementById("t-"+k).textContent=t(k);});
   if(FROM_VIEWER)document.getElementById("t-sub").textContent=t("subViewer");
   document.getElementById("printBtn").textContent=t("print");
   document.title=t("title")+" — watchcafe.eu";
   // prices and serial numbers are off by default: a report is often shared (insurer, buyer, watchmaker)
   var opt={raw:document.getElementById("optRaw").checked,log:document.getElementById("optLog").checked,
-    price:document.getElementById("optPrice").checked,serial:document.getElementById("optSerial").checked};
+    price:document.getElementById("optPrice").checked,serial:document.getElementById("optSerial").checked,
+    std:document.getElementById("optStd").checked};
   document.getElementById("optPrice").disabled=document.getElementById("optSerial").disabled=!opt.log;
   document.getElementById("lblPrice").classList.toggle("dis",!opt.log);
   document.getElementById("lblSerial").classList.toggle("dis",!opt.log);
@@ -666,9 +747,10 @@ function render(){
     ?overview(list,{device:WatchData.getDevice(),sources:SRC.viewer?used:null},SRC.sample,opt)+list.map(function(a){return watchPage(a,opt);}).join("")
     :'<div class="pick-none">'+esc(t("pickNone"))+'</div>';
 }
-["optRaw","optLog","optPrice","optSerial"].forEach(function(id){document.getElementById(id).onchange=render;});
+["optRaw","optLog","optPrice","optSerial","optStd"].forEach(function(id){document.getElementById(id).onchange=render;});
 document.getElementById("printBtn").onclick=function(){window.print();};
 window.addEventListener("swclang",function(e){lang=e.detail;render();});
+window.addEventListener("swcstandards",render);
 render();
 </script>
 </body>
