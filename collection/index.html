@@ -125,6 +125,13 @@
   .sortpill:hover,.sortpill:focus-within{color:var(--ink)}
   .sortpill b{color:var(--ink);font-weight:600}
   .sortpill select{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;font-size:16px;padding:0;border:0}
+  /* spec field: free text plus a pulldown of the standards (an invisible native select, so a phone shows its own picker) */
+  .specrow{display:flex;gap:6px}
+  .specrow input{flex:1;min-width:0}
+  .specrow input::-webkit-calendar-picker-indicator{display:none!important}
+  .specpick{position:relative;flex:none;width:42px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:8px;background:#26262c;color:var(--muted);cursor:pointer}
+  .specpick:hover,.specpick:focus-within{color:var(--ink);background:#30303a}
+  .specpick select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px;padding:0;border:0}
   .divider{grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6d6a73;margin:4px 0 -2px}
   .divider::after{content:"";flex:1;border-top:1px dashed var(--border)}
   .f.warn{color:#ff9f43;border-color:color-mix(in srgb,#ff9f43 45%,transparent)}
@@ -414,7 +421,7 @@ var I18N={
   tgN:function(n){return n+(n===1?" session":" sessions");}, tgNone:"No sessions yet",
   openRM:"Open in Rate Meter →", openPR:"Open in Power Reserve →",
   fields:{brand:"Brand",model:"Model",ref:"Reference",caliber:"Caliber / movement",spec:"Accuracy spec",year:"Year",serial:"Serial number",caseSize:"Case size",lugWidth:"Lug width",boxPapers:"Box & papers",serviceYears:"Service interval"},
-  ph:{caliber:"e.g. 861, manual wind",spec:"e.g. COSC or −2/+4",year:"e.g. 1969",caseSize:"e.g. 42 mm",lugWidth:"e.g. 20 mm"},
+  specPick:"Choose a standard",ph:{caliber:"e.g. 861, manual wind",spec:"e.g. COSC or −2/+4",year:"e.g. 1969",caseSize:"e.g. 42 mm",lugWidth:"e.g. 20 mm"},
   bp:{"":"—",full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},
   refPfx:"Ref. ", calPfx:"Cal. ",
   showSerial:"Click to show", edit:"Edit details", del:"Delete watch…",
@@ -496,7 +503,7 @@ var I18N={
   tgN:function(n){return n+(n===1?" sessie":" sessies");}, tgNone:"Nog geen sessies",
   openRM:"Open in Rate Meter →", openPR:"Open in Gangreserve →",
   fields:{brand:"Merk",model:"Model",ref:"Referentie",caliber:"Kaliber / uurwerk",spec:"Nauwkeurigheidsnorm",year:"Jaar",serial:"Serienummer",caseSize:"Kastmaat",lugWidth:"Bandaanzet",boxPapers:"Doos & papieren",serviceYears:"Onderhoudsinterval"},
-  ph:{caliber:"bijv. 861, handopwind",spec:"bijv. COSC of −2/+4",year:"bijv. 1969",caseSize:"bijv. 42 mm",lugWidth:"bijv. 20 mm"},
+  specPick:"Kies een norm",ph:{caliber:"bijv. 861, handopwind",spec:"bijv. COSC of −2/+4",year:"bijv. 1969",caseSize:"bijv. 42 mm",lugWidth:"bijv. 20 mm"},
   bp:{"":"—",full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},
   refPfx:"Ref. ", calPfx:"Kal. ",
   showSerial:"Klik om te tonen", edit:"Gegevens bewerken", del:"Horloge verwijderen…",
@@ -971,14 +978,18 @@ function renderDet(w){
         var opts={boxPapers:t.bp,serviceYears:t.svc}[f],keys={boxPapers:["","full","papers","box","none"],serviceYears:["","3","4","5","6","7","8","10"]}[f];
         if(opts)return '<div><label class="fld" for="e_'+f+'">'+esc(t.fields[f])+'</label><select id="e_'+f+'">'
           +keys.map(function(k){return '<option value="'+k+'"'+((i[f]||"")===k?" selected":"")+'>'+esc(opts[k])+'</option>';}).join("")+'</select></div>';
-        return '<div><label class="fld" for="e_'+f+'">'+esc(t.fields[f])+'</label><input type="text" id="e_'+f+'" value="'+esc(i[f]||"")+'"'
-          +(t.ph[f]?' placeholder="'+esc(t.ph[f])+'"':'')+(f==="spec"?' list="specList"':'')+' autocomplete="off"></div>';
+        var inp='<input type="text" id="e_'+f+'" value="'+esc(i[f]||"")+'"'+(t.ph[f]?' placeholder="'+esc(t.ph[f])+'"':'')+(f==="spec"?' list="specList"':'')+' autocomplete="off">';
+        if(f==="spec")inp='<div class="specrow">'+inp+'<label class="specpick" title="'+esc(t.specPick)+'">▾<select id="specPick" aria-label="'+esc(t.specPick)+'"><option value="">'+esc(t.specPick)+'</option>'
+          +(window.Standards?Standards.list():[]).map(function(s){return '<option value="'+esc(s.label)+'">'+esc(s.label+(s.name!==s.label?" \u00b7 "+s.name:"")+" \u00b7 "+Standards.fmt(s))+'</option>';}).join("")+'</select></label></div>';
+        return '<div><label class="fld" for="e_'+f+'">'+esc(t.fields[f])+'</label>'+inp+'</div>';
       }).join("")
       +'<datalist id="specList">'+(window.Standards?Standards.list():[]).map(function(s){return '<option value="'+esc(s.label)+'">'+esc(s.name+" \u00b7 "+Standards.fmt(s))+'</option>';}).join("")+'</datalist>'
       +'</div><p class="note" id="detNote"></p>'
       +'<div class="formbtns"><button class="sm" id="eCancel">'+esc(t.cancel)+'</button><button class="sm primary" id="eSave">'+esc(t.save)+'</button></div>';
     document.getElementById("eCancel").onclick=function(){editing=false;render();};
     document.getElementById("eSave").onclick=function(){saveEdit(w);};
+    var sp=document.getElementById("specPick");
+    if(sp)sp.onchange=function(){if(sp.value)document.getElementById("e_spec").value=sp.value;sp.value="";};
     el.querySelectorAll("input").forEach(function(inp){inp.addEventListener("keydown",function(e){if(e.key==="Enter")saveEdit(w);else if(e.key==="Escape"){editing=false;render();}});});
     document.getElementById("eName").focus();
     return;
