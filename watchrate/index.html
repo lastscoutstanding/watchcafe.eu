@@ -109,10 +109,11 @@
   th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
   td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   .empty{color:var(--muted);font-size:14px;padding:14px 2px}
-  .sessend{display:flex;justify-content:space-between;align-items:center;gap:8px 12px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin:0 0 6px}
+  /* Rate session box under the timegrapher box: End session, and Undo once ended */
   .sessend b{color:var(--ink);font-weight:600}
-  .sessend.done{padding:9px 12px;border-radius:8px;background:#0e0e12;border:1px solid var(--border)}
-  .sessend button.dash{background:transparent;border-style:dashed;color:var(--muted)}
+  .sessend .hint{margin:6px 0 0}
+  .sessend .sesslbl{font-size:13.5px;color:var(--muted)}
+  .sessend button.dash{flex:none;background:transparent;border-style:dashed;color:var(--muted)}
   .sessend button.dash:hover{color:var(--ink)}
   .sessend button.armed{color:#ff6b5e;border-color:#ff6b5e;border-style:solid}
   .tag{display:inline-block;background:#2e221c;color:#eda57f;border-radius:6px;font-size:11px;padding:2px 7px;margin-left:6px;vertical-align:1px;white-space:nowrap}
@@ -370,6 +371,7 @@
           </div>
         </div>
       </div>
+      <div class="tgframe sessend" id="sessEnd" style="display:none"></div>
     </div>
 
     <div class="block">
@@ -381,7 +383,6 @@
         </div>
       </div>
       <div id="rateSummary" class="hint" style="margin:0 0 6px"></div>
-      <div id="sessEnd" class="sessend" style="display:none"></div>
 
       <div class="chart-wrap" id="chartOffWrap" style="display:none">
         <p class="chart-title"><span id="chartOffTitle"></span><span class="cunit">(s)</span></p>
@@ -459,9 +460,9 @@ var I18N={
   grpAlign:"Align to your watch", grpRecord:"Record",
   alignHint:"Use the \u25b2/\u25bc arrows so the green clock matches your watch to the second, then record.",
   sessionLbl:"Session", allSessions:"All sessions", allSessionsC:"All sessions, gaps removed",
-  sessSince:function(d,n){return "Current session since <b>"+d+"</b> \u00b7 "+n+(n===1?" measurement":" measurements");},
+  sessSince:function(d,n){return "Rate session \u00b7 since <b>"+d+"</b> \u00b7 "+n+(n===1?" measurement":" measurements");},
   endSess:"End session", endConfirm:"Confirm", undo:"Undo",
-  sessEnded:function(d){return "Session ended "+d+". Your next measurement starts a new session.";},
+  sessEnded:function(d){return "Rate session ended <b>"+d+"</b>";}, sessNext:"Your next measurement starts a new session.",
   nsHint:"Tick this to start a new measuring period, for example after a service or when the watch has been put away for a while. The rate starts fresh from this measurement; earlier measurements no longer count. To set the watch and keep the session going, use \u201cReset, same session\u201d.",
   rsHint:"Tick this if you set the watch (also for daylight saving time) or it had stopped, and you want to keep the session going. The offset may jump here; the rate stays one line over the whole session. Set the green clock to what your watch shows now: a few seconds off is fine, for example on a watch without hacking seconds. Tip: record a normal measurement first, then set the watch and measure again.",
   tgFrameLabel:"Timegrapher",
@@ -521,9 +522,9 @@ var I18N={
   grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
   alignHint:"Zet met de \u25b2/\u25bc pijltjes de groene klok gelijk aan je horloge tot op de seconde, en leg dan vast.",
   sessionLbl:"Sessie", allSessions:"Alle sessies", allSessionsC:"Alle sessies, zonder tussenpozen",
-  sessSince:function(d,n){return "Huidige sessie sinds <b>"+d+"</b> \u00b7 "+n+(n===1?" meting":" metingen");},
+  sessSince:function(d,n){return "Gangsessie \u00b7 sinds <b>"+d+"</b> \u00b7 "+n+(n===1?" meting":" metingen");},
   endSess:"Sessie afronden", endConfirm:"Bevestigen", undo:"Ongedaan maken",
-  sessEnded:function(d){return "Sessie afgerond op "+d+". Je volgende meting start een nieuwe sessie.";},
+  sessEnded:function(d){return "Gangsessie afgerond op <b>"+d+"</b>";}, sessNext:"Je volgende meting start een nieuwe sessie.",
   nsHint:"Vink dit aan voor een nieuwe meetperiode, bijvoorbeeld na een onderhoudsbeurt of als het horloge een tijd in de la heeft gelegen. De gang begint opnieuw vanaf deze meting; eerdere metingen tellen niet meer mee. Wil je het horloge gelijkzetten en de sessie laten doorlopen, gebruik dan \u201cDoorstart\u201d.",
   rsHint:"Vink dit aan als je het horloge hebt gelijkgezet (ook bij zomer- of wintertijd) of als het heeft stilgestaan, en je de sessie wilt laten doorlopen. De offset mag hier verspringen; de gang blijft \u00e9\u00e9n lijn over de hele sessie. Zet de groene klok op wat je horloge nu aanwijst: een paar seconden ernaast is prima, bijvoorbeeld bij een horloge zonder stopseconde. Tip: leg eerst een gewone meting vast, zet het horloge dan gelijk en meet opnieuw.",
   tgFrameLabel:"Timegrapher",
@@ -731,13 +732,13 @@ function renderSessEnd(w){
   if(!s){el.style.display="none";return;}
   var f=function(ms){return new Date(ms).toLocaleDateString(lang==="nl"?"nl-NL":"en-GB",{day:"numeric",month:"short"});};
   el.style.display="";
-  el.classList.toggle("done",s.ended);
   if(s.ended){
-    el.innerHTML='<span>'+escapeHtml(t.sessEnded(f(w.rateEnd.at)))+'</span><button class="sm dash" id="sessUndo">'+t.undo+'</button>';
+    el.innerHTML='<div class="tgframe-h"><span class="sesslbl">'+t.sessEnded(escapeHtml(f(w.rateEnd.at)))+'</span><button class="sm dash" id="sessUndo">'+t.undo+'</button></div>'
+      +'<p class="hint">'+escapeHtml(t.sessNext)+'</p>';
     document.getElementById("sessUndo").onclick=function(){w.rateEnd={at:null,edited:Date.now()};save();renderAll();};
     return;
   }
-  el.innerHTML='<span>'+t.sessSince(f(s.start),s.n)+'</span><button class="sm dash'+(endArmed?' armed':'')+'" id="sessEndBtn">'+(endArmed?t.endConfirm:t.endSess)+'</button>';
+  el.innerHTML='<div class="tgframe-h"><span class="sesslbl">'+t.sessSince(escapeHtml(f(s.start)),s.n)+'</span><button class="sm dash'+(endArmed?' armed':'')+'" id="sessEndBtn">'+(endArmed?t.endConfirm:t.endSess)+'</button></div>';
   document.getElementById("sessEndBtn").onclick=function(){
     clearTimeout(endTimer);
     if(!endArmed){endArmed=true;endTimer=setTimeout(function(){endArmed=false;renderSessEnd(activeWatch());},5000);renderSessEnd(w);return;}
