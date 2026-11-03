@@ -961,6 +961,8 @@ function renderStd(w,r){
   var html='<div class="stdbar"><button class="sm stdtog'+(stdOpen?' open':'')+'" id="stdTog"><span class="chev">\u25b8</span>'+escapeHtml(t.stdTitle)
     +(stdOpen?'':'<span class="vd">'+stdVerdict(w,r,false)+'</span>')+'</button>'
     +(stdOpen?'<button class="qbtn" id="stdHelp" aria-label="?">?</button>':'')+'</div>';
+  // the note sits right under the ? button: under the table it would open off screen on a phone
+  if(stdOpen)html+='<p class="hint infobox" id="stdNote"'+(stdHelp?'':' style="display:none"')+'>'+escapeHtml(t.stdNote)+'</p>';
   if(stdOpen){
     var cur=stdCur(w),S=Math.max(10,Math.ceil((Math.abs(r.rate)+1)/5)*5),fr=(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1);
     html+='<table class="std"><thead><tr><th>'+t.stdThStd+'</th><th>'+t.stdThRange+'</th><th>\u2212'+S+' \u2026 0 \u2026 +'+S+' '+t.perDay+'</th><th></th></tr></thead><tbody>';
@@ -971,7 +973,7 @@ function renderStd(w,r){
         +'<td class="rng">'+rng+'</td><td class="bar">'+stdBar(s,r.rate,S)+'</td><td class="v'+(ok?' ok':'')+'">'+(ok?'\u2713':'\u2013')+'</td></tr>';
     });
     html+='<tr class="me"><td class="nm">'+escapeHtml(t.stdThis)+'<small>'+escapeHtml(t.stdThisSub)+'<span class="mr"> \u00b7 '+fr+'</span></small></td><td class="rng">'+fr+'</td><td class="bar">'+stdBar(null,r.rate,S)+'</td><td></td></tr>';
-    html+='</tbody></table><p class="hint infobox" id="stdNote"'+(stdHelp?'':' style="display:none"')+'>'+escapeHtml(t.stdNote)+'</p>';
+    html+='</tbody></table>';
   }
   box.innerHTML=html;
   document.getElementById("stdTog").onclick=function(){
