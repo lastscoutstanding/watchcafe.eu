@@ -13,6 +13,7 @@
 COSC | Chronometer | -4 | +6 | chronometer; COSC chronometer; ISO 3159
 METAS | Master Chronometer | 0 | +5 | master chronometer; METAS master chronometer
 Superlative | Superlative Chronometer (Rolex) | -2 | +2 | superlative chronometer; Rolex superlative
+Performance | Performance Control (TUDOR) | -2 | +4 | TUDOR Performance; Tudor; Tudor internal standard
 Grand Seiko | Grand Seiko mechanical | -3 | +5 | GS; GS mechanical
 Seiko 6R | Seiko 6R calibres | -15 | +25 | 6R; 6R15; 6R35
 Seiko 4R | Seiko 4R calibres | -35 | +45 | 4R; 4R35; 4R36
