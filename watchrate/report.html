@@ -101,6 +101,7 @@
   .kpi .v{font-size:15pt;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
   .kpi .v small{font-size:9pt;font-weight:400;color:var(--p-muted)}
   .kpi.main .v{color:var(--p-accent)}
+  .kpi .v .nw{white-space:nowrap}
 
   .watch{break-before:page}
   .watch-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:2px solid var(--p-accent);padding-bottom:6px;margin-bottom:6px}
@@ -202,7 +203,7 @@ var I18N={
   allMeas:"All measurements",time:"Time",offset:"Offset",newStart:"new start",resetTag:"reset",
   offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
   tgLegend:"◇ timegrapher per position · ╌ session average",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
-  footer:"watchcafe.eu · data from this browser only",sampleTag:"sample data",
+  footer:"watchcafe.eu",sampleTag:"sample data",
   optLog:"Details, logbook & worn",sessShort:"Sess.",tgShort:"Time&shy;grapher",optPrice:"Prices",optSerial:"Serial numbers",
   details:"Details",logbook:"Logbook",worn:"Worn",type:"Type",whereCol:"Where / by",cost:"Price / cost",
   f_brand:"Brand",f_model:"Model",f_ref:"Reference",f_caliber:"Caliber / movement",f_year:"Year",f_serial:"Serial number",f_caseSize:"Case size",f_lugWidth:"Lug width",f_boxPapers:"Box & papers",f_serviceYears:"Service interval",
@@ -229,7 +230,7 @@ var I18N={
   allMeas:"Alle metingen",time:"Tijdstip",offset:"Offset",newStart:"nieuwe start",resetTag:"doorstart",
   offsetChart:"Offset in de tijd (s)",rateChart:"Gang in de tijd (s/dag)",gapsRemoved:"sessies aaneengesloten, tijd ertussen weggelaten",
   tgLegend:"◇ timegrapher per positie · ╌ sessiegemiddelde",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
-  footer:"watchcafe.eu · alleen data uit deze browser",sampleTag:"voorbeelddata",
+  footer:"watchcafe.eu",sampleTag:"voorbeelddata",
   optLog:"Gegevens, logboek & gedragen",sessShort:"Sess.",tgShort:"Time&shy;grapher",optPrice:"Prijzen",optSerial:"Serienummers",
   details:"Gegevens",logbook:"Logboek",worn:"Gedragen",type:"Soort",whereCol:"Waar / door",cost:"Prijs / kosten",
   f_brand:"Merk",f_model:"Model",f_ref:"Referentie",f_caliber:"Kaliber / uurwerk",f_year:"Jaar",f_serial:"Serienummer",f_caseSize:"Kastmaat",f_lugWidth:"Bandaanzet",f_boxPapers:"Doos & papieren",f_serviceYears:"Onderhoudsinterval",
@@ -255,6 +256,8 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return
 function loc(){return lang==="nl"?"nl-NL":"en-GB";}
 function fDate(ms){return new Date(ms).toLocaleDateString(loc(),{day:"numeric",month:"short",year:"numeric"});}
 function fShort(ms){return new Date(ms).toLocaleDateString(loc(),{day:"numeric",month:"short"});}
+// "2 Jun –" over "20 Oct 2026" (both years when they differ): too wide for one line in a KPI
+function fRange(a,b){return '<span class="nw">'+esc(new Date(a).getFullYear()===new Date(b).getFullYear()?fShort(a):fDate(a))+' –</span> <span class="nw">'+esc(fDate(b))+'</span>';}
 function fDTs(ms){return new Date(ms).toLocaleString(loc(),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});}
 function fDT(ms){return new Date(ms).toLocaleString(loc(),{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
 function sgn(v,d){if(v==null||!isFinite(v))return t("none");var s=Math.abs(v).toFixed(d==null?1:d);return (v>0&&+s!==0?"+":v<0&&+s!==0?"−":"")+s;}
@@ -532,7 +535,7 @@ function overview(list,info,isSample,opt){
     +(info.sources&&info.sources.length?'<p class="meta">'+esc(t("sources"))+': '+info.sources.map(function(f){
       return f.dev?esc(t("thisDevice"))+' <span class="dim">('+esc(info.device)+')</span>':esc(f.name)+(f.from?' <span class="dim">('+esc(f.from.device)+(f.from.at?', '+esc(fDT(f.from.at)):'')+')</span>':'');}).join('; ')+'</p>':'')
     +'<div class="kpis">'+kpi(t("watches"),list.length)+kpi(t("measurements"),nMeas)
-    +kpi(t("period"),all.length?esc(fShort(Math.min.apply(null,all)))+' – '+esc(fShort(Math.max.apply(null,all))):t("none"))
+    +kpi(t("period"),all.length?(fRange(Math.min.apply(null,all),Math.max.apply(null,all))):t("none"))
     +kpi(t("timegrapher"),list.reduce(function(x,a){return x+a.tg.length;},0))+'</div>'
     +'<h3>'+esc(t("overview"))+'</h3>'
     // short headings with the unit small underneath, so the watch name gets the room
@@ -600,7 +603,7 @@ function watchPage(a,opt){
         return '<tr'+(m.newStart&&i>0?' class="ns"':'')+'><td class="mono">'+esc(fDT(m.t))+(m.newStart?'<span class="tag">'+esc(t("newStart"))+'</span>':m.restart?'<span class="tag rs">'+esc(t("resetTag"))+'</span>':'')+'</td><td class="num mono">'+sgn(m.offset)+'</td><td>'+(m.position?'<span class="dot" style="background:'+p.color+'"></span>'+esc(p.label):t("none"))+'</td><td class="dim">'+esc(m.note||"")+'</td></tr>';}).join("")
       +'</tbody></table>';
   }
-  h+='<div class="foot"><span>'+esc(t("footer"))+'</span><span>'+esc(fDT(Date.now()))+'</span></div>';
+  h+='<div class="foot"><span>'+esc(t("footer"))+'</span><span>'+esc(fDate(Date.now()))+'</span></div>';
   return h+'</section>';
 }
 
