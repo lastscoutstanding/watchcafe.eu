@@ -116,6 +116,8 @@
   .sessend button.dash{flex:none;background:transparent;border-style:dashed;color:var(--muted)}
   .sessend button.dash:hover{color:var(--ink)}
   .sessend button.armed{color:#ff6b5e;border-color:#ff6b5e;border-style:solid}
+  /* sub-headings inside the history block get their own divider */
+  .block h2.sub{border-top:1px solid var(--border);padding-top:20px;margin-top:26px}
   .tag{display:inline-block;background:#2e221c;color:#eda57f;border-radius:6px;font-size:11px;padding:2px 7px;margin-left:6px;vertical-align:1px;white-space:nowrap}
   .tag.rs{background:transparent;border:1px dashed #eda57f;padding:1px 6px}
 
@@ -712,7 +714,7 @@ function renderHistory(){
     var since=r.partial?(" ("+t.sinceStart+")"):"";
     sum.innerHTML=(lang==="nl"?"Gang: <b>"+rstr+"</b> &mdash; uit "+r.n+" metingen over "+humanSpan(r.span):"Rate: <b>"+rstr+"</b> &mdash; from "+r.n+" measurements over "+humanSpan(r.span))+since+"."+(stdOpen?stdVerdict(w,r,true):"");}
   else sum.textContent=t.needTwo;
-  var html='<h2 style="margin-top:22px">'+escapeHtml(t.measLog)+watchSuffix(w)+'</h2><table class="mtab"><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
+  var html='<h2 class="sub">'+escapeHtml(t.measLog)+watchSuffix(w)+'</h2><table class="mtab"><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
   pts.forEach(function(m){
     var d=new Date(m.t).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
     var tag=m.newStart?('<span class="tag">'+t.newStartTag+'</span>'):m.restart?('<span class="tag rs">'+t.restartTag+'</span>'):"";
@@ -761,7 +763,7 @@ function renderTG(w){
   cmp.style.display="grid";
   // sessielijst
   var loc=lang==="nl"?"nl-NL":"en-GB";
-  var html='<h2 style="margin-top:22px">'+escapeHtml(t.tgSessions)+watchSuffix(w)+'</h2><table class="mtab"><thead><tr><th>'+t.tgDate+'</th><th>'+t.tgAvg+'</th><th>'+t.tgReadings+'</th><th>'+t.tgNote2+'</th><th></th></tr></thead><tbody>';
+  var html='<h2 class="sub">'+escapeHtml(t.tgSessions)+watchSuffix(w)+'</h2><table class="mtab"><thead><tr><th>'+t.tgDate+'</th><th>'+t.tgAvg+'</th><th>'+t.tgReadings+'</th><th>'+t.tgNote2+'</th><th></th></tr></thead><tbody>';
   sessions.slice().reverse().forEach(function(sess){
     var d=new Date(sess.t).toLocaleDateString(loc,{day:"2-digit",month:"short",year:"numeric"});
     var reads=sess.readings.map(function(r){
