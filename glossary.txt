@@ -33,6 +33,10 @@ Power reserve / Gangreserve
 EN: How long a fully wound watch keeps running without being wound again, typically 38 to 80 hours.
 NL: Hoe lang een volledig opgewonden horloge blijft lopen zonder opnieuw op te winden, doorgaans 38 tot 80 uur.
 ---
+Isochronism / Isochronie
+EN: How well a watch keeps the same rate as its mainspring runs down. With less energy the amplitude drops and the rate changes, usually most in the last part of the power reserve. That is why a watch worn every day can run differently from one left to run down on the table.
+NL: Hoe goed een horloge dezelfde gang houdt terwijl de opwindveer afloopt. Met minder energie daalt de amplitude en verandert de gang, meestal het sterkst in het laatste deel van de gangreserve. Daarom kan een horloge dat je dagelijks draagt anders lopen dan een dat op tafel leegloopt.
+---
 Complication / Complicatie
 EN: Any function of a watch beyond showing hours, minutes and seconds, such as a date, moonphase or chronograph.
 NL: Elke functie van een horloge naast het tonen van uren, minuten en seconden, zoals een datum, maanfase of chronograaf.
@@ -44,6 +48,10 @@ NL: Een horloge met ingebouwde stopwatchfunctie, bediend met drukkers op de kast
 Chronometer
 EN: A precision watch whose movement has passed official rate testing (e.g. COSC: -4 to +6 s/day).
 NL: Een precisiehorloge waarvan het uurwerk officiele gangtests heeft doorstaan (bv. COSC: -4 tot +6 s/dag).
+---
+Accuracy standard / Nauwkeurigheidsnorm
+EN: A published limit for the daily rate, such as COSC (-4/+6 s/day) or METAS (0/+5). Most are lab tests over several days in different positions and temperatures; some test the bare movement (COSC), others the finished watch (METAS). A rate measured on the wrist is an indication, not a certificate. Compare in the Rate Meter under "How it compares".
+NL: Een vastgelegde grens voor de dagelijkse gang, zoals COSC (-4/+6 s/dag) of METAS (0/+5). De meeste zijn labtests van enkele dagen in verschillende posities en temperaturen; sommige testen het losse uurwerk (COSC), andere het complete horloge (METAS). Een gang gemeten aan de pols is een indicatie, geen certificaat. Te vergelijken in de Rate Meter onder "How it compares".
 ---
 Tourbillon
 EN: A rotating cage that carries the balance and escapement to average out the effect of gravity in different positions.
@@ -80,6 +88,22 @@ NL: De onzekerheid van een gang uit de regressie, als ± in het rapport: met ong
 R²
 EN: The coefficient of determination of a regression: the share of the variation in offset that the line explains, from 0 to 1. Not shown on this site: it mostly grows with how far the offset drifts during a session, so a watch measured for weeks shows 1.000 and a very accurate one can score low, and with two readings it is always 1. The spread and the rate margin say more.
 NL: De determinatiecoëfficiënt van een regressie: het deel van de variatie in offset dat de lijn verklaart, van 0 tot 1. Staat bewust niet op deze site: hij groeit vooral met hoe ver de offset tijdens een sessie verloopt, dus een horloge dat weken is gemeten toont 1.000 en een heel nauwkeurig horloge kan laag scoren, en met twee metingen is hij altijd 1. De spreiding en de marge zeggen meer.
+---
+Session / Sessie
+EN: A run of measurements of one watch that belong together, from one new start to the next. The Rate Meter gives each session its own rate, so a period after a service or in the drawer is not mixed with the rest.
+NL: Een reeks metingen van één horloge die bij elkaar horen, van de ene nieuwe start tot de volgende. De Rate Meter geeft elke sessie een eigen gang, zodat een periode na een servicebeurt of in de la niet door de rest heen loopt.
+---
+New start / Nieuwe start
+EN: A tick box in the Rate Meter that begins a new session with this measurement; earlier readings no longer count for the rate. Meant for after a service or repair, or when the watch has been put away for a while. The first measurement of a watch always starts a session.
+NL: Een vinkje in de Rate Meter waarmee deze meting een nieuwe sessie begint; eerdere metingen tellen niet meer mee voor de gang. Bedoeld voor na een servicebeurt of reparatie, of als het horloge een tijd heeft weggelegen. De eerste meting van een horloge begint altijd een sessie.
+---
+Reset, same session / Doorstart
+EN: A tick box for when you set the watch to time, or it stopped and you wound and set it, but the session should go on. The offset may jump at that point; the pieces before and after share one rate, and how long the watch stood still does not matter.
+NL: Een vinkje voor als je het horloge gelijk hebt gezet, of als het stilstond en je het hebt opgewonden en gezet, maar de sessie moet doorlopen. De offset mag op dat punt verspringen; de stukken ervoor en erna delen één gang, en hoe lang het horloge stilstond doet er niet toe.
+---
+Rate points / Gangpunten
+EN: The dots on the Rate over time chart: the rate between two consecutive readings at least 6 hours apart. Readings are in whole seconds, so one second of reading error over one hour would already mean 24 s/day; over 6 hours it is at most 4 s/day. The overall rate comes from the regression line, not from these points.
+NL: De stippen in de grafiek Gang in de tijd: de gang tussen twee opeenvolgende metingen die minstens 6 uur uit elkaar liggen. Je leest af op hele seconden, dus één seconde afleesfout over een uur is al 24 s/dag; over 6 uur hooguit 4 s/dag. De gang zelf komt van de regressielijn, niet van deze punten.
 ---
 Amplitude
 EN: The rotation angle of the balance wheel swing, in degrees; healthy movements typically show 250-310 degrees, low amplitude can indicate a service is due.
@@ -121,6 +145,10 @@ Crown / Kroon
 EN: The knob on the side of the case used to set the time and, on manual watches, wind the mainspring.
 NL: De knop aan de zijkant van de kast waarmee je de tijd instelt en bij handopwinders de veer opwindt.
 ---
+Hacking seconds / Stopseconde
+EN: A feature that stops the seconds hand when you pull out the crown, so you can set the watch to the second. Without it, as on many vintage watches, you can only get within a few seconds; for a reset in the Rate Meter, record what the watch actually shows.
+NL: Een functie die de secondewijzer stilzet als je de kroon uittrekt, zodat je het horloge op de seconde gelijk kunt zetten. Zonder, zoals bij veel vintage horloges, kom je tot op een paar seconden; leg bij een doorstart in de Rate Meter vast wat het horloge echt aanwijst.
+---
 Bezel / Lunette
 EN: The ring around the crystal; on dive watches it rotates to track elapsed time.
 NL: De ring rond het glas; bij duikhorloges draaibaar om verstreken tijd bij te houden.
@@ -132,3 +160,7 @@ NL: Lichtgevend materiaal op wijzers en indexen dat oplicht in het donker, meest
 Water resistance / Waterdichtheid
 EN: The pressure rating of a case, in meters or bar; 100 m or more is generally suitable for swimming.
 NL: De drukklasse van een kast, in meters of bar; vanaf 100 m is een horloge doorgaans geschikt om mee te zwemmen.
+---
+Magnetism / Magnetisme
+EN: Near a strong magnet (a speaker, a tablet cover, a bag clasp) a watch can become magnetized: coils of the hairspring stick together and it suddenly runs fast, often by tens of seconds to minutes a day. A watchmaker can demagnetize it in moments. In the Rate Meter, a sudden jump after a steady period points to this; tick New start after demagnetizing.
+NL: Bij een sterke magneet (een speaker, een tablethoes, een tassluiting) kan een horloge gemagnetiseerd raken: windingen van de spiraalveer plakken aan elkaar en het loopt ineens flink voor, vaak tientallen seconden tot minuten per dag. Een horlogemaker demagnetiseert het in een paar tellen. In de Rate Meter wijst een plotselinge sprong na een rustige periode hierop; vink na het demagnetiseren Nieuwe start aan.
