@@ -9,7 +9,7 @@
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=9"></script>
+<script src="/watchdata.js?v=10"></script>
 <script src="sample.js?v=7"></script>
 <script src="/standards.js?v=1"></script>
 <style>
@@ -118,6 +118,7 @@
   .stdt tr.own td{background:#f5faf7}
   .sheet .tag.ok{color:var(--p-ok);border-color:var(--p-ok)}
   .disc{font-size:8pt;color:var(--p-muted);font-style:italic;margin:4px 0 0}
+  .sheet .pm{color:var(--p-muted);font-size:.85em;margin-left:3px;font-weight:400}
 
   .watch{break-before:page}
   .watch-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:2px solid var(--p-accent);padding-bottom:6px;margin-bottom:6px}
@@ -213,7 +214,7 @@ var I18N={
   sampleNote:"No watches in this browser yet — showing the sample watches.",
   rTitle:"Watch Report",generated:"Generated",device:"Device",period:"Period",watches:"Watches",measurements:"Measurements",
   overview:"Overview",watch:"Watch",meas:"Meas.",current:"Current rate",allSessions:"All sessions",tgLatest:"Timegrapher",pr:"Power reserve",
-  sessions:"Sessions",session:"Session",from:"From",to:"To",duration:"Duration",n:"N",rate:"Rate",r2:"R²",
+  sessions:"Sessions",session:"Session",from:"From",to:"To",duration:"Duration",n:"N",rate:"Rate",fitSpread:"Spread",sessNote:"± = margin on the rate (about 95%), never smaller than whole-second readings allow. Spread = how far the measurements typically lie from the rate line. Explained in the glossary at watchcafe.eu/guide.",
   positions:"Rate per position",positionsSub:"latest session",position:"Position",spread:"Spread between positions",
   timegrapher:"Timegrapher",date:"Date",avg:"Avg",readings:"Readings",note2:"Note",amp:"Amplitude",beat:"Beat error",
   powerReserve:"Power reserve",wound:"Wound",stopped:"Stopped",reserve:"Reserve",typical:"Typical",
@@ -244,7 +245,7 @@ var I18N={
   sampleNote:"Nog geen horloges in deze browser — je ziet de voorbeeldhorloges.",
   rTitle:"Horlogerapport",generated:"Gemaakt",device:"Apparaat",period:"Periode",watches:"Horloges",measurements:"Metingen",
   overview:"Overzicht",watch:"Horloge",meas:"Met.",current:"Huidige gang",allSessions:"Alle sessies",tgLatest:"Timegrapher",pr:"Gangreserve",
-  sessions:"Sessies",session:"Sessie",from:"Van",to:"Tot",duration:"Duur",n:"N",rate:"Gang",r2:"R²",
+  sessions:"Sessies",session:"Sessie",from:"Van",to:"Tot",duration:"Duur",n:"N",rate:"Gang",fitSpread:"Spreiding",sessNote:"± = marge op de gang (ongeveer 95%), nooit kleiner dan aflezen op hele seconden toelaat. Spreiding = hoe ver de metingen doorgaans van de ganglijn liggen. Uitleg in de woordenlijst op watchcafe.eu/guide.",
   positions:"Gang per positie",positionsSub:"laatste sessie",position:"Positie",spread:"Spreiding tussen posities",
   timegrapher:"Timegrapher",date:"Datum",avg:"Gem.",readings:"Metingen",note2:"Notitie",amp:"Amplitude",beat:"Beat error",
   powerReserve:"Gangreserve",wound:"Opgewonden",stopped:"Gestopt",reserve:"Reserve",typical:"Typisch",
@@ -286,6 +287,7 @@ function fRange(a,b){return '<span class="nw">'+esc(new Date(a).getFullYear()===
 function fDTs(ms){return new Date(ms).toLocaleString(loc(),{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});}
 function fDT(ms){return new Date(ms).toLocaleString(loc(),{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
 function sgn(v,d){if(v==null||!isFinite(v))return t("none");var s=Math.abs(v).toFixed(d==null?1:d);return (v>0&&+s!==0?"+":v<0&&+s!==0?"−":"")+s;}
+function fMargin(v){return v.toFixed(v<0.995?2:v<9.95?1:0);}
 function fDur(ms){var h=ms/3600000;return h<48?Math.round(h)+" h":(ms/DAY).toFixed(1)+" "+t("days");}
 function fHM(ms){var m=Math.round(ms/60000);return Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"m";}
 
@@ -642,9 +644,10 @@ function watchPage(a,opt){
   } else h+='<p class="empty">'+esc(t("noData"))+'</p>';
 
   if(a.sess.length){
-    h+='<h3>'+esc(t("sessions"))+'</h3><table><thead><tr><th>'+t("session")+'</th><th>'+t("from")+'</th><th>'+t("to")+'</th><th class="num">'+t("duration")+'</th><th class="num">'+t("n")+'</th><th class="num">'+t("rate")+' ('+t("perDay")+')</th><th class="num">'+t("r2")+'</th><th>'+t("note2")+'</th></tr></thead><tbody>'
-      +a.sess.map(function(s,i){return '<tr><td>'+(i+1)+'</td><td class="nw">'+esc(fDTs(s.t0))+'</td><td class="nw">'+esc(fDTs(s.t1))+'</td><td class="num">'+fDur(s.t1-s.t0)+'</td><td class="num">'+s.pts.length+'</td><td class="num"><b>'+(s.fit?sgn(s.fit.rate,2):t("none"))+'</b></td><td class="num dim">'+(s.fit&&s.fit.r2!=null?s.fit.r2.toFixed(3):t("none"))+'</td><td class="dim">'+esc(s.pts[0].note||"")+'</td></tr>';}).join("")
-      +'</tbody></table>';
+    h+='<h3>'+esc(t("sessions"))+'</h3><table><thead><tr><th>'+t("session")+'</th><th>'+t("from")+'</th><th>'+t("to")+'</th><th class="num">'+t("duration")+'</th><th class="num">'+t("n")+'</th><th class="num">'+t("rate")+'<small>'+t("perDay")+'</small></th><th class="num">'+t("fitSpread")+'<small>s</small></th><th>'+t("note2")+'</th></tr></thead><tbody>'
+      +a.sess.map(function(s,i){return '<tr><td>'+(i+1)+'</td><td class="nw">'+esc(fDTs(s.t0))+'</td><td class="nw">'+esc(fDTs(s.t1))+'</td><td class="num">'+fDur(s.t1-s.t0)+'</td><td class="num">'+s.pts.length+'</td><td class="num"><b>'+(s.fit?sgn(s.fit.rate,2):t("none"))+'</b>'+(s.fit&&s.fit.margin!=null?'<span class="pm">±'+fMargin(s.fit.margin)+'</span>':'')+'</td><td class="num dim">'+(s.fit&&s.fit.spread!=null?s.fit.spread.toFixed(1):t("none"))+'</td><td class="dim">'+esc(s.pts[0].note||"")+'</td></tr>';}).join("")
+      +'</tbody></table>'
+      +(a.sess.some(function(s){return s.fit&&s.fit.margin!=null;})?'<p class="disc">'+esc(t("sessNote"))+'</p>':'');
   }
   if(opt.std&&a.current!=null)h+=stdBlock(a);
 

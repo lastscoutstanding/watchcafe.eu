@@ -257,7 +257,21 @@ var WatchData=(function(){
     var b=sxy/sxx,lines=ms.filter(function(m){return m.p.length>1;}).map(function(m){
       var a=m.p[0].t,z=m.p[m.p.length-1].t;
       return {t0:a,t1:z,o0:m.mo+b*(a-m.mt),o1:m.mo+b*(z-m.mt)};});
-    return {rate:b*DAY,n:n,span:t1-t0,r2:syy>0?1-(syy-b*sxy)/syy:null,lines:lines};
+    // spread: residual standard deviation (s); margin: ~95% interval on the rate (s/day).
+    // Degrees of freedom: one intercept per piece plus the shared slope.
+    // The residual sd never counts below the rounding noise of whole-second readings (1/sqrt(12) s).
+    var sse=Math.max(syy-b*sxy,0),dof=n-ms.length-1,spread=null,margin=null;
+    if(dof>0){
+      spread=Math.sqrt(sse/dof);
+      margin=tCrit(dof)*Math.max(spread,ROUND_SD)/Math.sqrt(sxx)*DAY;
+    }
+    return {rate:b*DAY,n:n,span:t1-t0,r2:syy>0?1-sse/syy:null,spread:spread,margin:margin,dof:dof,lines:lines};
+  }
+  var ROUND_SD=1/Math.sqrt(12);
+  // two-sided 95% Student-t critical value
+  function tCrit(dof){
+    var T=[0,12.71,4.30,3.18,2.78,2.57,2.45,2.36,2.31,2.26,2.23,2.20,2.18,2.16,2.14,2.13,2.12,2.11,2.10,2.09,2.09];
+    return dof<T.length?T[dof]:dof<30?2.06:dof<60?2.02:1.98;
   }
   function rateOf(pts){return fitPieces(pieces(pts));}
 
