@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=10"></script>
+<script src="/watchdata.js?v=11"></script>
 <script src="/watchrate/sample.js?v=7"></script>
 <script src="/brands.js?v=2"></script>
 <script src="/standards.js?v=1"></script>
@@ -687,7 +687,7 @@ function wearHTML(now){
   return '<div class="wear closable"><button class="x" id="wearClose" aria-label="'+esc(t.close)+'" title="'+esc(t.close)+'">×</button>'
     +'<div class="hd"><h2>'+esc(day===today?t.wearToday:t.wearOn(fmtWeekday(day,true)))+'</h2>'
     +'<span class="hint">'+esc(t.wearHint)+'</span></div>'
-    +'<div class="chips">'+now.map(function(w){
+    +'<div class="chips">'+WatchData.wearOrder(now).map(function(w){
       return '<button class="chip'+(wornOn(w,day)?' on':'')+'" data-wear="'+esc(w.id)+'">'+esc(w.name)+'</button>';
     }).join("")+'</div>'
     +'<div class="week">'+days.map(function(d){

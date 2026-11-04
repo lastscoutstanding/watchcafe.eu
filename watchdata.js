@@ -298,9 +298,29 @@ var WatchData=(function(){
     return {start:pts[0].t,last:last,n:n,gap:gap,ended:ended(w),quiet:n>=3&&now-last>3*gap};
   }
 
+  /* Order for watch lists you pick from (Wearing today chips, report): current
+     watches first, most worn over the past year on top, then by name; sold or
+     gifted watches last. Days are counted up to yesterday, so a chip does not
+     jump while you tap it today. Returns a sorted copy. */
+  function lastLogOf(w,types){
+    return (w.log||[]).slice().sort(function(a,b){return b.t-a.t;}).find(function(e){return types.indexOf(e.type)>-1;})||null;
+  }
+  function isFormer(w){var e=lastLogOf(w,["purchase","sold"]);return !!(e&&e.type==="sold");}
+  function wornCount(w,now){
+    var d=new Date(now||Date.now()),today=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()),from=today-365*DAY,o={};
+    (w.worn||[]).forEach(function(x){if(x.t>=from&&x.t<today)o[x.t]=1;});
+    return Object.keys(o).length;
+  }
+  function wearOrder(list,now){
+    return list.map(function(w){return {w:w,f:isFormer(w),n:wornCount(w,now)};}).sort(function(a,b){
+      return a.f-b.f||b.n-a.n||String(a.w.name||"").localeCompare(String(b.w.name||""));
+    }).map(function(r){return r.w;});
+  }
+
   return {getDevice:getDevice,setDevice:setDevice,guessDevice:guessDevice,
     backupName:backupName,backupData:backupData,
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
     markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,deletedAt:deletedAt,markRestored:markRestored,idTime:idTime,ensureIds:ensureIds,merge:merge,
-    currentRate:currentRate,previousRate:previousRate,pieces:pieces,fitPieces:fitPieces,rateOf:rateOf,rateSession:rateSession};
+    currentRate:currentRate,previousRate:previousRate,pieces:pieces,fitPieces:fitPieces,rateOf:rateOf,rateSession:rateSession,
+    wornCount:wornCount,wearOrder:wearOrder};
 })();

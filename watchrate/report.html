@@ -9,7 +9,7 @@
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=10"></script>
+<script src="/watchdata.js?v=11"></script>
 <script src="sample.js?v=7"></script>
 <script src="/standards.js?v=1"></script>
 <style>
@@ -358,13 +358,13 @@ function isEmptyWatch(w){return !(w.measurements||[]).length&&!(w.timegrapher||[
 function srcOn(i){return i in srcPick?srcPick[i]:!SRC.list[i].dev;}
 // groups of pickable watches: one per source, or a single merged one
 function groups(){
-  if(!SRC.viewer)return [{src:null,items:SRC.list[0].watches.map(function(w){return {key:"w|"+watchId(w),w:w};})}];
+  if(!SRC.viewer)return [{src:null,items:WatchData.wearOrder(SRC.list[0].watches).map(function(w){return {key:"w|"+watchId(w),w:w};})}];
   if(MERGE){
     var ws=mergeFiles(SRC.list.filter(function(s,i){return srcOn(i);}));
-    return [{src:null,items:ws.map(function(w){return {key:"m|"+w._key,w:w};})}];
+    return [{src:null,items:WatchData.wearOrder(ws).map(function(w){return {key:"m|"+w._key,w:w};})}];
   }
   var many=SRC.list.length>1;
-  return SRC.list.map(function(s,i){return {src:s,items:s.watches.map(function(w){
+  return SRC.list.map(function(s,i){return {src:s,items:WatchData.wearOrder(s.watches).map(function(w){
     var c=Object.assign({},w);if(many)c._source=srcText(s);return {key:i+"|"+watchId(w),w:c};})};});
 }
 function isOn(it,g){return it.key in pick?pick[it.key]:!isEmptyWatch(it.w)&&!(g.src&&g.src.dev);}
