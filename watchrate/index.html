@@ -892,9 +892,15 @@ function drawCharts(w){
   var idx=resolvedSegIndex(w);
   var segs=(idx==="all")?allSegs:[allSegs[idx]||allSegs[allSegs.length-1]];
   // gedeelde tijd-as: min/max van alle getoonde offset-metingen
-  var tAll=[];segs.forEach(function(s){s.forEach(function(p){tAll.push(p.t);});});
-  var tDomain=tAll.length?[Math.min.apply(null,tAll),Math.max.apply(null,tAll)]:null;
-  var blocks=(selectedSession==="allc")?segs.map(function(s){return [s[0].t,s[s.length-1].t];}):null;
+  // a timegrapher session up to a day before or after a session's measurements belongs to it
+  // (often the last reading of a session, then onto the timegrapher), so the axis stretches to it
+  var tgAll=tgOf(w),tgSessions=[];
+  var spans=segs.map(function(s){var a=s[0].t,b=s[s.length-1].t;
+    tgAll.forEach(function(g){if(g.t>=s[0].t-TG_GRACE&&g.t<=s[s.length-1].t+TG_GRACE){
+      if(tgSessions.indexOf(g)<0)tgSessions.push(g);if(g.t<a)a=g.t;if(g.t>b)b=g.t;}});
+    return [a,b];});
+  var tDomain=[Math.min.apply(null,spans.map(function(b){return b[0];})),Math.max.apply(null,spans.map(function(b){return b[1];}))];
+  var blocks=(selectedSession==="allc")?spans:null;
   // offset chart
   // the offset line breaks at a reset as well, where the offset jumps
   var offSegs=[];segs.forEach(function(s){WatchData.pieces(s).forEach(function(pc){offSegs.push(pc.map(function(p){return {t:p.t,v:p.offset};}));});});
@@ -912,9 +918,9 @@ function drawCharts(w){
     }
     if(pts.length)rateSegs.push(pts);
   });});
-  // timegrapher sessions only within the shown period (as in the Viewer); without a
-  // rate point there is no rate chart, so a first measurement doesn't stack every session at one x
-  var tgSessions=tgOf(w).filter(function(s){return s.t>=tDomain[0]&&s.t<=tDomain[1];});
+  // all timegrapher sessions inside the (stretched) period count; without a rate point
+  // there is no rate chart, so a first measurement doesn't stack every session at one x
+  tgSessions=tgAll.filter(function(g){return g.t>=tDomain[0]&&g.t<=tDomain[1];});
   var okRate=rateSegs.length>0&&chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain,blocks,stdBand(w));
   rw.style.display=okRate?"block":"none";
   document.getElementById("tgLegend").style.display=(okRate&&tgSessions.length)?"block":"none";
@@ -986,6 +992,7 @@ function renderStd(w,r){
 }
 
 /* ===== timegrapher helpers ===== */
+var TG_GRACE=864e5; // a timegrapher session within a day of a rate session shows with it
 function tgOf(w){
   if(!w||!Array.isArray(w.timegrapher))return [];
   return w.timegrapher.slice().sort(function(a,b){return a.t-b.t;}).map(function(s){

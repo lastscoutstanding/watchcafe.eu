@@ -216,7 +216,7 @@
 <script src="sample.js?v=7"></script>
 <script>
 "use strict";
-const MS_PER_DAY=86400000, SPEC_BAND=5;
+const MS_PER_DAY=86400000, SPEC_BAND=5, TG_GRACE=MS_PER_DAY;
 
 /* ---------- i18n ---------- */
 const T={
@@ -371,6 +371,13 @@ function collectWatches(){
     w.delta=rated.length>=2?Math.max(...rated)-Math.min(...rated):null;
     w.timegrapher=(w.timegrapher||[]).filter(sess=>Number.isFinite(sess.t)&&sess.readings.length).sort((a,b)=>a.t-b.t);
     w.timegrapher.forEach(sess=>{sess.avg=sess.readings.reduce((a,r)=>a+r.rate,0)/sess.readings.length;});
+    // a timegrapher session up to a day before or after a session's measurements belongs to it,
+    // so the time axis stretches to it (same rule as the Rate Meter)
+    const span=s=>{let a=s[0].t,b=s[s.length-1].t;
+      w.timegrapher.forEach(g=>{if(g.t>=s[0].t-TG_GRACE&&g.t<=s[s.length-1].t+TG_GRACE){a=Math.min(a,g.t);b=Math.max(b,g.t);}});return [a,b];};
+    w.spans=sessions.map(span);
+    const sp=isAllSel(selKey)?w.spans:(shown.length?[span(shown)]:[]);
+    w.axMin=sp.length?Math.min(...sp.map(b=>b[0])):null; w.axMax=sp.length?Math.max(...sp.map(b=>b[1])):null;
   }
   return out;
 }
@@ -393,8 +400,8 @@ function isAllSel(k){return k==="all"||k==="allc";}
 // Shared time axis. In "allc" mode each session gets its own block and the dead time between sessions is cut out.
 function timeAxis(w){
   const comp=w.selKey==="allc"&&w.sessions.length>1;
-  let blocks=comp?w.sessions.map(s=>[s[0].t,s[s.length-1].t]):[[w.tMin,w.tMax]];
-  if(!comp&&w.tMin===w.tMax) blocks=[[w.tMin-MS_PER_DAY/2,w.tMax+MS_PER_DAY/2]];
+  let blocks=comp?w.spans:[[w.axMin,w.axMax]];
+  if(!comp&&w.axMin===w.axMax) blocks=[[w.axMin-MS_PER_DAY/2,w.axMax+MS_PER_DAY/2]];
   const GAP=comp?16:0, plot=CW-padL-padR-GAP*(blocks.length-1);
   const total=blocks.reduce((s,b)=>s+(b[1]-b[0]),0)||1;
   const wts=blocks.map(b=>Math.max(b[1]-b[0],total*0.04)), sw=wts.reduce((a,b)=>a+b,0);
@@ -472,7 +479,7 @@ function rateSegments(w){
 }
 function rateChartSVG(w){
   const segs=rateSegments(w);
-  const tg=(w.timegrapher||[]).filter(s=>s.t>=w.tMin&&s.t<=w.tMax);
+  const tg=(w.timegrapher||[]).filter(s=>s.t>=w.axMin&&s.t<=w.axMax);
   const vals=[...segs.flat().map(p=>p.v),...tg.flatMap(s=>s.readings.map(r=>r.rate))];
   if(vals.length<2) return "";
   const ax=timeAxis(w),X=ax.X;
