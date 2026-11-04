@@ -433,7 +433,7 @@ var I18N={
   position:"Position", note:"Note", optional:"optional", record:"Record measurement", recSaved:"Recorded",
   newStart:"New start", restart:"Reset, same session",
   measurements:"Measurements", measLog:"Measurement log", noMeasurements:"No measurements recorded yet.", needTwo:"Record at least 2 measurements to calculate the rate.",
-  sinceStart:"since the last new start",
+  sinceStart:"latest session",
   thTime:"Time", thOffset:"Offset", thPosition:"Position", thNote:"Note", del:"delete",
   newStartTag:"new start", restartTag:"reset",
   chartOffset:"Offset over time", chartRate:"Rate over time",
@@ -495,7 +495,7 @@ var I18N={
   position:"Positie", note:"Notitie", optional:"optioneel", record:"Meting vastleggen", recSaved:"Vastgelegd",
   newStart:"Nieuwe start", restart:"Doorstart",
   measurements:"Metingen", measLog:"Meetlog", noMeasurements:"Nog geen metingen vastgelegd.", needTwo:"Leg minstens 2 metingen vast om de gang te berekenen.",
-  sinceStart:"sinds de laatste nieuwe start",
+  sinceStart:"laatste sessie",
   thTime:"Tijdstip", thOffset:"Offset", thPosition:"Positie", thNote:"Notitie", del:"verwijder",
   newStartTag:"nieuwe start", restartTag:"doorstart",
   chartOffset:"Offset in de tijd", chartRate:"Gang in de tijd",
@@ -633,7 +633,8 @@ function rateOf(w){
   // bij "all": gang over het laatste segment (zuiverst); anders over de sessie zelf
   if(resolvedSegIndex(w)==="all")pts=segs[segs.length-1];
   var r=rateOfPts(pts);
-  if(r)r.partial=segs.length>1;
+  // "all"/"allc" still give the rate of the latest session only: say so
+  if(r)r.partial=resolvedSegIndex(w)==="all"&&segs.length>1;
   return r;
 }
 function signSec(n,dec){var v=dec?Math.abs(n).toFixed(1):String(Math.round(Math.abs(n)));return (n>0?"+":n<0?"\u2212":"\u00b1")+v+" s";}
