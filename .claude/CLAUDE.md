@@ -29,7 +29,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `watchrate/report.html` | Printbaar rapport (PDF via printvenster) |
 | `watchrate/sample.js` | Voorbeeldhorloges, gedeeld door Rate Meter en Viewer |
 | `powerreserve/index.html` | Power Reserve |
-| `guide/index.html` + `glossary.txt` | Guide met twee tabs: handleiding per tool en woordenlijst EN/NL (`#glossary`; `#glossary/<term>` vult de zoekbalk, zoals de link "How the rate is calculated" in de Rate Meter-uitleg naar `#glossary/regression`) |
+| `guide/index.html` + `glossary.txt` | Guide met twee tabs: handleiding per tool en woordenlijst EN/NL (`#glossary`; `#glossary/<term>` vult de zoekbalk, zoals de link "How the rate is calculated" in de Rate Meter-uitleg naar `#glossary/regression`). Losse termen in de handleiding (offset, kaliber, positie, "één lijn", amplitude, slagfout, "volledig opgewonden", servicebeurt) linken als `a.gl` (gestippelde onderstreping) naar een zoekterm die een klein cluster begrippen toont; de zoekopdracht doorzoekt namen en definities in beide talen, dus geen te algemene woorden als "rate" |
 | `glossary/index.html` | Alleen doorverwijzing naar `/guide/#glossary` (oude bladwijzers) |
 | `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
 | `cafe/index.html` + `meetings.txt`, `meetings.js`, `events.txt`, `events.js`, `cafe-log.txt` | Café-pagina |
