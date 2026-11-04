@@ -38,7 +38,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `brands.js` + `brands.txt` | Merk-woordmerken (Collection-kaarten), plus een wijzerplaat-badge voor later |
 | `standards.js` + `standards.txt` | Nauwkeurigheidsnormen (COSC, METAS …) voor "How it compares" in de Rate Meter en het veld "Accuracy spec" in de Collection |
 | `theme.css` | Alle thema-overrides |
-| `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Favicon (klokje op 10:10) |
+| `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Favicon: koffiemok met wijzers op 10:10 in Kermit-kleuren (groen, goud asje). `favicon-32.png` is 64 px met transparante hoeken, `apple-touch-icon.png` 360 px zonder afgeronde hoeken (iOS rondt zelf af). PNG's gerenderd met headless Chromium |
 
 localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
 - `siouxWatchRateMeter`: alle horlogedata (metingen, timegrapher, gangreserve, gegevens, logboek, draagdagen).
