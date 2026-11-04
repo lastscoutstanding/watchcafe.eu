@@ -177,6 +177,8 @@ var C={
       "<p>Each stretch between one \u201cnew start\u201d and the next is a <b>session</b>. When a watch has more than one, a dropdown appears so you can view a single session \u2014 its own chart, table and rate \u2014 without long empty gaps stretching across the graph. Pick <b>All sessions</b> for the full picture.</p>"+
       "<h3>The charts</h3>"+
       "<p><b>Offset over time</b> shows each reading; <b>Rate over time</b> shows the rate between consecutive readings (only pairs at least 6 hours apart, so measurement noise doesn't dominate). Point colours run green \u2192 yellow \u2192 orange \u2192 red as the value grows.</p>"+
+      "<h3>How the rate is calculated</h3>"+
+      "<p>The rate is the slope of the straight line that best fits all offset readings of a session (linear regression), so every reading counts, not just the first and last. The report also shows how reliable that rate is: a <b>margin</b> (\u00b1) and the <b>spread</b> of the readings around the line. <a href='#glossary/regression'>How they are calculated, in the glossary \u2192</a></p>"+
       "<h3>Timegrapher sessions</h3>"+
       "<p>Have a timegrapher at the meet-up? Tap <b>Add session</b> to log the rate, amplitude and beat error per position. Those appear as diamonds on the rate chart, so you can compare the machine's instant reading against how the watch actually performs over days on the wrist.</p>"+
       "<a class='go' href='/watchrate/'>Open the Rate Meter \u2192</a>"},
@@ -247,6 +249,8 @@ var C={
       "<p>Elk stuk tussen de ene \u201cnieuwe start\u201d en de volgende is een <b>sessie</b>. Heeft een horloge er meer dan \u00e9\u00e9n, dan verschijnt een keuzemenu om \u00e9\u00e9n sessie te bekijken \u2014 met eigen grafiek, tabel en gang \u2014 zonder lange lege gaten die over de grafiek lopen. Kies <b>Alle sessies</b> voor het totaaloverzicht.</p>"+
       "<h3>De grafieken</h3>"+
       "<p><b>Offset in de tijd</b> toont elke meting; <b>Gang in de tijd</b> toont de gang tussen opeenvolgende metingen (alleen paren die minstens 6 uur uit elkaar liggen, zodat meetruis niet domineert). Puntkleuren lopen van groen \u2192 geel \u2192 oranje \u2192 rood naarmate de waarde groter wordt.</p>"+
+      "<h3>Hoe de gang wordt berekend</h3>"+
+      "<p>De gang is de helling van de rechte lijn die het best bij alle offsetmetingen van een sessie past (lineaire regressie), zodat elke meting meetelt, niet alleen de eerste en de laatste. Het rapport laat ook zien hoe betrouwbaar die gang is: een <b>marge</b> (\u00b1) en de <b>spreiding</b> van de metingen rond de lijn. <a href='#glossary/regressie'>Hoe die worden berekend, in de woordenlijst \u2192</a></p>"+
       "<h3>Timegrapher-sessies</h3>"+
       "<p>Heb je een timegrapher bij de meetup? Tik op <b>Sessie toevoegen</b> om per positie de gang, amplitude en slagfout vast te leggen. Die verschijnen als ruitjes op de gang-grafiek, zodat je de momentmeting van de machine kunt vergelijken met hoe het horloge zich over dagen aan de pols gedraagt.</p>"+
       "<a class='go' href='/watchrate/'>Open de Rate Meter \u2192</a>"},
@@ -366,7 +370,14 @@ document.getElementById("gSearch").addEventListener("input",function(e){gQuery=e
 
 /* ===== tabs: #glossary opens the glossary, any other hash is a guide section ===== */
 function showTab(){
-  var gl=location.hash==="#glossary";
+  // #glossary opens the glossary; #glossary/<term> also fills in the search
+  var h=location.hash,gl=h==="#glossary"||h.indexOf("#glossary/")===0;
+  if(h.indexOf("#glossary/")===0){
+    gQuery=decodeURIComponent(h.slice(10)).trim();
+    document.getElementById("gSearch").value=gQuery;
+    if(TERMS)renderGlossary();
+    window.scrollTo(0,0);
+  }
   document.getElementById("paneGuide").hidden=gl;
   document.getElementById("paneGlossary").hidden=!gl;
   document.querySelectorAll("#tabs a").forEach(function(a){a.classList.toggle("on",(a.dataset.tab==="glossary")===gl);});

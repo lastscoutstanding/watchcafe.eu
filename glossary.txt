@@ -65,6 +65,22 @@ Offset
 EN: The difference between what your watch shows and the reference time at one moment; the change in offset over time gives the rate.
 NL: Het verschil tussen wat je horloge aangeeft en de referentietijd op een moment; de verandering van de offset over de tijd geeft de gang.
 ---
+Linear regression / Lineaire regressie
+EN: How the Rate Meter turns offset readings into a rate: it fits the straight line that lies closest to all readings of a session (least squares), and the slope of that line is the rate, so every reading counts, not just the first and last. After a reset each piece gets its own starting point, but all pieces share one slope.
+NL: Hoe de Rate Meter offsetmetingen omzet in een gang: hij legt de rechte lijn die het dichtst bij alle metingen van een sessie ligt (kleinste kwadraten), en de helling van die lijn is de gang. Zo telt elke meting mee, niet alleen de eerste en de laatste. Na een doorstart krijgt elk stuk een eigen beginpunt, maar delen alle stukken één helling.
+---
+Spread / Spreiding
+EN: How far the readings of a session typically lie from the regression line, in seconds (the residual standard deviation). Reading in whole seconds alone causes about 0.3 s; more points to changes in position, temperature or state of wind, or to a misread. Shown in the report, not for a session of only two readings.
+NL: Hoe ver de metingen van een sessie doorgaans van de regressielijn liggen, in seconden (de standaardafwijking van de residuen). Alleen al aflezen op hele seconden geeft ongeveer 0,3 s; meer wijst op wisselende posities, temperatuur of opwindtoestand, of een afleesfout. Staat in het rapport, niet bij een sessie van maar twee metingen.
+---
+Rate margin (±) / Marge (±)
+EN: The uncertainty of a rate from the regression, shown as ± in the report: with about 95% confidence the average rate over that session lies within it. Calculation: t × max(spread, 0.29 s) ÷ √(sum of the squared distances in days of each reading from the mean time). The Student t factor makes sessions with few readings honest (two degrees of freedom: 4.3, ten: 2.2); the 0.29 s floor (1/√12) is the rounding noise of whole-second readings, so a lucky series never gets a too small margin. More readings and a longer session make it smaller. It covers reading noise only, not how the watch would behave on another wrist or in another season.
+NL: De onzekerheid van een gang uit de regressie, als ± in het rapport: met ongeveer 95% zekerheid ligt de gemiddelde gang over die sessie daarbinnen. Berekening: t × max(spreiding, 0,29 s) ÷ √(som van de gekwadrateerde afstanden in dagen van elke meting tot de gemiddelde tijd). De Student-t-factor houdt sessies met weinig metingen eerlijk (twee vrijheidsgraden: 4,3, tien: 2,2); de ondergrens van 0,29 s (1/√12) is de afrondingsruis van aflezen op hele seconden, zodat een toevallig mooie reeks nooit een te kleine marge krijgt. Meer metingen en een langere sessie maken hem kleiner. Hij gaat alleen over afleesruis, niet over hoe het horloge zich bij ander gebruik of in een ander seizoen gedraagt.
+---
+R²
+EN: The coefficient of determination of a regression: the share of the variation in offset that the line explains, from 0 to 1. Not shown on this site: it mostly grows with how far the offset drifts during a session, so a watch measured for weeks shows 1.000 and a very accurate one can score low, and with two readings it is always 1. The spread and the rate margin say more.
+NL: De determinatiecoëfficiënt van een regressie: het deel van de variatie in offset dat de lijn verklaart, van 0 tot 1. Staat bewust niet op deze site: hij groeit vooral met hoe ver de offset tijdens een sessie verloopt, dus een horloge dat weken is gemeten toont 1.000 en een heel nauwkeurig horloge kan laag scoren, en met twee metingen is hij altijd 1. De spreiding en de marge zeggen meer.
+---
 Amplitude
 EN: The rotation angle of the balance wheel swing, in degrees; healthy movements typically show 250-310 degrees, low amplitude can indicate a service is due.
 NL: De rotatiehoek van de balansslag, in graden; gezonde uurwerken zitten meestal op 250-310 graden, een lage amplitude kan op onderhoudsbehoefte wijzen.
