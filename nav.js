@@ -9,6 +9,7 @@
     { title: "Collection",    url: "/collection/" },
     { title: "Rate Meter",    url: "/watchrate/" },
     { title: "Power Reserve", url: "/powerreserve/" },
+    { title: "Moon Phase",    url: "/moonphase/" },
     { title: "Guide",         url: "/guide/" },
     { title: "Watch Café",    url: "/cafe/" }
   ];

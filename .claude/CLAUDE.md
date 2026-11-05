@@ -29,6 +29,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `watchrate/report.html` | Printbaar rapport (PDF via printvenster) |
 | `watchrate/sample.js` | Voorbeeldhorloges, gedeeld door Rate Meter en Viewer |
 | `powerreserve/index.html` | Power Reserve |
+| `moonphase/index.html` | Moon Phase (NL "Maanstand"): maanstand-complicatie gelijkzetten |
 | `guide/index.html` + `glossary.txt` | Guide met twee tabs: handleiding per tool en woordenlijst EN/NL (`#glossary`; `#glossary/<term>` vult de zoekbalk, zoals de link "How the rate is calculated" in de Rate Meter-uitleg naar `#glossary/regression`). Losse termen in de handleiding (offset, kaliber, positie, "één lijn", amplitude, slagfout, "volledig opgewonden", servicebeurt) linken als `a.gl` (gestippelde onderstreping) naar een zoekterm die een klein cluster begrippen toont; de zoekopdracht doorzoekt namen en definities in beide talen, dus geen te algemene woorden als "rate" |
 | `glossary/index.html` | Alleen doorverwijzing naar `/guide/#glossary` (oude bladwijzers) |
 | `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
@@ -49,6 +50,7 @@ localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
 - `siouxWatchReportPick`: welke horloges in het rapport aan/uit staan (alleen expliciete keuzes, alleen Rate Meter-bron).
 - `siouxWatchCollectionSort`: gekozen sortering van de Collection-kaarten (standaard `smart`).
 - `siouxWatchStdOpen`: `"1"` als "How it compares" in de Rate Meter openstaat (per apparaat; standaard dicht).
+- `siouxWatchMoonType`: `"prec"` als in Moon Phase het type Precision is gekozen (per apparaat; standaard Standard).
 - `siouxWatchWearClosed`: dag (00:00 UTC, ms) waarop het blok "Wearing today" met de hand is gesloten; alleen die dag geldig.
 
 Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`): `{ version, activeWatch, watches: [...], deleted?, restored?, exportedFrom? }`.
@@ -80,7 +82,7 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 
 - Site is tool-gericht; café-inhoud staat onder `/cafe/`.
 - Merknaam buiten de café-pagina is `watchcafe.eu` (menubalk, paginatitels, footers, rapport); tool-ondertitels zonder achtervoegsel. "Sioux" alleen op `/cafe/` en in de regel onder de homepage-tegels, met uitleg ("a monthly meetup of watch fans at Dutch tech company Sioux"): buiten Sioux zegt de naam niemand iets en het is ook de naam van inheemse Amerikaanse volken.
-- Menuvolgorde: Home, Collection, Rate Meter, Power Reserve, Guide, Watch Café (café bewust achteraan). Glossary is een tab van de Guide, om het menu kort te houden.
+- Menuvolgorde: Home, Collection, Rate Meter, Power Reserve, Moon Phase, Guide, Watch Café (café bewust achteraan). Glossary is een tab van de Guide, om het menu kort te houden.
 - Verborgen sectie "Tools" onderaan het tandwielmenu (`TOOLS` in `nav.js`, één regel per tool, alleen Engels): verschijnt alleen bij rechtsklik/ctrl-klik op het tandwiel (`contextmenu`, ook lang drukken op Android) of lang drukken (500 ms, eigen touch-timer, want iOS kent geen `contextmenu`). Een gewone klik opent het menu zonder Tools; niets in localStorage. Nu "Brand marks" en "Add samples". Easter egg voor hulppagina's die niet in de menubalk horen.
 - Homepage-tegels: Collection, Rate Meter, Power Reserve, Guide.
 - Eén kolom op de breedte van de menubalk (980 px): klokpaneel vult de breedte, wereldklok op één rij van negen (3×3 onder 940 px), vier tegels naast elkaar (2×2 onder 860 px, onder elkaar onder 520 px).
@@ -204,6 +206,17 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 - Bewust losgekoppeld van de Rate Meter-offset; opgeslagen metingen houden `offset: 0`.
 - Meerdere horloges tegelijk meten kan: elk horloge met een lopende meting krijgt een ● achter de naam in de pulldown. Bewust geen looptijd in de pulldown en geen lijst met alle lopende metingen; dat overzicht staat in de Collection.
 
+## Moon Phase
+
+- Losse pagina zonder horlogedata: rekent alleen, slaat alleen het gekozen type op (`siouxWatchMoonType`).
+- Echte nieuwe en volle manen volgens Meeus (*Astronomical Algorithms*, hfst. 49, hoofdtermen), binnen een minuut of twee; getoetst op bekende data (o.a. 25 jan 2024, zonsverduistering 8 apr 2024). Geen dependency.
+- Bovenaan een dagstrook (14 dagen terug, 60 vooruit) met een maantje per dag (accentring = dag met nieuwe of volle maan, op het echte tijdstip in de lokale tijdzone) en een tijdschuif per kwartier. Strook blijft onder de menubalk staan (`sticky`, `top:53px` = vaste balk van `nav.js`); onder 760 px staat er een klein maanvenster naast de schuif, zodat je de maan ziet bewegen waar je ook op de pagina bent. Bewust geen native datumkiezer: die klapt open over de plaatjes. Gekozen uit drie mockups (pijltjes+schuif, maankalender, dagstrook).
+- Links "The moon now": de hemelmaan (noordelijk halfrond), fasenaam (nieuw/vol binnen 12 uur van het echte moment, de rest op leeftijd), leeftijd, % verlicht, laatste volle en volgende nieuwe/volle maan.
+- Standaard (59 tanden, 29,5 dag per maan): stap 1 volle maan in het midden, stap 2 N keer drukken = dagen sinds de laatste volle maan, afgerond; daaronder het maanvenster zoals het eruit hoort te zien. Precision (135 tanden of meer): geen aantal (verschilt per kaliber), alleen het plaatje.
+- Maanvenster als SVG: schijf met twee manen die achter twee bulten draaien; volle maan midden bovenaan, nieuwe maan achter een bult. Vaste kleuren (blauw/goud), alleen het streepje bovenaan in accentkleur.
+- Waarschuwing: corrector niet tussen ~21:00 en 03:00 (handleiding). Driftregel: standaard loopt ~elke 2 jaar en 8 maanden een dag achter.
+- Nog niet: tegel op de homepage, sectie in de Guide, koppeling met de Collection (type bij Details, logboekregel "maan ingesteld" met drift-herinnering).
+
 ## Thema's
 
 Zeven donkere thema's met iconische accentkleur, merkvrije namen:
@@ -227,6 +240,8 @@ Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowfla
 - Eerdere bugs om op te letten: segment-dimming-CSS, viewer die reset-vlaggen negeerde, klok buiten beeld op mobiel.
 
 ## Open punten
+
+- [ ] Moon Phase: homepage-tegel en Guide-sectie (homepage heeft nu vier tegels op een rij).
 
 - [x] Oude `viewer.html` in de root verwijderd (commit b46e201); `watchrate/viewer.html` is de enige viewer.
 - [ ] Beslissen of een lichtere, beter leesbare variant nog gewenst is, nu alle thema's donker zijn.
