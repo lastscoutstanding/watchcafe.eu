@@ -216,7 +216,8 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 - Standaard (59 tanden, 29,5 dag per maan): stap 1 volle maan in het midden, stap 2 N keer drukken. N komt uit `watchPos`: lineair tussen de echte volle en nieuwe maan (die liggen 13,9–15,6 dagen uit elkaar, het horloge rekent altijd 14,75), zodat nieuwe en volle maan allebei precies kloppen; eerst was het dagen sinds volle maan, en dan stak bij een korte helft op het moment van nieuwe maan nog een randje maan boven de bult uit. Bulten (r 35) iets groter dan de manen (r 29): rond nieuwe maan is de maan ~een dag helemaal weg, zoals op een echt horloge; daaronder het maanvenster zoals het eruit hoort te zien. Precision (135 tanden of meer): geen aantal (verschilt per kaliber), alleen het plaatje.
 - Maanvenster als SVG: schijf met twee manen die achter twee bulten draaien; volle maan midden bovenaan, nieuwe maan achter een bult. Vaste kleuren (blauw/goud), alleen het streepje bovenaan in accentkleur.
 - Waarschuwing: corrector niet tussen ~21:00 en 03:00 (handleiding). Driftregel: standaard loopt ~elke 2 jaar en 8 maanden een dag achter.
-- Nog niet: tegel op de homepage, sectie in de Guide, koppeling met de Collection (type bij Details, logboekregel "maan ingesteld" met drift-herinnering).
+- Bewust geen homepage-tegel (te weinig gebruikt; de vier tegels blijven rustig) en geen tabbladen met Rate/Reserve (die hebben een horlogekeuze, Moon Phase niet; kost bovenin schermruimte op de telefoon). Alleen een menu-item. Komt er een tweede zelden gebruikte tool (datumcorrectie, chronograafschalen), dan een groep "More" in het menu of één pagina "Complications"; Rate en Reserve blijven direct in de balk.
+- Nog niet: sectie in de Guide, koppeling met de Collection (type bij Details, logboekregel "maan ingesteld" met drift-herinnering).
 
 ## Thema's
 
@@ -242,7 +243,7 @@ Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowfla
 
 ## Open punten
 
-- [ ] Moon Phase: homepage-tegel en Guide-sectie (homepage heeft nu vier tegels op een rij).
+- [ ] Moon Phase: sectie in de Guide.
 
 - [x] Oude `viewer.html` in de root verwijderd (commit b46e201); `watchrate/viewer.html` is de enige viewer.
 - [ ] Beslissen of een lichtere, beter leesbare variant nog gewenst is, nu alle thema's donker zijn.
