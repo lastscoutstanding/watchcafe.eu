@@ -192,9 +192,9 @@ var I18N={
   lastFull:"Last full moon", nextNew:"Next new moon", nextFull:"Next full moon",
   typeLbl:"Moonphase type", typeStd:"Standard (59 teeth)", typePrec:"Precision (135 teeth or more)",
   s1h:"Centre the full moon", s1c:"Press the corrector until a full moon sits exactly in the middle of the window.",
-  s2h:"Then press", times:"times", ncap:"One press per day since the full moon of {d}.",
+  s2h:"Then press", times:"times", ncap:"About one press per day since the full moon of {d}.",
   resStd:"It should now look like this", resPrec:"Your moon should look like this",
-  capStd:"{x} days since the full moon, rounded to {n}.",
+  capStd:"{x} days since the full moon. {n} presses puts the watch closest to the real moon, which doesn't keep exactly to the watch's 29.5 days.",
   capPrec:"On a precision moonphase one press is usually less than a day, so follow your manual and use this picture to check. {x} days since the full moon.",
   warn:"Don't use the corrector in the evening or around midnight (roughly 21:00–03:00, check your manual): the calendar mechanism is engaged then and can be damaged.",
   driftStd:"A standard moonphase counts 29.5 days per moon instead of 29.53, so it falls a day behind about every 2 years and 8 months.",
@@ -217,9 +217,9 @@ var I18N={
   lastFull:"Laatste volle maan", nextNew:"Volgende nieuwe maan", nextFull:"Volgende volle maan",
   typeLbl:"Soort maanstand", typeStd:"Standaard (59 tanden)", typePrec:"Precisie (135 tanden of meer)",
   s1h:"Zet de volle maan in het midden", s1c:"Druk de corrector tot een volle maan precies in het midden van het venster staat.",
-  s2h:"Druk dan", times:"keer", ncap:"Eén druk per dag sinds de volle maan van {d}.",
+  s2h:"Druk dan", times:"keer", ncap:"Ongeveer één druk per dag sinds de volle maan van {d}.",
   resStd:"Zo hoort hij er nu uit te zien", resPrec:"Zo hoort je maan eruit te zien",
-  capStd:"{x} dagen sinds de volle maan, afgerond {n}.",
+  capStd:"{x} dagen sinds de volle maan. Met {n} keer drukken staat het horloge het dichtst bij de echte maan, die zich niet precies aan de 29,5 dagen van het horloge houdt.",
   capPrec:"Bij een precisie-maanstand is één druk meestal minder dan een dag. Volg dus je handleiding en controleer met dit plaatje. {x} dagen sinds de volle maan.",
   warn:"Gebruik de corrector niet 's avonds of rond middernacht (ongeveer 21:00–03:00, zie je handleiding): dan grijpt het kalendermechanisme in en kan het beschadigen.",
   driftStd:"Een standaard maanstand rekent met 29,5 dagen per maan in plaats van 29,53, en loopt daardoor ongeveer elke 2 jaar en 8 maanden een dag achter.",
@@ -260,6 +260,17 @@ function lastPhase(t,full){
   while(phaseTime(k)>t)k--;
   return k;
 }
+/* Where a moon disc should stand at t, in watch days since full moon (0 to 29.5).
+   The real moon takes 13.9 to 15.6 days from full to new and back, the watch
+   always 14.75. Interpolating between the real full and new moons puts both
+   exactly right, so the moon is never visible at new moon or off-centre at full. */
+var WATCH=29.5;
+function watchPos(t){
+  var kF=lastPhase(t,true),kN=lastPhase(t,false),k0=Math.max(kF,kN),t0=phaseTime(k0),t1=phaseTime(k0+.5);
+  return (k0%1?0:WATCH/2)+WATCH/2*(t-t0)/(t1-t0);
+}
+// presses from a centred full moon: the nearest whole number, wrapping to 0 just before full
+function pressesFor(pos){var n=Math.round(pos);return n>=WATCH||WATCH-pos<Math.abs(pos-n)?0:n;}
 function ageAt(t){return (t-phaseTime(lastPhase(t,false)))/D;}
 
 /* ===== drawings ===== */
@@ -271,17 +282,19 @@ function skyMoon(age,ring){
     '<circle cx="50" cy="50" r="40" fill="none" stroke="'+(ring?"var(--accent)":"#44444f")+'" stroke-width="'+(ring?7:1)+'"/>';
 }
 // a classic moonphase window: a disc with two moons turning behind two humps;
-// ageFromFull 0 = full moon centred, +-SYN/2 = new moon (hidden)
-function aperture(ageFromFull,id){
-  var th=ageFromFull/SYN*Math.PI,R=60,cx=100,cy=100,mr=29,moons="",stars="";
+// f = fraction of the cycle since full moon: 0 = full moon centred, .5 = new moon.
+// The humps are a little larger than the moons, so around new moon the moon
+// is hidden for about a day, as on a real watch.
+function aperture(f,id){
+  var th=f*Math.PI,R=60,cx=100,cy=100,mr=29,moons="",stars="";
   for(var i=0;i<2;i++){var a=th+i*Math.PI;moons+='<circle cx="'+(cx+R*Math.sin(a)).toFixed(1)+'" cy="'+(cy-R*Math.cos(a)).toFixed(1)+'" r="'+mr+'" fill="url(#gold'+id+')"/>';}
   [[40,40],[160,36],[100,18],[70,22],[132,24],[24,70],[178,72]].forEach(function(s,i){
     var x=s[0]-cx,y=s[1]-cy,X=cx+x*Math.cos(th)-y*Math.sin(th),Y=cy+x*Math.sin(th)+y*Math.cos(th);
     stars+='<circle cx="'+X.toFixed(1)+'" cy="'+Y.toFixed(1)+'" r="'+(i%2?1.3:1.8)+'" fill="#e9d9a6" opacity=".8"/>';});
   return '<defs><radialGradient id="gold'+id+'" cx=".4" cy=".35"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#c9a24a"/></radialGradient>'+
     '<clipPath id="win'+id+'"><path d="M8,100 A92,92 0 0 1 192,100 Z"/></clipPath></defs>'+
-    '<g clip-path="url(#win'+id+')"><rect x="0" y="0" width="200" height="104" fill="#14234f"/>'+stars+moons+'</g>'+
-    '<circle cx="40" cy="100" r="31" fill="#2b2b33" stroke="#4a4a55"/><circle cx="160" cy="100" r="31" fill="#2b2b33" stroke="#4a4a55"/>'+
+    '<g clip-path="url(#win'+id+')"><rect x="0" y="0" width="200" height="104" fill="#14234f"/>'+stars+moons+
+    '<circle cx="40" cy="100" r="35" fill="#2b2b33" stroke="#4a4a55"/><circle cx="160" cy="100" r="35" fill="#2b2b33" stroke="#4a4a55"/></g>'+
     '<path d="M8,100 A92,92 0 0 1 192,100" fill="none" stroke="#6a6a75" stroke-width="2"/><line x1="4" y1="101" x2="196" y2="101" stroke="#6a6a75" stroke-width="2"/>'+
     '<line x1="100" y1="3" x2="100" y2="11" stroke="var(--accent)" stroke-width="2"/>';
 }
@@ -332,7 +345,7 @@ function centreStrip(smooth){
 
 function render(){
   var t=chosen(),age=ageAt(t),kF=lastPhase(t,true),fullT=phaseTime(kF),sinceFull=(t-fullT)/D,kN=lastPhase(t,false);
-  var lit=Math.round((1-Math.cos(2*Math.PI*age/SYN))/2*100),prec=type==="prec",n=Math.round(sinceFull)%30;
+  var lit=Math.round((1-Math.cos(2*Math.PI*age/SYN))/2*100),prec=type==="prec",pos=watchPos(t),n=pressesFor(pos);
   setTxt("dayLbl",new Date(day).toLocaleDateString(tr("locale"),{weekday:"short",day:"numeric",month:"short",year:"numeric"}));
   setTxt("timeLbl",hhmm(mins));
   var sl=document.getElementById("time");if(document.activeElement!==sl)sl.value=mins;
@@ -346,7 +359,7 @@ function render(){
   setTxt("n",n);
   setTxt("ncap",tr("ncap",{d:fmt(fullT)}));
   document.getElementById("resTitle").innerHTML=prec?tr("resPrec"):'<span class="num ok">✓</span>'+tr("resStd");
-  var shown=prec?sinceFull:n;
+  var shown=(prec?pos:n)/WATCH;
   document.getElementById("apNow").innerHTML=aperture(shown,"n");
   document.getElementById("apMini").innerHTML=aperture(shown,"m");
   var x=sinceFull.toFixed(1);if(lang==="nl")x=x.replace(".",",");
