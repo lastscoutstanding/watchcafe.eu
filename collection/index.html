@@ -92,8 +92,10 @@
   .ms .n.prev{color:var(--muted)}
   .ms .n.none{color:var(--muted);font-weight:400;font-size:16px;padding:5px 0}
   .ms .d{font-size:13px;color:var(--muted)}
-  .ms a{font-size:13px;margin-top:auto;padding-top:8px;color:var(--accent);text-decoration:none;font-weight:600}
-  .ms a:hover{text-decoration:underline}
+  a.ms{color:var(--ink);text-decoration:none}
+  a.ms:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+  .ms .go{font-size:13px;margin-top:auto;padding-top:8px;color:var(--muted);font-weight:600}
+  a.ms:hover .go{color:var(--accent)}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
   @media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
   .grid>div{background:var(--card2);padding:10px 14px;min-width:0}
@@ -936,8 +938,9 @@ function renderOv(w){
   var nMeas=(w.measurements||[]).length,prev=r?null:WatchData.previousRate(w),s=WatchData.rateSession(w);
   var a=activity(w);
   function tile(k,n,d,link,linkTxt,pill){
-    return '<div class="ms"><span class="mh"><span class="k">'+esc(k)+'</span>'+(pill||"")+'</span>'+n+'<span class="d">'+esc(d)+'</span>'
-      +(link?'<a href="'+link+'" data-open="'+link+'">'+esc(linkTxt)+'</a>':'')+'</div>';
+    // the whole tile is the link; the "Open in …" line is only a hint
+    return '<a class="ms" href="'+link+'" data-open><span class="mh"><span class="k">'+esc(k)+'</span>'+(pill||"")+'</span>'+n+'<span class="d">'+esc(d)+'</span>'
+      +'<span class="go">'+esc(linkTxt)+'</span></a>';
   }
   document.getElementById("paneOv").innerHTML='<div class="meas">'
     +tile(t.rate,r?'<span class="n">'+fmtRate(r)+' '+t.perDay+'</span>'
