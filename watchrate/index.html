@@ -113,8 +113,8 @@
   .sessend b{color:var(--ink);font-weight:600}
   .sessend .hint{margin:6px 0 0}
   .sessend .sesslbl{font-size:13.5px;color:var(--muted)}
-  .sessend button.dash{flex:none;background:transparent;border-style:dashed;color:var(--muted)}
-  .sessend button.dash:hover{color:var(--ink)}
+  .sessend button.dash,.rsnote button.dash{flex:none;background:transparent;border-style:dashed;color:var(--muted)}
+  .sessend button.dash:hover,.rsnote button.dash:hover{color:var(--ink)}
   .sessend button.armed{color:#ff6b5e;border-color:#ff6b5e;border-style:solid}
   /* sub-headings inside the history block get their own divider */
   .block h2.sub{border-top:1px solid var(--border);padding-top:20px;margin-top:26px}
@@ -216,6 +216,9 @@
   .grp-n{color:var(--muted);font-weight:700}
   .qbtn{width:20px;height:20px;min-width:20px;padding:0;border-radius:50%;border:1px solid var(--border);background:#26262c;color:var(--muted);font-size:12px;font-weight:700;line-height:1;cursor:pointer;touch-action:manipulation}
   .qbtn:hover{background:#30303a;color:var(--ink)}
+  .rsnote{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .rsnote button.sm{padding:3px 9px;font-size:12px}
+  [hidden]{display:none!important}
   .infobox{background:#0e0e12;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:10px}
   .tgframe{border:1px dashed #4a4a55;border-radius:12px;padding:12px 14px;margin-top:16px}
   .tgframe-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -349,6 +352,7 @@
           </div>
           <button class="primary" id="recordBtn" style="flex:none"></button>
         </div>
+        <p class="hint rsnote" id="rsNote" hidden><span id="rsNoteTxt"></span><button class="sm dash" id="rsUndo"></button></p>
         <p class="hint infobox" id="nsHint" style="display:none"></p>
         <p class="hint infobox" id="rsHint" style="display:none"></p>
         <div class="bknudge" id="bkNudge" style="display:none"></div>
@@ -464,6 +468,7 @@ var I18N={
   sessionLbl:"Session", allSessions:"All sessions", allSessionsC:"All sessions, gaps removed",
   sessSince:function(d,n){return "Rate session \u00b7 since <b>"+d+"</b> \u00b7 "+n+(n===1?" measurement":" measurements");},
   endSess:"End session", endConfirm:"Confirm", undo:"Undo",
+  rsZeroed:function(was){return "Green clock set to \u00b10 s (was "+was+").";},
   sessEnded:function(d){return "Rate session ended <b>"+d+"</b>";}, sessNext:"Your next measurement starts a new session.",
   nsHint:"Tick this to start a new measuring period, for example after a service or when the watch has been put away for a while. The rate starts fresh from this measurement; earlier measurements no longer count. To set the watch and keep the session going, use \u201cReset, same session\u201d.",
   rsHint:"Tick this if you set the watch (also for daylight saving time) or it had stopped, and you want to keep the session going. The offset may jump here; the rate stays one line over the whole session. Set the green clock to what your watch shows now: a few seconds off is fine, for example on a watch without hacking seconds. Tip: record a normal measurement first, then set the watch and measure again.",
@@ -526,6 +531,7 @@ var I18N={
   sessionLbl:"Sessie", allSessions:"Alle sessies", allSessionsC:"Alle sessies, zonder tussenpozen",
   sessSince:function(d,n){return "Gangsessie \u00b7 sinds <b>"+d+"</b> \u00b7 "+n+(n===1?" meting":" metingen");},
   endSess:"Sessie afronden", endConfirm:"Bevestigen", undo:"Ongedaan maken",
+  rsZeroed:function(was){return "Groene klok op \u00b10 s gezet (was "+was+").";},
   sessEnded:function(d){return "Gangsessie afgerond op <b>"+d+"</b>";}, sessNext:"Je volgende meting start een nieuwe sessie.",
   nsHint:"Vink dit aan voor een nieuwe meetperiode, bijvoorbeeld na een onderhoudsbeurt of als het horloge een tijd in de la heeft gelegen. De gang begint opnieuw vanaf deze meting; eerdere metingen tellen niet meer mee. Wil je het horloge gelijkzetten en de sessie laten doorlopen, gebruik dan \u201cDoorstart\u201d.",
   rsHint:"Vink dit aan als je het horloge hebt gelijkgezet (ook bij zomer- of wintertijd) of als het heeft stilgestaan, en je de sessie wilt laten doorlopen. De offset mag hier verspringen; de gang blijft \u00e9\u00e9n lijn over de hele sessie. Zet de groene klok op wat je horloge nu aanwijst: een paar seconden ernaast is prima, bijvoorbeeld bij een horloge zonder stopseconde. Tip: leg eerst een gewone meting vast, zet het horloge dan gelijk en meet opnieuw.",
@@ -644,8 +650,11 @@ function humanSpan(ms){var d=ms/86400000,h=ms/3600000;
 
 /* ===== meter session ===== */
 var offsetN=0, guideOpen=false;
+// offsetTouched: the user moved the green clock since it was seeded; rsPrev: offset before a reset set it to 0
+var offsetTouched=false, rsPrev=null;
 function currentOffset(){return offsetN;}
 function seedOffset(){var w=activeWatch();
+  offsetTouched=false;rsPrev=null;
   if(w&&w.measurements.length){var last=w.measurements.slice().sort(function(a,b){return b.t-a.t;})[0];offsetN=Math.round(last.offset);}
   else offsetN=0;
 }
@@ -679,6 +688,9 @@ function renderMeter(){
   if(!s||s.ended){chk.checked=true;chk.disabled=true;rs.checked=false;rs.disabled=true;}
   else if(chk.disabled){chk.checked=false;chk.disabled=false;rs.disabled=false;}
   document.getElementById("offVal").textContent=signSec(currentOffset(),false);
+  var note=document.getElementById("rsNote");
+  note.hidden=!(rs.checked&&rsPrev!==null);
+  if(!note.hidden){document.getElementById("rsNoteTxt").textContent=t.rsZeroed(signSec(rsPrev,false));document.getElementById("rsUndo").textContent=t.undo;}
 
   var r=rateOf(w);
   document.getElementById("rateVal").textContent=r?((r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" "+t.perDay):("\u2014 "+t.perDay);
@@ -1108,16 +1120,21 @@ function toggleInfo(id){var el=document.getElementById(id);el.style.display=el.s
 document.getElementById("nsHelp").onclick=function(ev){ev.preventDefault();toggleInfo("nsHint");};
 document.getElementById("rateHelp").onclick=function(){toggleInfo("rateChartHint");};
 document.getElementById("rsHelp").onclick=function(ev){ev.preventDefault();toggleInfo("rsHint");};
-// New start and Reset exclude each other; a reset usually follows setting the watch, so the green clock goes to 0
+// New start and Reset exclude each other. A reset usually follows setting the watch, so the green clock goes to 0,
+// unless the user already set the clock (then that value is what the watch shows); a note with Undo says so
+function unReset(){if(rsPrev!==null)offsetN=rsPrev;rsPrev=null;}
 document.getElementById("newStartChk").onchange=function(e){
   var rs=document.getElementById("restartChk");
-  if(e.target.checked&&rs.checked){rs.checked=false;seedOffset();renderMeter();}
+  if(e.target.checked&&rs.checked){rs.checked=false;unReset();renderMeter();}
 };
 document.getElementById("restartChk").onchange=function(e){
-  if(e.target.checked){document.getElementById("newStartChk").checked=false;offsetN=0;}
-  else seedOffset();
+  if(e.target.checked){
+    document.getElementById("newStartChk").checked=false;
+    if(!offsetTouched&&offsetN!==0){rsPrev=offsetN;offsetN=0;}
+  }else unReset();
   renderMeter();
 };
+document.getElementById("rsUndo").onclick=function(){unReset();offsetTouched=true;renderMeter();};
 document.getElementById("sessionSel").onchange=function(e){selectedSession=e.target.value;renderHistory();};
 
 document.getElementById("sampleBtn").onclick=function(){
@@ -1219,8 +1236,9 @@ document.getElementById("tgSave").onclick=function(){
   closeTG();save();renderAll();
 };
 
-document.getElementById("nUp").onclick=function(){offsetN++;renderMeter();};
-document.getElementById("nDown").onclick=function(){offsetN--;renderMeter();};
+// adjusting the clock by hand: the value is the user's now, a reset no longer changes it
+document.getElementById("nUp").onclick=function(){offsetN++;offsetTouched=true;rsPrev=null;renderMeter();};
+document.getElementById("nDown").onclick=function(){offsetN--;offsetTouched=true;rsPrev=null;renderMeter();};
 document.getElementById("recordBtn").onclick=function(){
   var w=activeWatch();if(!w)return;
   var chk=document.getElementById("newStartChk");
@@ -1229,7 +1247,7 @@ document.getElementById("recordBtn").onclick=function(){
   if(chk.checked&&w.measurements.length)m.newStart=true; // the first measurement starts a session anyway
   else if(rs.checked)m.restart=true;
   w.measurements.push(m);
-  document.getElementById("noteIn").value="";chk.checked=false;rs.checked=false;
+  document.getElementById("noteIn").value="";chk.checked=false;rs.checked=false;offsetTouched=false;rsPrev=null;
   save();renderAll();showNudge();flashRecorded();
 };
 // Brief "✓ Recorded" on the button as confirmation, width kept so nothing shifts
