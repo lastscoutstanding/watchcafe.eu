@@ -32,6 +32,7 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `moonphase/index.html` | Moon Phase (NL "Maanstand"): maanstand-complicatie gelijkzetten |
 | `guide/index.html` + `glossary.txt` | Guide met twee tabs: handleiding per tool en woordenlijst EN/NL (`#glossary`; `#glossary/<term>` vult de zoekbalk, zoals de link "How the rate is calculated" in de Rate Meter-uitleg naar `#glossary/regression`). Losse termen in de handleiding (offset, kaliber, positie, "één lijn", amplitude, slagfout, "volledig opgewonden", servicebeurt) linken als `a.gl` (gestippelde onderstreping) naar een zoekterm die een klein cluster begrippen toont; de zoekopdracht doorzoekt namen en definities in beide talen, dus geen te algemene woorden als "rate" |
 | `glossary/index.html` | Alleen doorverwijzing naar `/guide/#glossary` (oude bladwijzers) |
+| `flyer/index.html` + `watchcafe-flyer.pdf` | A4-flyer (Engels, `noindex`, niet in het menu): tools voorop, QR naar watchcafe.eu, Sioux Watch Café alleen in de voetregel. Licht papier met donker kopblok in Watch Café-oranje; PDF gemaakt met headless Chromium (`page.pdf`, `printBackground`) |
 | `privacy/index.html` | Privacy, inspecteert live cookies/localStorage |
 | `cafe/index.html` + `meetings.txt`, `meetings.js`, `events.txt`, `events.js`, `cafe-log.txt` | Café-pagina |
 | `nav.js` | Gedeelde menubalk, taal-toggle, thema-keuze, verborgen Tools-sectie |
