@@ -198,6 +198,14 @@
   .top .ttl{flex:1 1 260px;min-width:0}
   #wearPill{flex:0 1 auto;min-width:0;max-width:100%}
   #wearPill:empty{display:none}
+  /* privacy switch: only an eye; grey when off, tinted when prices are hidden */
+  .privbtn{order:2;flex:none;width:34px;height:34px;padding:0;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid transparent;color:var(--muted)}
+  .privbtn:hover{color:var(--ink);border-color:var(--border);background:transparent}
+  .privbtn svg{width:20px;height:20px}
+  .privbtn.on{color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+  #wearPill{order:1}
+  @media(max-width:600px){.top .ttl{flex-basis:200px}.privbtn{order:1}#wearPill{order:2;flex-basis:100%}}
+  .mask{color:var(--muted);letter-spacing:2px}
   .tpill{display:inline-flex;align-items:center;gap:7px;max-width:100%;border-radius:999px;padding:7px 14px;font-size:13.5px;margin:4px 0 18px}
   .tpill .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tpill .car{font-size:10px;opacity:.8}
@@ -309,6 +317,7 @@
       <div class="top">
         <div class="ttl"><h1 id="title">Collection</h1><p class="sub" id="sub"></p></div>
         <span id="wearPill"></span>
+        <button class="privbtn" id="privBtn"></button>
       </div>
       <div id="overview"></div>
       <div class="box" id="addBox" hidden>
@@ -444,6 +453,7 @@ var I18N={
   specPick:"Choose a standard",ph:{caliber:"e.g. 861, manual wind",spec:"e.g. COSC or −2/+4",year:"e.g. 1969",caseSize:"e.g. 42 mm",lugWidth:"e.g. 20 mm"},
   bp:{"":"—",full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},
   refPfx:"Ref. ", calPfx:"Cal. ",
+  privOff:"Hide prices and serial numbers", privOn:"Show prices and serial numbers",
   showSerial:"Click to show", edit:"Edit details", del:"Delete watch…",
   delArmed:function(n){return "Click again within 5 seconds to delete “"+n+"” and all its measurements.";},
   delAgain:"Click again to delete",
@@ -529,6 +539,7 @@ var I18N={
   specPick:"Kies een norm",ph:{caliber:"bijv. 861, handopwind",spec:"bijv. COSC of −2/+4",year:"bijv. 1969",caseSize:"bijv. 42 mm",lugWidth:"bijv. 20 mm"},
   bp:{"":"—",full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},
   refPfx:"Ref. ", calPfx:"Kal. ",
+  privOff:"Prijzen en serienummers verbergen", privOn:"Prijzen en serienummers tonen",
   showSerial:"Klik om te tonen", edit:"Gegevens bewerken", del:"Horloge verwijderen…",
   delArmed:function(n){return "Klik binnen 5 seconden nogmaals om “"+n+"” en al zijn metingen te verwijderen.";},
   delAgain:"Klik nogmaals om te verwijderen",
@@ -619,7 +630,7 @@ function serviceInfo(w){
 }
 function entryTitle(e){var t=T();return t.types[e.type]+(e.where?" · "+e.where:"");}
 function entryHTML(e,clickable){
-  var desc=[e.note?esc(e.note):"",e.cost?'<span class="cost">'+esc(e.cost)+'</span>':""].filter(Boolean).join(" · ");
+  var desc=[e.note?esc(e.note):"",e.cost?(priv?MASK:'<span class="cost">'+esc(e.cost)+'</span>'):""].filter(Boolean).join(" · ");
   var inner='<span class="h"><b>'+esc(entryTitle(e))+'</b><span class="dt">'+esc(fmtDay(e.t))+'</span></span>'
     +(desc?'<span class="ds">'+desc+'</span>':'');
   return '<li><span class="ic">'+svgIcon(e.type)+'</span>'
@@ -680,6 +691,7 @@ function render(){
   document.title=(id?((byId(id)||{}).name||t.title):t.title)+" — watchcafe.eu";
   document.getElementById("vOverview").hidden=!!id;
   document.getElementById("vDetail").hidden=!id;
+  renderPriv();
   if(id)renderDetail(id);else renderOverview();
 }
 
@@ -727,6 +739,19 @@ function wearHTML(now){
    but don't pull active watches up. */
 var SORTKEY="siouxWatchCollectionSort",SORTS=["smart","worn","most","bought","price","brand","name","service","added"];
 var sortBy=(function(){try{var v=localStorage.getItem(SORTKEY);return SORTS.indexOf(v)>-1?v:"smart";}catch(e){return "smart";}})();
+// privacy switch (the eye on the overview): hides prices, costs and serial numbers on
+// screen, per device; the data, the report and backups are untouched
+var PRIVKEY="siouxWatchHidePrices",MASK='<span class="mask">••••</span>';
+var priv=(function(){try{return localStorage.getItem(PRIVKEY)==="1";}catch(e){return false;}})();
+var EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+function renderPriv(){
+  var b=document.getElementById("privBtn"),t=T();
+  b.innerHTML=EYE+(priv?'<path d="M3 3l18 18"/>':'')+'</svg>';
+  b.classList.toggle("on",priv);b.title=priv?t.privOn:t.privOff;
+  b.setAttribute("aria-label",b.title);b.setAttribute("aria-pressed",priv);
+}
+// sorting by price would give the ranking away, so it is left out while prices are hidden
+function sortKey(){return priv&&sortBy==="price"?"smart":sortBy;}
 function activity(w){
   var s=WatchData.rateSession(w),pr=w.prCurrent&&w.prCurrent.start?w.prCurrent:null;
   var rate=s&&!s.ended?(s.quiet?"quiet":"live"):null;
@@ -773,7 +798,8 @@ function sortWatches(list){
     if(a==null||b==null)return (a==null)-(b==null)||byName(x,y);
     return (desc?b-a:a-b)||byName(x,y);};}
   var byWorn=on(function(r){return lastWorn(r.w);},true),cut=-1;
-  if(sortBy==="smart"){
+  var sk=sortKey();
+  if(sk==="smart"){
     var live=rows.filter(function(r){return r.a.live;}).sort(function(x,y){return y.a.last-x.a.last||byName(x,y);});
     var rest=rows.filter(function(r){return !r.a.live;}).sort(byWorn);
     if(live.length&&rest.length)cut=live.length;
@@ -787,14 +813,15 @@ function sortWatches(list){
     name:byName,
     service:on(function(r){var sv=serviceInfo(r.w);return sv?sv.due:null;}),
     added:function(x,y){return x.i-y.i;}
-  }[sortBy]);
+  }[sk]);
   return {rows:rows,cut:cut};
 }
 function sortHTML(){
   var t=T();
-  return '<label class="sortpill">'+esc(t.sortLbl)+': <b>'+esc(t.sorts[sortBy])+'</b> ▾'
-    +'<select id="sortSel" aria-label="'+esc(t.sortLbl)+'">'+SORTS.map(function(k){
-      return '<option value="'+k+'"'+(k===sortBy?' selected':'')+'>'+esc(t.sorts[k])+'</option>';}).join("")+'</select></label>';
+  var sk=sortKey();
+  return '<label class="sortpill">'+esc(t.sortLbl)+': <b>'+esc(t.sorts[sk])+'</b> ▾'
+    +'<select id="sortSel" aria-label="'+esc(t.sortLbl)+'">'+SORTS.filter(function(k){return !priv||k!=="price";}).map(function(k){
+      return '<option value="'+k+'"'+(k===sk?' selected':'')+'>'+esc(t.sorts[k])+'</option>';}).join("")+'</select></label>';
 }
 
 // share of worn days per watch over the last 12 months
@@ -1048,6 +1075,7 @@ function renderDet(w){
       else if(f==="boxPapers")html='<div class="v">'+esc(t.bp[v]||v)+'</div>';
       else if(f==="serviceYears")html='<div class="v">'+esc(t.svc[v]||v)+'</div>';
       else if(f==="spec")html='<div class="v">'+specHTML(v)+'</div>';
+      else if(f==="serial"&&priv)html='<div class="v">'+MASK+'</div>';
       else if(f==="serial"&&!serialShown)html='<div class="v"><button class="serial" id="serialBtn" title="'+esc(t.showSerial)+'">•••• '+esc(v.slice(-4))+'</button></div>';
       else html='<div class="v">'+esc(v)+'</div>';
       return '<div><div class="k">'+esc(t.fields[f])+'</div>'+html+'</div>';
@@ -1055,8 +1083,8 @@ function renderDet(w){
     +(function(){
       // purchase comes from the logbook, so it is edited there
       var p=lastOf(w,["purchase"]);
-      function cell(k,v){return '<div><div class="k">'+esc(k)+'</div><div class="v'+(v?'':' none')+'">'+(v?esc(v):'—')+'</div></div>';}
-      return cell(t.purchased,p?fmtDay(p.t)+(p.where?", "+p.where:""):"")+cell(t.price,p&&p.cost||"");
+      function cell(k,v,hide){return '<div><div class="k">'+esc(k)+'</div><div class="v'+(v?'':' none')+'">'+(v?(hide?MASK:esc(v)):'—')+'</div></div>';}
+      return cell(t.purchased,p?fmtDay(p.t)+(p.where?", "+p.where:""):"")+cell(t.price,p&&p.cost||"",priv);
     })()+'</div>'
     +'<div class="detbtns"><button class="sm dash" id="delBtn">'+esc(t.del)+'</button><button class="sm primary" id="editBtn">'+esc(t.edit)+'</button></div>'
     +'<p class="note" id="detNote"></p>';
@@ -1425,6 +1453,10 @@ document.getElementById("addCancel").onclick=function(){closeAdd();document.getE
   document.getElementById(id).addEventListener("keydown",function(e){if(e.key==="Enter")addWatch();else if(e.key==="Escape")closeAdd();});
 });
 document.getElementById("backBtn").onclick=function(){location.hash="";};
+document.getElementById("privBtn").onclick=function(){
+  priv=!priv;try{if(priv)localStorage.setItem(PRIVKEY,"1");else localStorage.removeItem(PRIVKEY);}catch(e){}
+  render();
+};
 document.getElementById("pnPrev").onclick=function(){stepWatch(-1);};
 document.getElementById("pnNext").onclick=function(){stepWatch(1);};
 document.addEventListener("keydown",function(e){
