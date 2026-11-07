@@ -94,7 +94,7 @@ var WatchData=(function(){
      in the Collection; their "edited" field holds the time of that edit, and
      the most recent edit wins.
      Returns {state, rows}: one row per watch for the import dialog, with
-     status "new" | "changed" | "same" | "localOnly" | "removed". */
+     status "new" | "changed" | "same" | "localOnly" | "removed" and the watch id. */
   function merge(local,incoming){
     var inc=JSON.parse(JSON.stringify(incoming));
     var loc=JSON.parse(JSON.stringify(local));
@@ -110,7 +110,7 @@ var WatchData=(function(){
 
     (loc.watches||[]).forEach(function(w){
       var iw=incById[w.id];delete incById[w.id];
-      if(gone(w.id)){rows.push({name:w.name,status:"removed"});return;}
+      if(gone(w.id)){rows.push({id:w.id,name:w.name,status:"removed"});return;}
       var added=0,removed=0,updated=false;
       if(iw&&(+iw.edited||0)>(+w.edited||0)){
         w.name=iw.name;w.edited=iw.edited;
@@ -142,7 +142,7 @@ var WatchData=(function(){
       if(w.prCurrent&&!run){removed++;delete w.prCurrent;}
       else if(run&&run!==w.prCurrent){added++;w.prCurrent=run;}
       out.push(w);
-      rows.push({name:w.name,status:!iw?"localOnly":(added||removed||updated)?"changed":"same",added:added,removed:removed,updated:updated});
+      rows.push({id:w.id,name:w.name,status:!iw?"localOnly":(added||removed||updated)?"changed":"same",added:added,removed:removed,updated:updated});
     });
 
     (inc.watches||[]).forEach(function(w){
@@ -150,7 +150,7 @@ var WatchData=(function(){
       LISTS.forEach(function(L){if(w[L[0]])w[L[0]]=w[L[0]].filter(function(x){return !gone(x.id);});});
       if(w.prCurrent&&gone("pr:"+w.prCurrent.start))delete w.prCurrent;
       out.push(w);
-      rows.push({name:w.name,status:"new",added:(w.measurements||[]).length+(w.timegrapher||[]).length+(w.powerReserve||[]).length+(w.log||[]).length+(w.worn||[]).length});
+      rows.push({id:w.id,name:w.name,status:"new",added:(w.measurements||[]).length+(w.timegrapher||[]).length+(w.powerReserve||[]).length+(w.log||[]).length+(w.worn||[]).length});
     });
 
     loc.watches=out;

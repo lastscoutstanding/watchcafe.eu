@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=11"></script>
+<script src="/watchdata.js?v=12"></script>
 <script src="/watchrate/sample.js?v=7"></script>
 <script src="/brands.js?v=2"></script>
 <script src="/standards.js?v=1"></script>
@@ -278,7 +278,11 @@
   .impbtns .replace{margin-left:auto;background:transparent;border-style:dashed;color:var(--muted)}
   .impsec{margin-top:14px;padding:10px 0 4px;border-top:1px dashed var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:700}
   .improw .sub{display:block;font-size:12px;color:var(--muted);margin-top:1px}
-  .improw .st button{margin-left:6px;padding:3px 10px;font-size:12px}
+  .improw label{display:flex;align-items:flex-start;gap:9px;cursor:pointer;min-width:0}
+  .improw input[type=checkbox],.improw .nock{flex:none;width:15px;height:15px;margin:2px 0 0;accent-color:var(--accent)}
+  .improw input[type=checkbox]:disabled{opacity:.45}
+  .improw label:has(input:disabled){cursor:default}
+  .impbtns button:disabled{opacity:.4;cursor:default}
   .imppanel .hint2{font-size:12px;color:var(--muted);margin-top:10px}
   .wear .bknudge{margin-top:14px}
   .gears{margin-top:20px;text-align:center;font-size:12.5px;color:#8f8c96}
@@ -383,8 +387,10 @@ var I18N={
   impSame:"no changes", impLocalOnly:"only on this device, kept", impWatchRemoved:"deleted on the other device",
   impMerge:"Merge", impCancel:"Cancel", impReplace:"Replace everything",
   impDelSec:"Deleted on this device · in the backup", impDelSub:function(d,n){return "deleted "+d+" · "+n+(n===1?" item":" items")+" in the backup";}, impSampleSub:"sample watch",
-  impRestore:"Restore", impWillRestore:"will be restored", impUndo:"Undo", impMergeRestore:function(n){return "Merge and restore "+n;},
-  impHintDel:"Deleted watches stay deleted unless you restore them above.",
+  impWillRestore:"will be restored", impSkip:"not imported",
+  impMergeLbl:function(k,n,r){return "Merge"+(k<n?" "+k+" of "+n+" new":"")+(r?" and restore "+r:"");},
+  impReplaceOff:"Replace everything takes the whole backup, so it’s off while a watch is unchecked.",
+  impHintDel:"Deleted watches stay deleted unless you tick them above.",
   impHint:"Merge adds what’s new in the backup and keeps everything that’s only on this device. Deletions on either side carry over.",
   impReplaceConfirm:"Replace all data in this browser with this backup? Anything not in the backup is lost.",
   impBad:"Could not read this file as a valid backup.",
@@ -465,8 +471,10 @@ var I18N={
   impSame:"geen wijzigingen", impLocalOnly:"alleen op dit apparaat, blijft staan", impWatchRemoved:"verwijderd op het andere apparaat",
   impMerge:"Samenvoegen", impCancel:"Annuleren", impReplace:"Alles vervangen",
   impDelSec:"Verwijderd op dit apparaat · in de back-up", impDelSub:function(d,n){return "verwijderd "+d+" · "+n+(n===1?" item":" items")+" in de back-up";}, impSampleSub:"voorbeeldhorloge",
-  impRestore:"Terugzetten", impWillRestore:"wordt teruggezet", impUndo:"Ongedaan maken", impMergeRestore:function(n){return "Samenvoegen en "+n+" terugzetten";},
-  impHintDel:"Verwijderde horloges blijven weg, tenzij je ze hierboven terugzet.",
+  impWillRestore:"wordt teruggezet", impSkip:"niet geïmporteerd",
+  impMergeLbl:function(k,n,r){return "Samenvoegen"+(k<n?" ("+k+" van "+n+" nieuw)":"")+(r?" en "+r+" terugzetten":"");},
+  impReplaceOff:"Alles vervangen neemt de hele back-up over en staat daarom uit zolang er een horloge is uitgevinkt.",
+  impHintDel:"Verwijderde horloges blijven weg, tenzij je ze hierboven aanvinkt.",
   impHint:"Samenvoegen voegt toe wat nieuw is in de back-up en houdt alles wat alleen op dit apparaat staat. Verwijderingen aan beide kanten worden overgenomen.",
   impReplaceConfirm:"Alle gegevens in deze browser vervangen door deze back-up? Wat niet in de back-up staat, ben je kwijt.",
   impBad:"Kon dit bestand niet lezen als geldige back-up.",
@@ -1277,47 +1285,77 @@ function showImport(d){
   var from=d.exportedFrom&&d.exportedFrom.device
     ?'<b>'+esc(String(d.exportedFrom.device))+'</b>'+(d.exportedFrom.at?' · '+new Date(d.exportedFrom.at).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"")
     :esc(t.impNoDevice);
-  var rows=res.rows.map(function(r){
-    var st,cls="";
-    if(r.status==="new"){st=t.impNew(r.added);cls="add";}
-    else if(r.status==="changed"){var a=[];if(r.updated)a.push(t.impUpdated);if(r.added)a.push(t.impAdded(r.added));if(r.removed)a.push(t.impRemoved(r.removed));st=a.join(", ");cls=r.added||r.updated?"add":"del";}
-    else if(r.status==="removed"){st=t.impWatchRemoved;cls="del";}
-    else st=r.status==="localOnly"?t.impLocalOnly:t.impSame;
-    return '<div class="improw"><span>'+esc(r.name)+'</span><span class="st '+cls+'">'+esc(st)+'</span></div>';
+  var incById={};(d.watches||[]).forEach(function(w){incById[w.id]=w;});
+  // new watches can be left out (take[id] = false); sample watches start unchecked
+  // next to your own watches, so they don't end up on every device by accident
+  var ownHere=(state.watches||[]).some(function(w){return !WatchSample.isSample(w);});
+  var take={},isNew=function(r){return r.status==="new";};
+  res.rows.forEach(function(r){if(isNew(r))take[r.id]=!(ownHere&&incById[r.id]&&WatchSample.isSample(incById[r.id]));});
+  function status(r){
+    if(r.status==="new")return [t.impNew(r.added),"add"];
+    if(r.status==="changed"){var a=[];if(r.updated)a.push(t.impUpdated);if(r.added)a.push(t.impAdded(r.added));if(r.removed)a.push(t.impRemoved(r.removed));return [a.join(", "),r.added||r.updated?"add":"del"];}
+    if(r.status==="removed")return [t.impWatchRemoved,"del"];
+    return [r.status==="localOnly"?t.impLocalOnly:t.impSame,""];
+  }
+  var rows=res.rows.map(function(r,i){
+    var st=status(r),sample=isNew(r)&&incById[r.id]&&WatchSample.isSample(incById[r.id]);
+    // existing watches always merge: checked and greyed out; local-only ones aren't in the backup
+    var box=r.status==="localOnly"?'<span class="nock"></span>'
+      :'<input type="checkbox"'+(isNew(r)?' data-take="'+i+'"':' checked disabled')+'>';
+    return '<div class="improw"><label>'+box+'<span>'+esc(r.name)
+      +(sample?'<span class="sub">'+esc(t.impSampleSub)+'</span>':"")+'</span></label>'
+      +'<span class="st '+st[1]+'"'+(isNew(r)?' data-st="'+i+'"':"")+'>'+esc(st[0])+'</span></div>';
   }).join("");
   // watches deleted here that the backup still has: merging skips them unless restored
   var back=(d.watches||[]).filter(function(w){return WatchData.deletedAt(state,w.id);}),pick={};
   var items=function(w){return ["measurements","timegrapher","powerReserve","log","worn"].reduce(function(n,k){return n+(w[k]||[]).length;},0);};
   var delRows=back.length?'<div class="impsec">'+esc(t.impDelSec)+'</div>'+back.map(function(w,i){
-    return '<div class="improw"><span>'+esc(w.name)+'<span class="sub">'
+    return '<div class="improw"><label><input type="checkbox" data-rs="'+i+'"><span>'+esc(w.name)+'<span class="sub">'
       +esc((WatchSample.isSample(w)?t.impSampleSub+" · ":"")+t.impDelSub(fmtDate(WatchData.deletedAt(state,w.id)),items(w)))
-      +'</span></span><span class="st" data-rs="'+i+'"></span></div>';
+      +'</span></span></label><span class="st" data-rst="'+i+'"></span></div>';
   }).join(""):"";
   p.innerHTML='<h3>'+esc(t.impTitle)+'</h3><div class="from">'+esc(t.impFrom)+' '+from+'</div>'+rows+delRows
     +'<div class="impbtns"><button class="primary" id="impMerge">'+esc(t.impMerge)+'</button><button id="impCancel">'+esc(t.impCancel)+'</button>'
-    +'<button class="replace" id="impReplace">'+esc(t.impReplace)+'</button></div><div class="hint2">'+esc(t.impHint)+(back.length?" "+esc(t.impHintDel):"")+'</div>';
-  function drawPick(){
-    p.querySelectorAll("[data-rs]").forEach(function(el){
-      var i=+el.dataset.rs;
-      el.className="st"+(pick[i]?" add":"");
-      el.innerHTML=(pick[i]?esc(t.impWillRestore)+" ":"")+'<button class="sm dash">'+esc(pick[i]?t.impUndo:t.impRestore)+'</button>';
-      el.querySelector("button").onclick=function(){pick[i]=!pick[i];drawPick();};
+    +'<button class="replace" id="impReplace">'+esc(t.impReplace)+'</button></div><div class="hint2" id="impHint"></div>';
+  function draw(){
+    var nNew=0,nTake=0,nBack=0;
+    res.rows.forEach(function(r,i){
+      if(!isNew(r))return;
+      nNew++;if(take[r.id])nTake++;
+      p.querySelector('[data-take="'+i+'"]').checked=take[r.id];
+      var el=p.querySelector('[data-st="'+i+'"]');
+      el.className="st"+(take[r.id]?" add":"");
+      el.textContent=take[r.id]?t.impNew(r.added):t.impSkip;
     });
-    var n=Object.keys(pick).filter(function(i){return pick[i];}).length;
-    document.getElementById("impMerge").textContent=n?t.impMergeRestore(n):t.impMerge;
+    back.forEach(function(w,i){
+      if(pick[i])nBack++;
+      p.querySelector('[data-rs="'+i+'"]').checked=!!pick[i];
+      var el=p.querySelector('[data-rst="'+i+'"]');
+      el.className="st"+(pick[i]?" add":"");el.textContent=pick[i]?t.impWillRestore:"";
+    });
+    document.getElementById("impMerge").textContent=t.impMergeLbl(nTake,nNew,nBack);
+    // Replace takes the whole backup, so it can't honour a selection
+    var off=nTake<nNew;
+    document.getElementById("impReplace").disabled=off;
+    document.getElementById("impHint").textContent=t.impHint+(back.length?" "+t.impHintDel:"")+(off?" "+t.impReplaceOff:"");
   }
-  drawPick();
+  p.querySelectorAll("[data-take]").forEach(function(el){
+    var id=res.rows[+el.dataset.take].id;
+    el.onchange=function(){take[id]=el.checked;draw();};
+  });
+  p.querySelectorAll("[data-rs]").forEach(function(el){
+    el.onchange=function(){pick[+el.dataset.rs]=el.checked;draw();};
+  });
+  draw();
   p.hidden=false;
   p.scrollIntoView({behavior:"smooth",block:"nearest"});
   document.getElementById("impCancel").onclick=closeImport;
   document.getElementById("impMerge").onclick=function(){
-    var chosen=back.filter(function(w,i){return pick[i];});
-    if(chosen.length){
-      var base=JSON.parse(JSON.stringify(state));
-      chosen.forEach(function(w){WatchData.markRestored(base,w);});
-      res=WatchData.merge(base,d);
-    }
-    state=res.state;closeImport();save();render();};
+    // leave out the unchecked new watches; they stay in the backup file and show up as new next time
+    var inc=Object.assign({},d,{watches:(d.watches||[]).filter(function(w){return take[w.id]!==false;})});
+    var base=JSON.parse(JSON.stringify(state));
+    back.forEach(function(w,i){if(pick[i])WatchData.markRestored(base,w);});
+    state=WatchData.merge(base,inc).state;closeImport();save();render();};
   document.getElementById("impReplace").onclick=function(){
     if(!confirm(T().impReplaceConfirm))return;
     delete d.exportedFrom;state=d;WatchData.ensureIds(state.watches);
