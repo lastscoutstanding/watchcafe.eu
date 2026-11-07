@@ -275,6 +275,70 @@ var WatchData=(function(){
   }
   function rateOf(pts){return fitPieces(pieces(pts));}
 
+  /* ----- positions -----
+     Colours on a dark background (Rate Meter, Viewer); the report keeps its own
+     darker set for paper. Worn has the chart green: it is the most common
+     position, and a timegrapher can't measure it. */
+  var POS_COLOR={dial_up:"#f0a03a",dial_down:"#cf7f35",crown_up:"#35c2b1",crown_down:"#5b93cf",
+    crown_left:"#a98bd4",crown_right:"#e0678a",worn:"#3be35b"},NO_POS="#8a8a8a";
+  var POS_ORDER=["worn","dial_up","dial_down","crown_up","crown_down","crown_left","crown_right"];
+  function posColor(c){return POS_COLOR[c]||NO_POS;}
+  var MIN_RATE_GAP=6*3600000;
+  /* Rate points of time-sorted measurements: per piece between resets, one point
+     per interval of at least 6 hours, placed at its end. pos = the position all
+     measurements of that interval share ("" = none given), or null when they
+     differ: then the interval can't be put down to one position. */
+  function ratePoints(pts){
+    return pieces(pts).map(function(pc){
+      var out=[],from=0;
+      for(var i=1;i<pc.length;i++){
+        var a=pc[from],b=pc[i],dt=b.t-a.t;
+        if(dt<MIN_RATE_GAP)continue;
+        var ps={};for(var j=from;j<=i;j++)ps[pc[j].position||""]=1;
+        var k=Object.keys(ps);
+        out.push({t:b.t,from:a.t,v:(b.offset-a.offset)/dt*DAY,pos:k.length===1?k[0]:null,
+          path:k.length===1?null:pc.slice(from,i+1).map(function(m){return m.position||"";})});
+        from=i;
+      }
+      return out;
+    }).filter(function(s){return s.length;});
+  }
+  /* Rate per position: each unbroken run of one position (within a piece) gets
+     its own intercept, with one shared slope, so the drift while the watch lay
+     otherwise never counts. Returns [{code, n, rate, fit}] in POS_ORDER, then
+     other codes; "" (no position given) last. */
+  function positionRates(pts){
+    var runs={},n={};
+    pieces(pts).forEach(function(pc){
+      var cur=null,code=null;
+      pc.forEach(function(m){
+        var c=m.position||"";n[c]=(n[c]||0)+1;
+        if(c!==code){code=c;cur=[];(runs[c]=runs[c]||[]).push(cur);}
+        cur.push(m);
+      });
+    });
+    return Object.keys(n).sort(function(a,b){
+      var ia=a===""?99:POS_ORDER.indexOf(a),ib=b===""?99:POS_ORDER.indexOf(b);
+      return (ia<0?50:ia)-(ib<0?50:ib)||a.localeCompare(b);
+    }).map(function(c){var f=fitPieces(runs[c]);return {code:c,n:n[c],rate:f?f.rate:null,fit:f};});
+  }
+  /* Timegrapher readings per position over the given sessions:
+     {code: {rate, amp, n, list:[{t, rate, amp, beat}]}}; rate and amp are averages. */
+  function tgByPosition(sessions){
+    var o={};
+    (sessions||[]).forEach(function(s){(s.readings||[]).forEach(function(r){
+      var c=r.position||"",x=o[c]=o[c]||{list:[]};
+      x.list.push({t:s.t,rate:+r.rate,amp:r.amplitude!=null&&r.amplitude!==""?+r.amplitude:null,beat:r.beatError!=null&&r.beatError!==""?+r.beatError:null});
+    });});
+    Object.keys(o).forEach(function(c){
+      var l=o[c].list,a=l.filter(function(x){return x.amp!=null&&isFinite(x.amp);});
+      o[c].n=l.length;
+      o[c].rate=l.reduce(function(s,x){return s+x.rate;},0)/l.length;
+      o[c].amp=a.length?a.reduce(function(s,x){return s+x.amp;},0)/a.length:null;
+    });
+    return o;
+  }
+
   /* ----- session state -----
      w.rateEnd = {at, edited}: "End session" in the Rate Meter. at = when it was
      ended (null after Undo), edited = time of that change, so the latest wins
@@ -322,5 +386,6 @@ var WatchData=(function(){
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
     markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,deletedAt:deletedAt,markRestored:markRestored,idTime:idTime,ensureIds:ensureIds,merge:merge,
     currentRate:currentRate,previousRate:previousRate,pieces:pieces,fitPieces:fitPieces,rateOf:rateOf,rateSession:rateSession,
+    POS_ORDER:POS_ORDER,posColor:posColor,ratePoints:ratePoints,positionRates:positionRates,tgByPosition:tgByPosition,
     wornCount:wornCount,wearOrder:wearOrder};
 })();

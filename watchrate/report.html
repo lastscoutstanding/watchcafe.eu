@@ -9,7 +9,7 @@
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=12"></script>
+<script src="/watchdata.js?v=13"></script>
 <script src="sample.js?v=7"></script>
 <script src="/standards.js?v=1"></script>
 <style>
@@ -220,7 +220,7 @@ var I18N={
   powerReserve:"Power reserve",wound:"Wound",stopped:"Stopped",reserve:"Reserve",typical:"Typical",
   allMeas:"All measurements",time:"Time",offset:"Offset",newStart:"new start",resetTag:"reset",
   offsetChart:"Offset over time (s)",rateChart:"Rate over time (s/day)",gapsRemoved:"sessions shown back to back, idle time between them removed",
-  tgLegend:"◇ timegrapher per position · ╌ session average",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
+  tgLegend:"◇ timegrapher per position · ╌ session average",posMixed:"mixed positions",days:"days",perDay:"s/day",none:"—",noData:"Not enough measurements for a rate.",
   footer:"watchcafe.eu",sampleTag:"sample data",
   optLog:"Details, logbook & worn",sessShort:"Sess.",tgShort:"Time&shy;grapher",optPrice:"Prices",optSerial:"Serial numbers",
   details:"Details",logbook:"Logbook",worn:"Worn",type:"Type",whereCol:"Where / by",cost:"Price / cost",
@@ -251,7 +251,7 @@ var I18N={
   powerReserve:"Gangreserve",wound:"Opgewonden",stopped:"Gestopt",reserve:"Reserve",typical:"Typisch",
   allMeas:"Alle metingen",time:"Tijdstip",offset:"Offset",newStart:"nieuwe start",resetTag:"doorstart",
   offsetChart:"Offset in de tijd (s)",rateChart:"Gang in de tijd (s/dag)",gapsRemoved:"sessies aaneengesloten, tijd ertussen weggelaten",
-  tgLegend:"◇ timegrapher per positie · ╌ sessiegemiddelde",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
+  tgLegend:"◇ timegrapher per positie · ╌ sessiegemiddelde",posMixed:"gemengde posities",days:"dagen",perDay:"s/dag",none:"—",noData:"Te weinig metingen voor een gang.",
   footer:"watchcafe.eu",sampleTag:"voorbeelddata",
   optLog:"Gegevens, logboek & gedragen",sessShort:"Sess.",tgShort:"Time&shy;grapher",optPrice:"Prijzen",optSerial:"Serienummers",
   details:"Gegevens",logbook:"Logboek",worn:"Gedragen",type:"Soort",whereCol:"Waar / door",cost:"Prijs / kosten",
@@ -546,15 +546,19 @@ function offsetChart(a){
   var blocks=layout(a);if(!blocks.length)return "";
   var ax=yAxis(a.ms.map(function(m){return m.offset;})),g=ax.g+frame(blocks);
   blocks.forEach(function(b){
+    // the path per piece, faint, under the fitted line: on paper always both (no choice)
+    WatchData.pieces(b.s.pts).forEach(function(pc){if(pc.length>1)g+='<polyline fill="none" stroke="#9a97a0" stroke-width=".8" stroke-opacity=".55" points="'+pc.map(function(m){return b.X(m.t).toFixed(1)+","+ax.Y(m.offset).toFixed(1);}).join(" ")+'"/>';});
     // one fitted line per piece between resets, all with the session's slope
     if(b.s.fit)b.s.fit.lines.forEach(function(l){
       g+='<line x1="'+b.X(l.t0).toFixed(1)+'" y1="'+ax.Y(l.o0).toFixed(1)+'" x2="'+b.X(l.t1).toFixed(1)+'" y2="'+ax.Y(l.o1).toFixed(1)+'" stroke="#b8532e" stroke-width="1.2" opacity=".75"/>';});
-    b.s.pts.forEach(function(m){g+='<circle cx="'+b.X(m.t).toFixed(1)+'" cy="'+ax.Y(m.offset).toFixed(1)+'" r="2.4" fill="'+pos(m.position).color+'"/>';});
+    b.s.pts.forEach(function(m){g+='<circle cx="'+b.X(m.t).toFixed(1)+'" cy="'+ax.Y(m.offset).toFixed(1)+'" r="'+(m.restart?2.8:2.4)+'" fill="'+pos(m.position).color+'"'+(m.restart?' stroke="#b8532e" stroke-width="1.2"':'')+'/>';});
   });
   return '<svg viewBox="0 0 '+CW+' '+CH+'" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif">'+g+'</svg>';
 }
-// rate points per piece between resets (never across a jump in the offset)
-function ratePoints(s){return WatchData.pieces(s).map(function(pc){var out=[],lu=pc[0];for(var i=1;i<pc.length;i++){var dt=pc[i].t-lu.t;if(dt>=MIN_RATE_GAP){out.push({t:pc[i].t,v:(pc[i].offset-lu.offset)/dt*DAY});lu=pc[i];}}return out;});}
+// rate points per piece between resets (never across a jump in the offset), with the
+// position of the whole interval (null = it changed in between: grey)
+function ratePoints(s){return WatchData.ratePoints(s);}
+var MIXED="#8a8a8a";
 function rateChart(a){
   var blocks=layout(a);if(!blocks.length)return "";
   var segs=blocks.map(function(b){return ratePoints(b.s.pts);});
@@ -580,7 +584,7 @@ function rateChart(a){
   blocks.forEach(function(b,i){
     segs[i].forEach(function(pts){
       if(pts.length>1)g+='<polyline fill="none" stroke="#9a97a0" stroke-width="1" points="'+pts.map(function(p){return b.X(p.t).toFixed(1)+","+ax.Y(p.v).toFixed(1);}).join(" ")+'"/>';
-      pts.forEach(function(p){g+='<circle cx="'+b.X(p.t).toFixed(1)+'" cy="'+ax.Y(p.v).toFixed(1)+'" r="2.2" fill="#3f9a3f"/>';});});
+      pts.forEach(function(p){g+='<circle cx="'+b.X(p.t).toFixed(1)+'" cy="'+ax.Y(p.v).toFixed(1)+'" r="2.2" fill="'+(p.pos===null?MIXED:pos(p.pos).color)+'"/>';});});
     tgIn(b).forEach(function(s){var cx=b.X(s.t),ya=ax.Y(s.avg).toFixed(1);
       if(s.readings.length>1)g+='<line x1="'+(cx-14).toFixed(1)+'" x2="'+(cx+14).toFixed(1)+'" y1="'+ya+'" y2="'+ya+'" stroke="#b8532e" stroke-width="1.4" stroke-dasharray="3 2"/>';
       s.readings.forEach(function(r){var cy=ax.Y(+r.rate);g+='<rect x="'+(cx-3.2).toFixed(1)+'" y="'+(cy-3.2).toFixed(1)+'" width="6.4" height="6.4" transform="rotate(45 '+cx.toFixed(1)+' '+cy.toFixed(1)+')" fill="#fff" stroke="'+pos(r.position).color+'" stroke-width="1.4"/>';});});
@@ -638,7 +642,9 @@ function watchPage(a,opt){
     var used={},ov=ownVerdict(a);a.ms.forEach(function(m){if(m.position)used[m.position]=1;});
     h+='<div class="charts"><div class="chart"><div class="ct">'+esc(t("offsetChart"))+'</div>'+offsetChart(a)+'</div>'
       +'<div class="chart"><div class="ct">'+esc(t("rateChart"))+'</div>'+rateChart(a)+'</div></div>';
+    var mixed=layout(a).some(function(b){return ratePoints(b.s.pts).some(function(pc){return pc.some(function(p){return p.pos===null;});});});
     h+='<p class="legend">'+Object.keys(used).map(function(k){var p=pos(k);return '<span><span class="dot" style="background:'+p.color+'"></span>'+esc(p.label)+'</span>';}).join("")
+      +(mixed?'<span><span class="dot" style="background:'+MIXED+'"></span>'+esc(t("posMixed"))+'</span>':'')
       +(ov?'<span><span class="sw"></span>'+esc(ov.name+(ov.range?" "+ov.range:"")+" ("+t("ownSpec")+")")+'</span>':'')
       +(a.tg.length?'<span>'+esc(t("tgLegend"))+'</span>':'')+(a.sess.length>1?'<span>┆ '+esc(t("gapsRemoved"))+'</span>':'')+'</p>';
   } else h+='<p class="empty">'+esc(t("noData"))+'</p>';

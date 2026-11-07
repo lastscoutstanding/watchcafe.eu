@@ -126,6 +126,12 @@
   .chart-wrap svg{display:block;width:100%}
   .chart-title .cunit{text-transform:none;letter-spacing:0;color:#777;margin-left:4px}
   .chart-title .qbtn{margin-left:auto;letter-spacing:0}
+  .lineseg{margin-left:auto;display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;letter-spacing:0;text-transform:none}
+  .lineseg button{background:transparent;border:none;border-radius:0;color:#999;font-size:11px;padding:2px 9px;line-height:1.5}
+  .lineseg button:hover{background:transparent;color:var(--ink)}
+  .lineseg button.on{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent)}
+  .legend{flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted);margin:10px 4px 0}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
   .chart-wrap .infobox{background:#16161b;margin:8px 0 4px}
   /* How it compares: folded by default; open, it adds a table and a band in the rate chart */
   .stdbar{display:flex;align-items:center;gap:8px;margin-top:14px;border:1px dashed var(--border);border-radius:8px;padding-right:9px}
@@ -240,7 +246,7 @@
   }
 </style>
   <script src="/nav.js" defer></script>
-  <script src="/watchdata.js?v=12"></script>
+  <script src="/watchdata.js?v=13"></script>
   <script src="sample.js?v=7"></script>
   <script src="/standards.js?v=1"></script>
 </head>
@@ -391,7 +397,7 @@
       <div id="rateSummary" class="hint" style="margin:0 0 6px"></div>
 
       <div class="chart-wrap" id="chartOffWrap" style="display:none">
-        <p class="chart-title"><span id="chartOffTitle"></span><span class="cunit">(s)</span></p>
+        <p class="chart-title"><span id="chartOffTitle"></span><span class="cunit">(s)</span><span class="lineseg" id="lineSeg"></span></p>
         <svg id="chartOff"></svg>
       </div>
       <div class="chart-wrap" id="chartRateWrap" style="display:none">
@@ -399,7 +405,7 @@
         <svg id="chartRate"></svg>
         <p class="hint infobox" id="rateChartHint" style="display:none"></p>
       </div>
-      <div class="hint" id="tgLegend" style="display:none"></div>
+      <div class="legend" id="tgLegend" style="display:none"></div>
       <div id="stdBox" style="display:none"></div>
       <div class="tgcmp" id="tgCompare" style="display:none"></div>
       <div id="tgList"></div>
@@ -440,6 +446,7 @@ var I18N={
   sinceStart:"latest session",
   thTime:"Time", thOffset:"Offset", thPosition:"Position", thNote:"Note", del:"delete",
   newStartTag:"new start", restartTag:"reset",
+  posNone:"no position", posMixed:"mixed", lineSeg:{trend:"Trend",path:"Path",both:"Both"}, lineSegTip:"Trend line = the calculated rate; path = straight lines between the measurements",
   chartOffset:"Offset over time", chartRate:"Rate over time",
   stdTitle:"How it compares", stdWithin:function(l){return "\u2713 Within "+l;}, stdOutside:function(l){return "Outside "+l;},
   stdSpec:"your spec", stdOwn:"Your spec", stdOwnSub:"from Details", stdThis:"This watch", stdThisSub:"rate of this session",
@@ -503,6 +510,7 @@ var I18N={
   sinceStart:"laatste sessie",
   thTime:"Tijdstip", thOffset:"Offset", thPosition:"Positie", thNote:"Notitie", del:"verwijder",
   newStartTag:"nieuwe start", restartTag:"doorstart",
+  posNone:"geen positie", posMixed:"gemengd", lineSeg:{trend:"Trend",path:"Pad",both:"Beide"}, lineSegTip:"Trendlijn = de berekende gang; pad = rechte lijnen tussen de metingen",
   chartOffset:"Offset in de tijd", chartRate:"Gang in de tijd",
   stdTitle:"Vergelijking met normen", stdWithin:function(l){return "\u2713 Binnen "+l;}, stdOutside:function(l){return "Buiten "+l;},
   stdSpec:"jouw norm", stdOwn:"Jouw norm", stdOwnSub:"uit Gegevens", stdThis:"Dit horloge", stdThisSub:"gang van deze sessie",
@@ -554,9 +562,8 @@ var LKEY="siouxWatchRateMeterLang";
 var lang=(function(){try{return localStorage.getItem(LKEY)||"en";}catch(e){return "en";}})();
 function posLabel(key){var p=I18N[lang].pos;return (key in p)?p[key]:key;}
 
-var POSCOL={dial_up:"#f0a03a",dial_down:"#cf7f35",crown_up:"#35c2b1",crown_down:"#5b93cf",crown_left:"#a98bd4",crown_right:"#e0678a",worn:"#63c063"};
 var POSABBR={dial_up:"DU",dial_down:"DD",crown_up:"CU",crown_down:"CD",crown_left:"CL",crown_right:"CR",worn:"WR"};
-function posColor(c){return POSCOL[c]||"#8a8a8a";}
+function posColor(c){return WatchData.posColor(c);}
 function posAbbr(c){return POSABBR[c]||(c||"?").slice(0,2).toUpperCase();}
 
 /* ===== seven-segment ===== */
@@ -792,9 +799,6 @@ function renderTG(w){
 }
 
 /* ===== charts ===== */
-function colOff(v){v=Math.abs(v);return v<5?"#3be35b":v<15?"#e8d44d":v<30?"#ff8a3c":"#ff3b30";}
-function colRate(v){v=Math.abs(v);return v<5?"#3be35b":v<10?"#e8d44d":v<20?"#ff8a3c":"#ff3b30";}
-var MIN_RATE_GAP=6*3600000; // 6 hours
 
 // Lay time blocks side by side; with more than one block the dead time between them is cut out.
 function timeLayout(blocks,x0,x1){
@@ -812,8 +816,9 @@ function timeLayout(blocks,x0,x1){
   }
   return {X:X,lay:lay};
 }
-function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks,band){
-  // seriesSegs: array of segments; each segment: array of {t,v}
+function chartSVG(svgEl,seriesSegs,opt,tgSessions,tDomain,blocks,band){
+  // seriesSegs: array of segments; each segment: array of {t, v, c (colour), title, ring}
+  // opt: {path: "solid"|"faint"|false (grey line through each segment), lines: [{t0,o0,t1,o1}] (trend lines)}
   var all=[];seriesSegs.forEach(function(s){all=all.concat(s);});
   (tgSessions||[]).forEach(function(sess){sess.readings.forEach(function(r){all.push({t:sess.t,v:r.rate});});});
   if(all.length<2){return false;}
@@ -870,13 +875,17 @@ function chartSVG(svgEl,seriesSegs,colorFn,unit,tgSessions,tDomain,blocks,band){
   // the session rate as a dashed line, to read against the band
   if(band)out+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(band.rate).toFixed(1)+'" y2="'+Y(band.rate).toFixed(1)+'" stroke="#d96a41" stroke-opacity=".6" stroke-dasharray="6 4"/>';
   // segments: line per segment + colored dots
-  seriesSegs.forEach(function(s){
+  if(opt.path)seriesSegs.forEach(function(s){
     if(s.length>1){
       var d=s.map(function(p,i){return (i?"L":"M")+X(p.t).toFixed(1)+" "+Y(p.v).toFixed(1);}).join(" ");
-      out+='<path d="'+d+'" fill="none" stroke="#777" stroke-width="1.5"/>';
+      out+='<path d="'+d+'" fill="none" stroke="#777" stroke-width="1.5"'+(opt.path==="faint"?' stroke-opacity=".35"':'')+'/>';
     }
-    s.forEach(function(p){out+='<circle cx="'+X(p.t).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="4" fill="'+colorFn(p.v)+'"/>';});
   });
+  (opt.lines||[]).forEach(function(l){
+    out+='<line x1="'+X(l.t0).toFixed(1)+'" y1="'+Y(l.o0).toFixed(1)+'" x2="'+X(l.t1).toFixed(1)+'" y2="'+Y(l.o1).toFixed(1)+'" stroke="#d96a41" stroke-width="2" stroke-opacity=".9"/>';});
+  // dots in the colour of their position; a reset gets an accent ring
+  seriesSegs.forEach(function(s){s.forEach(function(p){
+    out+='<circle cx="'+X(p.t).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(p.ring?4.6:4)+'" fill="'+p.c+'" stroke="'+(p.ring?'#d96a41':'#0e0e12')+'" stroke-width="'+(p.ring?2:1)+'"><title>'+escapeHtml(p.title||"")+'</title></circle>';});});
   (tgSessions||[]).forEach(function(sess){
     var x=X(sess.t).toFixed(1);
     out+='<line x1="'+x+'" y1="'+T+'" x2="'+x+'" y2="'+(H-B)+'" stroke="#d96a41" stroke-width="1" opacity="0.3"/>';
@@ -895,6 +904,16 @@ var chartWatch=null,chartWidth=0;
 // Charts are drawn at pixel size, so redraw them when the column width changes.
 if(window.ResizeObserver)new ResizeObserver(function(es){var wd=Math.round(es[0].contentRect.width);
   if(wd!==chartWidth){chartWidth=wd;if(chartWatch)drawCharts(chartWatch);}}).observe(document.getElementById("chartOffWrap").parentNode);
+// offset chart lines: "trend" (fitted line), "path" (straight lines) or "both"; per device
+var LINEKEY="siouxWatchOffsetLines";
+var offLines=(function(){try{var v=localStorage.getItem(LINEKEY);return v==="trend"||v==="path"?v:"both";}catch(e){return "both";}})();
+function renderLineSeg(){
+  var el=document.getElementById("lineSeg"),t=I18N[lang];el.title=t.lineSegTip;
+  el.innerHTML=["trend","path","both"].map(function(k){return '<button type="button" data-l="'+k+'"'+(k===offLines?' class="on"':'')+'>'+escapeHtml(t.lineSeg[k])+'</button>';}).join("");
+  el.querySelectorAll("button").forEach(function(b){b.onclick=function(){
+    offLines=b.getAttribute("data-l");try{if(offLines==="both")localStorage.removeItem(LINEKEY);else localStorage.setItem(LINEKEY,offLines);}catch(e){}
+    drawCharts(chartWatch);};});
+}
 function drawCharts(w){
   var ow=document.getElementById("chartOffWrap"),rw=document.getElementById("chartRateWrap"),rh=document.getElementById("rateChartHint");
   chartWatch=w;
@@ -913,30 +932,40 @@ function drawCharts(w){
     return [a,b];});
   var tDomain=[Math.min.apply(null,spans.map(function(b){return b[0];})),Math.max.apply(null,spans.map(function(b){return b[1];}))];
   var blocks=(selectedSession==="allc")?spans:null;
-  // offset chart
-  // the offset line breaks at a reset as well, where the offset jumps
-  var offSegs=[];segs.forEach(function(s){WatchData.pieces(s).forEach(function(pc){offSegs.push(pc.map(function(p){return {t:p.t,v:p.offset};}));});});
-  var okOff=chartSVG(document.getElementById("chartOff"),offSegs,colOff,"s",null,tDomain,blocks);
+  // offset chart: dots per measurement, a grey path per piece (it breaks at a reset, where
+  // the offset jumps) and/or the fitted line per session, as chosen under the chart
+  var t=I18N[lang],loc=lang==="nl"?"nl-NL":"en-GB",used={},mixed=false;
+  function fdt(ms){return new Date(ms).toLocaleString(loc,{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});}
+  function plab(c){return c?posLabel(c):t.posNone;}
+  var offSegs=[],lines=[];segs.forEach(function(s){
+    WatchData.pieces(s).forEach(function(pc){offSegs.push(pc.map(function(p){used[p.position||""]=1;
+      return {t:p.t,v:p.offset,c:posColor(p.position),ring:!!p.restart,
+        title:fdt(p.t)+" \u00b7 "+(p.offset>0?"+":p.offset<0?"\u2212":"\u00b1")+Math.abs(p.offset)+" s \u00b7 "+plab(p.position)+(p.restart?" \u00b7 "+t.restartTag:"")+(p.note?" \u00b7 "+p.note:"")};}));});
+    var f=WatchData.rateOf(s);if(f)lines=lines.concat(f.lines);});
+  var okOff=chartSVG(document.getElementById("chartOff"),offSegs,{path:offLines==="trend"?false:offLines==="both"?"faint":"solid",lines:offLines==="path"?null:lines},null,tDomain,blocks);
   ow.style.display=okOff?"block":"none";
-  // rate chart: per segment, consecutive pairs >= 6h apart; never across a reset
-  var rateSegs=[];segs.forEach(function(s){WatchData.pieces(s).forEach(function(pc){
-    var pts=[],lastUsed=pc[0];
-    for(var i=1;i<pc.length;i++){
-      var dt=pc[i].t-lastUsed.t;
-      if(dt>=MIN_RATE_GAP){
-        pts.push({t:pc[i].t,v:(pc[i].offset-lastUsed.offset)/dt*86400000});
-        lastUsed=pc[i];
-      }
-    }
-    if(pts.length)rateSegs.push(pts);
-  });});
+  renderLineSeg();
+  // rate chart: one point per interval of >= 6h, never across a reset; the colour of the
+  // position the whole interval was in, grey when it changed in between
+  var rateSegs=[];segs.forEach(function(s){WatchData.ratePoints(s).forEach(function(pc){rateSegs.push(pc.map(function(p){
+    if(p.pos===null)mixed=true;
+    var v=(p.v>0?"+":p.v<0?"\u2212":"\u00b1")+Math.abs(p.v).toFixed(1)+" "+t.perDay;
+    return {t:p.t,v:p.v,c:p.pos===null?"#8a8a8a":posColor(p.pos),
+      title:fdt(p.from)+" \u2192 "+fdt(p.t)+" \u00b7 "+v+" \u00b7 "+(p.pos===null?t.posMixed+": "+p.path.map(function(c){return c?posAbbr(c):"\u2014";}).filter(function(x,i,a){return i===0||a[i-1]!==x;}).join(" \u2192 "):plab(p.pos))};}));});});
   // all timegrapher sessions inside the (stretched) period count; without a rate point
   // there is no rate chart, so a first measurement doesn't stack every session at one x
   tgSessions=tgAll.filter(function(g){return g.t>=tDomain[0]&&g.t<=tDomain[1];});
-  var okRate=rateSegs.length>0&&chartSVG(document.getElementById("chartRate"),rateSegs,colRate,"",tgSessions,tDomain,blocks,stdBand(w));
+  var okRate=rateSegs.length>0&&chartSVG(document.getElementById("chartRate"),rateSegs,{path:"solid"},tgSessions,tDomain,blocks,stdBand(w));
   rw.style.display=okRate?"block":"none";
-  document.getElementById("tgLegend").style.display=(okRate&&tgSessions.length)?"block":"none";
-  document.getElementById("tgLegend").textContent=I18N[lang].tgLegendTxt;
+  // legend: the positions that show, grey for "mixed" or none given, and the timegrapher marks
+  if(okRate)tgSessions.forEach(function(g){g.readings.forEach(function(r){used[r.position||""]=1;});});
+  var codes=WatchData.POS_ORDER.filter(function(c){return used[c];}).concat(Object.keys(used).filter(function(c){return c&&WatchData.POS_ORDER.indexOf(c)<0;}));
+  var lg=codes.map(function(c){return '<span><i style="background:'+posColor(c)+'"></i>'+escapeHtml(posLabel(c))+'</span>';}).join("");
+  if(used[""]||(okRate&&mixed))lg+='<span><i style="background:#8a8a8a"></i>'+escapeHtml(used[""]&&okRate&&mixed?t.posNone+" / "+t.posMixed:used[""]?t.posNone:t.posMixed)+'</span>';
+  if(okRate&&tgSessions.length)lg+='<span>'+escapeHtml(t.tgLegendTxt)+'</span>';
+  var le=document.getElementById("tgLegend");
+  le.style.display=okOff&&(codes.length||okRate&&tgSessions.length)?"flex":"none";
+  le.innerHTML=lg;
 }
 
 /* ===== how it compares: accuracy standards from /standards.txt ===== */
@@ -1172,7 +1201,8 @@ document.getElementById("addCancel").onclick=closeAddForm;
 /* ===== timegrapher formulier ===== */
 var TG_DEFAULT=["dial_up","crown_down","crown_left"];
 function tgPosOptions(sel){
-  var t=I18N[lang],codes=["dial_up","dial_down","crown_up","crown_down","crown_left","crown_right","worn"];
+  // no "worn": a timegrapher can't measure on the wrist (kept for an old row that has it)
+  var t=I18N[lang],codes=["dial_up","dial_down","crown_up","crown_down","crown_left","crown_right"].concat(sel==="worn"?["worn"]:[]);
   return codes.map(function(c){return '<option value="'+c+'"'+(c===sel?' selected':'')+'>'+t.pos[c]+'</option>';}).join("");
 }
 function tgRowHTML(r){

@@ -24,7 +24,7 @@
     --mono:ui-monospace,"SF Mono","Roboto Mono",Menlo,Consolas,monospace;
     /* positiekleuren op lichte achtergrond */
     --p-dialup:#f0a03a; --p-dialdown:#cf7f35; --p-crownup:#35c2b1; --p-crowndown:#5b93cf;
-    --p-crownleft:#a98bd4; --p-crownright:#e0678a; --p-worn:#63c063; --p-flat:#8a8a8a;
+    --p-crownleft:#a98bd4; --p-crownright:#e0678a; --p-worn:#3be35b; --p-flat:#8a8a8a;
     --nav-bg:#17171b; --nav-border:#2a2a31; --nav-hover:#22222a; --accent-glow:rgba(217,106,65,.7);
   }
   *{box-sizing:border-box}
@@ -134,7 +134,11 @@
   @media (min-width:860px){.charts:not(.one){grid-template-columns:1fr 1fr}}
   .chart{width:100%;display:block;margin:8px 0 2px}
   .ctitle .cunit{text-transform:none;letter-spacing:0;margin-left:4px;opacity:.8}
-  .ctitle{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:12px 0 -2px}
+  .ctitle{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:12px 0 -2px;display:flex;align-items:center}
+  .lineseg{margin-left:auto;display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;letter-spacing:0;text-transform:none}
+  .lineseg button{background:transparent;border:none;border-radius:0;color:var(--muted);font:inherit;font-size:11px;padding:2px 9px;line-height:1.5;cursor:pointer}
+  .lineseg button:hover{color:var(--ink)}
+  .lineseg button.on{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent)}
   .legend{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 2px;font-size:11px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
@@ -212,7 +216,7 @@
   </div>
 </div>
 
-<script src="/watchdata.js?v=12"></script>
+<script src="/watchdata.js?v=13"></script>
 <script src="sample.js?v=7"></script>
 <script>
 "use strict";
@@ -283,6 +287,7 @@ const POS={
 };
 const FALLBACK=["#f0a03a","#35c2b1","#5b93cf","#a98bd4","#e0678a","#63c063","#cf7f35","#8a8a8a"];
 function posInfo(code,idx){
+  if(code==="unknown"||!code) return {label:t().posNone,abbr:"\u2014",color:"var(--p-flat)"};
   if(POS[code]) return {label:POS[code][lang],abbr:abbrOf(code),color:POS[code].color};
   const pretty=String(code||"?").replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
   return {label:pretty,abbr:(code||"?").slice(0,2).toUpperCase(),color:FALLBACK[idx%FALLBACK.length]};
@@ -394,7 +399,6 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 let CW=560,CH=230;
 const padL=44,padR=14,padT=12,padB=26,MONO="ui-monospace,monospace";
 const MIN_RATE_GAP=6*3600000; // same rule as the Rate Meter: rate points need >= 6h between measurements
-function colRate(v){v=Math.abs(v);return v<5?"#3be35b":v<10?"#e8d44d":v<20?"#ff8a3c":"#ff3b30";}
 function isAllSel(k){return k==="all"||k==="allc";}
 
 // Shared time axis. In "allc" mode each session gets its own block and the dead time between sessions is cut out.
@@ -456,7 +460,11 @@ function chartSVG(w){
   let g=yGrid(Y,oMin,oMax,false)+axisSVG(ax);
   // one fitted line per piece between resets, all with the session's slope
   const fitLines=f=>f?f.lines.map(l=>`<line x1="${X(l.t0).toFixed(1)}" y1="${Y(l.o0).toFixed(1)}" x2="${X(l.t1).toFixed(1)}" y2="${Y(l.o1).toFixed(1)}" stroke="var(--accent)" stroke-width="2" opacity=".9"/>`).join(""):"";
-  if(ax.comp){
+  // grey path per piece (faint next to the trend line), as chosen under "Trend · Path · Both"
+  if(offLines!=="trend")shownSessions(w).flatMap(s=>WatchData.pieces(s)).forEach(pc=>{if(pc.length>1)
+    g+=`<path d="${pc.map((p,i)=>(i?"L":"M")+X(p.t).toFixed(1)+" "+Y(p.offset).toFixed(1)).join(" ")}" fill="none" stroke="#777" stroke-width="1.5"${offLines==="both"?' stroke-opacity=".35"':""}/>`;});
+  if(offLines==="path"){/* no trend line */}
+  else if(ax.comp){
     // one regression per session, each within its own block
     w.sessions.forEach(s=>{g+=fitLines(fitOf(s));});
   } else g+=fitLines(w.fit);
@@ -469,13 +477,9 @@ function chartSVG(w){
 
 // Rate over time: one point per interval of >= 6h, placed at the interval's end (as on the Rate Meter page).
 // Never across a reset, where the offset jumps.
+// Each point has the colour of the position its whole interval was in, grey when it changed.
 function rateSegments(w){
-  return shownSessions(w).flatMap(s=>WatchData.pieces(s)).map(s=>{
-    const out=[]; let lastUsed=s[0];
-    for(let i=1;i<s.length;i++){const dt=s[i].t-lastUsed.t;
-      if(dt>=MIN_RATE_GAP){out.push({t:s[i].t,v:(s[i].offset-lastUsed.offset)/dt*MS_PER_DAY,from:lastUsed.t});lastUsed=s[i];}}
-    return out;
-  }).filter(s=>s.length);
+  return shownSessions(w).flatMap(s=>WatchData.ratePoints(s.map(m=>({...m,position:m.position==="unknown"?"":m.position}))));
 }
 function rateChartSVG(w){
   const segs=rateSegments(w);
@@ -489,9 +493,10 @@ function rateChartSVG(w){
   let g=yGrid(Y,vMin,vMax,true)+axisSVG(ax);
   if(vMin<0&&vMax>0){const zy=Y(0).toFixed(1);g+=`<line x1="${padL}" y1="${zy}" x2="${CW-padR}" y2="${zy}" stroke="#66646c" stroke-dasharray="4 4"/>`;}
   segs.forEach(s=>{
-    if(s.length>1) g+=`<path d="${s.map((p,i)=>(i?"L":"M")+X(p.t).toFixed(1)+" "+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".7"/>`;
-    s.forEach(p=>{const title=`${fmtDateTime(p.from)} → ${fmtDateTime(p.t)} · ${signOf(p.v)}${fmtMag(p.v)} ${t().sday}`;
-      g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="3.8" fill="${colRate(p.v)}"><title>${esc(title)}</title></circle>`;});
+    if(s.length>1) g+=`<path d="${s.map((p,i)=>(i?"L":"M")+X(p.t).toFixed(1)+" "+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="#777" stroke-width="1.5"/>`;
+    s.forEach(p=>{const where=p.pos===null?`${t().posMixed}: ${p.path.map(c=>c?abbrOf(c):"\u2014").filter((x,i,a)=>i===0||a[i-1]!==x).join(" \u2192 ")}`:posInfo(p.pos||"unknown",0).label;
+      const title=`${fmtDateTime(p.from)} → ${fmtDateTime(p.t)} · ${signOf(p.v)}${fmtMag(p.v)} ${t().sday} · ${where}`;
+      g+=`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="3.8" fill="${p.pos===null?"var(--p-flat)":posInfo(p.pos||"unknown",0).color}" stroke="#202026" stroke-width="1"><title>${esc(title)}</title></circle>`;});
   });
   tg.forEach(sess=>{const cx=X(sess.t);
     g+=`<line x1="${cx.toFixed(1)}" y1="${padT}" x2="${cx.toFixed(1)}" y2="${CH-padB}" stroke="var(--accent)" stroke-width="1" opacity=".3"/>`;
@@ -531,7 +536,8 @@ function cardHTML(w,i){
   const r=w.fit?.ratePerDay ?? null;
   const range=w.tMin!=null?`${fmtDate(w.tMin)} – ${fmtDate(w.tMax)}`:t().noValid;
   const src=w.sources.length>1?` · ${t().files(w.sources.length)}`:"";
-  const legend=w.positions.map(p=>`<span><i style="background:${p.info.color}"></i>${p.info.abbr}</span>`).join("");
+  const legend=w.positions.map(p=>`<span><i style="background:${p.info.color}"></i>${p.info.abbr}</span>`).join("")
+    +(rateSegments(w).flat().some(p=>p.pos===null)?`<span><i style="background:var(--p-flat)"></i>${t().posMixed}</span>`:"");
   const rows=w.positions.map(p=>`<tr><td class="dot"><i style="background:${p.info.color}"></i></td>
     <td>${esc(p.info.label)}</td><td class="num">${p.n}</td>
     <td class="num">${p.ratePerDay==null?"—":signOf(p.ratePerDay)+fmtMag(p.ratePerDay)}</td></tr>`).join("");
@@ -555,13 +561,20 @@ function chartsHTML(w,i,legend){
   if(!(w.shown||w.valid).length) return "";
   const hasRate=rateChartSVG(w)!=="";
   return `<div class="charts${hasRate?"":" one"}">
-    <div><div class="ctitle">${t().chartOff}<span class="cunit">(s)</span></div>
+    <div><div class="ctitle">${t().chartOff}<span class="cunit">(s)</span>${lineSegHTML()}</div>
       <svg class="chart" data-i="${i}" data-k="off" role="img" aria-label="offset / time"></svg>
       <div class="legend">${legend}</div></div>
     ${hasRate?`<div><div class="ctitle" title="${esc(t().rateHint)}">${t().chartRate}<span class="cunit">(${t().sday})</span></div>
       <svg class="chart" data-i="${i}" data-k="rate" role="img" aria-label="rate / time"></svg></div>`:""}
   </div>`;
 }
+// offset chart lines, per device and shared with the Rate Meter: "trend", "path" or "both"
+const LINEKEY="siouxWatchOffsetLines";
+let offLines=(()=>{try{const v=localStorage.getItem(LINEKEY);return v==="trend"||v==="path"?v:"both";}catch(e){return "both";}})();
+function lineSegHTML(){return `<span class="lineseg" title="${esc(t().lineSegTip)}">${["trend","path","both"].map(k=>`<button type="button" data-l="${k}"${k===offLines?' class="on"':""}>${esc(t().lineSeg[k])}</button>`).join("")}</span>`;}
+document.getElementById("list").addEventListener("click",e=>{const b=e.target.closest(".lineseg button");if(!b)return;
+  offLines=b.dataset.l;try{if(offLines==="both")localStorage.removeItem(LINEKEY);else localStorage.setItem(LINEKEY,offLines);}catch(err){}
+  document.querySelectorAll(".lineseg button").forEach(x=>x.classList.toggle("on",x.dataset.l===offLines));drawCharts();});
 let shownWatches=[],chartListW=0;
 function drawCharts(){
   document.querySelectorAll("#list svg.chart").forEach(svg=>{
@@ -598,6 +611,10 @@ function tgHTML(w){
 }
 
 T.en.tgHead="Timegrapher"; T.nl.tgHead="Timegrapher";
+T.en.posMixed="mixed"; T.nl.posMixed="gemengd";
+T.en.posNone="no position"; T.nl.posNone="geen positie";
+T.en.lineSeg={trend:"Trend",path:"Path",both:"Both"}; T.nl.lineSeg={trend:"Trend",path:"Pad",both:"Beide"};
+T.en.lineSegTip="Trend line = the calculated rate; path = straight lines between the measurements"; T.nl.lineSegTip="Trendlijn = de berekende gang; pad = rechte lijnen tussen de metingen";
 T.en.sessionLbl="Session"; T.nl.sessionLbl="Sessie";
 T.en.allSessions="All sessions"; T.nl.allSessions="Alle sessies";
 T.en.allSessionsC="All sessions, gaps removed"; T.nl.allSessionsC="Alle sessies, zonder tussenpozen";
