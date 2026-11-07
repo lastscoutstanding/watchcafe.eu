@@ -63,6 +63,7 @@
   .pick .chip{font:inherit;font-size:13px;cursor:pointer;border-radius:999px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;
     background:color-mix(in srgb,var(--accent) 18%,transparent);border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
   .pick .chip .ck{font-size:11px;width:10px}
+  .pick .chip:disabled{cursor:default}
   .pick .chip.off{background:transparent;border:1px dashed color-mix(in srgb,var(--muted) 50%,transparent);color:var(--muted)}
   .pick .chip.off .nm{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 50%,transparent)}
   .pick .chip .em{font-size:11px;opacity:.75}
@@ -207,6 +208,7 @@ var I18N={
   inReport:"Watches",of:"of",all:"All",noneSel:"None",empty:"empty",thisDevice:"This device",now:"now",
   pickNone:"No watches selected. Pick at least one watch above.",
   pickRemember:"Your choice is remembered on this device. Watches you add later are included automatically.",
+  onlyThis:"Only this watch",chooseOther:"Choose other watches",pickCard:"Opened from a watch: this choice is not remembered.",
   pickMerged:"Watches with the same id are merged across the sources you tick.",
   pickDevice:"“This device” is off by default: its watches are often in a backup already.",
   raw:"All measurements",
@@ -238,6 +240,7 @@ var I18N={
   inReport:"Horloges",of:"van",all:"Alle",noneSel:"Geen",empty:"leeg",thisDevice:"Dit apparaat",now:"nu",
   pickNone:"Geen horloges gekozen. Kies hierboven minstens één horloge.",
   pickRemember:"Je keuze wordt op dit apparaat onthouden. Horloges die je later toevoegt, gaan er vanzelf in.",
+  onlyThis:"Alleen dit horloge",chooseOther:"Andere horloges kiezen",pickCard:"Geopend vanaf een horloge: deze keuze wordt niet onthouden.",
   pickMerged:"Horloges met hetzelfde id worden samengevoegd over de bronnen die je aanvinkt.",
   pickDevice:"“Dit apparaat” staat standaard uit: de horloges staan vaak al in een back-up.",
   raw:"Alle metingen",
@@ -342,10 +345,18 @@ function loadSources(){
   return {viewer:false,sample:true,list:[{dev:true,watches:w}]};
 }
 var SRC=loadSources(),pick={},srcPick={};
+// ?watch=<id> (the Report button on a watch in the Collection): only that watch, back to
+// its card, and the choice is not remembered; "Choose other watches" opens the chips
+var CARD=null,solo=false;
+if(!SRC.viewer&&!SRC.sample&&PARAMS.get("watch")!=null){
+  CARD=SRC.list[0].watches.find(function(w){return watchId(w)===PARAMS.get("watch");})||null;
+  solo=!!CARD;
+}
+if(CARD){SRC.list[0].watches.forEach(function(w){pick["w|"+watchId(w)]=w===CARD;});}
 // remembered choice, only for this device's own watches: { watchId: true|false }
-if(!SRC.viewer&&!SRC.sample){try{var saved=JSON.parse(localStorage.getItem(PICK_KEY)||"{}");Object.keys(saved).forEach(function(id){pick["w|"+id]=!!saved[id];});}catch(e){}}
+else if(!SRC.viewer&&!SRC.sample){try{var saved=JSON.parse(localStorage.getItem(PICK_KEY)||"{}");Object.keys(saved).forEach(function(id){pick["w|"+id]=!!saved[id];});}catch(e){}}
 function savePick(){
-  if(SRC.viewer||SRC.sample)return;
+  if(SRC.viewer||SRC.sample||CARD)return;
   var out={},ids={};SRC.list[0].watches.forEach(function(w){ids[watchId(w)]=1;});
   Object.keys(pick).forEach(function(k){var id=k.slice(2);if(ids[id])out[id]=pick[k];});
   try{if(Object.keys(out).length)localStorage.setItem(PICK_KEY,JSON.stringify(out));else localStorage.removeItem(PICK_KEY);}catch(e){}
@@ -632,9 +643,10 @@ function overview(list,info,isSample,opt){
     +'</section>';
 }
 
-function watchPage(a,opt){
+function watchPage(a,opt,alone){
   var h='<section class="sheet watch">';
-  h+='<div class="watch-head"><h2>'+esc(a.w.name)+(isFormer(a.w)?'<span class="tag">'+esc(t("soldTag"))+'</span>':'')+'</h2><span class="meta" style="margin:0;text-align:right">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+(a.w._source?'<br>'+esc(a.w._source):'')+'</span></div>';
+  h+='<div class="watch-head"><h2>'+esc(a.w.name)+(isFormer(a.w)?'<span class="tag">'+esc(t("soldTag"))+'</span>':'')+'</h2><span class="meta" style="margin:0;text-align:right">'+(a.t0!=null?esc(fDate(a.t0))+' – '+esc(fDate(a.t1)):'')+(a.w._source?'<br>'+esc(a.w._source):'')
+    +(alone?(a.t0!=null?'<br>':'')+esc(t("generated"))+' '+esc(fDT(Date.now())):'')+'</span></div>';
   var idl=identLine(a.w,opt);if(idl)h+='<p class="ident">'+esc(idl)+'</p>';
   var lastTg=a.tg[a.tg.length-1];
   h+='<div class="kpis">'+kpi(t("current"),sgn(a.current,2),t("perDay"),true,verdictKpi(ownVerdict(a)))
@@ -705,6 +717,12 @@ function watchPage(a,opt){
 
 function renderPick(gs){
   var sel=0,tot=0,h="";
+  if(solo){
+    document.getElementById("pick").innerHTML='<div class="prow"><span class="plbl">'+esc(t("inReport"))+'</span>'
+      +'<button class="chip" aria-pressed="true" disabled><span class="ck">✓</span><span class="nm">'+esc(CARD.name||"?")+'</span></button>'
+      +'<span class="cnt">'+esc(t("onlyThis"))+'</span><span class="lnks"><button class="lnk" data-other="1">'+esc(t("chooseOther"))+'</button></span></div>';
+    return;
+  }
   gs.forEach(function(g){g.items.forEach(function(it){tot++;if(isOn(it,g))sel++;});});
   var allNone=function(gi){var x=gi==null?"":' data-g="'+gi+'"';return '<button class="lnk" data-all="1"'+x+'>'+esc(t("all"))+'</button><span class="sep">·</span><button class="lnk" data-all="0"'+x+'>'+esc(t("noneSel"))+'</button>';};
   var chip=function(on,label,attr,extra){return '<button class="chip'+(on?'':' off')+'" '+attr+' aria-pressed="'+on+'"><span class="ck">'+(on?'✓':'')+'</span><span class="nm">'+label+'</span>'+(extra||'')+'</button>';};
@@ -719,7 +737,7 @@ function renderPick(gs){
     if(g.src&&gs.length>1)h+='<span class="glnk">'+allNone(gi)+'</span>';
     h+='</div>';
   });
-  var foot=!SRC.viewer?(SRC.sample?t("sampleNote"):t("pickRemember")):MERGE?t("pickMerged"):SRC.list[0].dev?t("pickDevice"):"";
+  var foot=!SRC.viewer?(SRC.sample?t("sampleNote"):CARD?t("pickCard"):t("pickRemember")):MERGE?t("pickMerged"):SRC.list[0].dev?t("pickDevice"):"";
   if(MERGE&&SRC.viewer&&SRC.list[0].dev)foot+=" "+t("pickDevice");
   if(foot)h+='<p class="foot">'+esc(foot)+'</p>';
   document.getElementById("pick").innerHTML=h;
@@ -727,6 +745,7 @@ function renderPick(gs){
 document.getElementById("pick").onclick=function(e){
   var b=e.target.closest("button");if(!b)return;
   var gs=groups();
+  if(b.dataset.other){solo=false;render();return;}
   if(b.dataset.src!=null){var i=+b.dataset.src;srcPick[i]=!srcOn(i);}
   else if(b.dataset.all!=null){var v=b.dataset.all==="1";
     gs.forEach(function(g,gi){if(b.dataset.g!=null&&+b.dataset.g!==gi)return;g.items.forEach(function(it){pick[it.key]=v;});});}
@@ -749,6 +768,7 @@ function render(){
   document.getElementById("lblPrice").classList.toggle("dis",!opt.log);
   document.getElementById("lblSerial").classList.toggle("dis",!opt.log);
   if(FROM_VIEWER){var bk=document.getElementById("t-back");bk.textContent=t("backViewer");bk.href="viewer.html";}
+  else if(CARD){var bc=document.getElementById("t-back");bc.textContent="\u2190 "+(CARD.name||"?");bc.href="/collection/#"+encodeURIComponent(watchId(CARD));}
   var gs=groups(),chosen=[],used=[];
   gs.forEach(function(g){var any=false;g.items.forEach(function(it){if(isOn(it,g)){chosen.push(it.w);any=true;}});if(any&&g.src)used.push(g.src);});
   if(SRC.viewer&&MERGE)used=SRC.list.filter(function(s,i){return srcOn(i);});
@@ -760,7 +780,8 @@ function render(){
   [["noPrice",opt.price&&!anyPrice],["noSerial",opt.serial&&!anySerial]].forEach(function(x){
     var el=document.getElementById(x[0]);el.hidden=!(opt.log&&x[1]&&chosen.length);el.textContent=t("noneFilled");});
   document.getElementById("sheets").innerHTML=list.length
-    ?overview(list,{device:WatchData.getDevice(),sources:SRC.viewer?used:null},SRC.sample,opt)+list.map(function(a){return watchPage(a,opt);}).join("")
+    ?(solo?watchPage(list[0],opt,true)
+      :overview(list,{device:WatchData.getDevice(),sources:SRC.viewer?used:null},SRC.sample,opt)+list.map(function(a){return watchPage(a,opt);}).join(""))
     :'<div class="pick-none">'+esc(t("pickNone"))+'</div>';
 }
 ["optRaw","optLog","optPrice","optSerial","optStd"].forEach(function(id){document.getElementById(id).onchange=render;});

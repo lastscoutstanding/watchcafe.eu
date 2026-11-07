@@ -72,7 +72,16 @@
   .empty .row{display:flex;gap:8px;flex-wrap:wrap}
 
   /* detail */
-  .back{background:none;border:none;color:var(--muted);padding:0;font-size:14px;margin:0 0 14px}
+  .back{background:none;border:none;color:var(--muted);padding:0;font-size:14px}
+  .dtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px;min-height:30px}
+  .pn{display:flex;align-items:center;gap:2px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .pn button{background:none;width:30px;height:30px;padding:0;border-radius:999px;font-size:17px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+  .pn button:hover{background:none;border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent)}
+  .pn span{min-width:46px;text-align:center}
+  a.rep{margin-left:auto;align-self:center;font-size:13px;padding:5px 10px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);text-decoration:none;white-space:nowrap;flex:none}
+  a.rep:hover{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+  .repov{display:none;margin-top:16px}
+  @media(max-width:600px){.tabs a.rep{display:none}.repov{display:block}.repov a.rep{display:inline-block}}
   .back:hover{background:none;color:var(--ink)}
   .ident h2{margin:0;font-size:24px;overflow-wrap:anywhere}
   .ident .ref{color:var(--muted);font-size:14px;margin-top:3px}
@@ -340,13 +349,15 @@
 
     <!-- ===== one watch ===== -->
     <div id="vDetail" hidden>
-      <button class="back" id="backBtn"></button>
+      <div class="dtop"><button class="back" id="backBtn"></button>
+        <div class="pn" id="pn" hidden><button id="pnPrev">‹</button><span id="pnPos"></span><button id="pnNext">›</button></div></div>
       <div class="ident"><h2><span id="dName"></span><span class="pill" id="dPill" hidden></span></h2><div class="ref" id="dRef"></div></div>
       <div class="tabs" id="tabs">
         <button data-tab="ov" id="tabOv"></button>
         <button data-tab="log" id="tabLog"></button>
         <button data-tab="worn" id="tabWorn"></button>
         <button data-tab="det" id="tabDet"></button>
+        <a class="rep" id="repBtn"></a>
       </div>
       <div class="pane" id="paneOv"></div>
       <div class="pane" id="paneLog" hidden></div>
@@ -428,6 +439,7 @@ var I18N={
   reserveNone:"Not measured yet", tgD:function(d){return "Last session "+d;},
   tgN:function(n){return n+(n===1?" session":" sessions");}, tgNone:"No sessions yet",
   openRM:"Open in Rate Meter →", openPR:"Open in Power Reserve →",
+  report:"Report ↗", reportOv:"Report for this watch ↗", prevW:"Previous watch (←)", nextW:"Next watch (→)",
   fields:{brand:"Brand",model:"Model",ref:"Reference",caliber:"Caliber / movement",spec:"Accuracy spec",year:"Year",serial:"Serial number",caseSize:"Case size",lugWidth:"Lug width",boxPapers:"Box & papers",serviceYears:"Service interval"},
   specPick:"Choose a standard",ph:{caliber:"e.g. 861, manual wind",spec:"e.g. COSC or −2/+4",year:"e.g. 1969",caseSize:"e.g. 42 mm",lugWidth:"e.g. 20 mm"},
   bp:{"":"—",full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},
@@ -512,6 +524,7 @@ var I18N={
   reserveNone:"Nog niet gemeten", tgD:function(d){return "Laatste sessie "+d;},
   tgN:function(n){return n+(n===1?" sessie":" sessies");}, tgNone:"Nog geen sessies",
   openRM:"Open in Rate Meter →", openPR:"Open in Gangreserve →",
+  report:"Rapport ↗", reportOv:"Rapport van dit horloge ↗", prevW:"Vorig horloge (←)", nextW:"Volgend horloge (→)",
   fields:{brand:"Merk",model:"Model",ref:"Referentie",caliber:"Kaliber / uurwerk",spec:"Nauwkeurigheidsnorm",year:"Jaar",serial:"Serienummer",caseSize:"Kastmaat",lugWidth:"Bandaanzet",boxPapers:"Doos & papieren",serviceYears:"Onderhoudsinterval"},
   specPick:"Kies een norm",ph:{caliber:"bijv. 861, handopwind",spec:"bijv. COSC of −2/+4",year:"bijv. 1969",caseSize:"bijv. 42 mm",lugWidth:"bijv. 20 mm"},
   bp:{"":"—",full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},
@@ -915,6 +928,22 @@ function loadSample(){
 }
 
 /* ===== one watch ===== */
+// the order of the overview: current watches as sorted there, then the former ones
+function navOrder(){
+  var now=state.watches.filter(function(w){return !isFormer(w);});
+  return sortWatches(now).rows.map(function(r){return r.w;}).concat(state.watches.filter(isFormer));
+}
+function reportURL(w){return "/watchrate/report.html?watch="+encodeURIComponent(w.id);}
+// step to the previous/next watch; replaces the history entry, so Back still
+// goes straight to the overview, and keeps the open tab
+var keepTab=false;
+function stepWatch(d){
+  var order=navOrder(),i=order.indexOf(byId(currentId()));
+  if(i<0||order.length<2)return;
+  var w=order[(i+d+order.length)%order.length];
+  keepTab=true;
+  location.replace("#"+encodeURIComponent(w.id));
+}
 function renderDetail(id){
   var t=T(),w=byId(id);
   document.getElementById("backBtn").textContent=t.back;
@@ -923,6 +952,7 @@ function renderDetail(id){
   document.getElementById("tabLog").textContent=t.tabLog;
   document.getElementById("tabWorn").textContent=t.tabWorn;
   if(!w){
+    document.getElementById("pn").hidden=true;
     document.getElementById("dPill").hidden=true;
     document.getElementById("dName").textContent="";
     document.getElementById("dRef").textContent=t.notFound;
@@ -931,6 +961,12 @@ function renderDetail(id){
     return;
   }
   document.getElementById("tabs").hidden=false;
+  var order=navOrder(),pos=order.indexOf(w),pn=document.getElementById("pn");
+  pn.hidden=order.length<2||pos<0;
+  document.getElementById("pnPos").textContent=(pos+1)+" / "+order.length;
+  document.getElementById("pnPrev").title=t.prevW;document.getElementById("pnPrev").setAttribute("aria-label",t.prevW);
+  document.getElementById("pnNext").title=t.nextW;document.getElementById("pnNext").setAttribute("aria-label",t.nextW);
+  var rb=document.getElementById("repBtn");rb.textContent=t.report;rb.href=reportURL(w);
   document.getElementById("dName").textContent=w.name;
   document.getElementById("dRef").textContent=refLine(w);
   var pill=document.getElementById("dPill"),smp=WatchSample.isSample(w);pill.hidden=!isFormer(w)&&!smp;pill.textContent=isFormer(w)?t.soldPill:t.samplePill;
@@ -964,7 +1000,8 @@ function renderOv(w){
       var l=logOf(w).slice(0,3);if(!l.length)return "";
       return '<div class="recent"><p class="lab">'+esc(t.recent)+'<a id="seeAll">'+esc(t.seeAll)+'</a></p>'
         +'<ul class="tl static">'+l.map(function(e){return entryHTML(e,false);}).join("")+'</ul></div>';
-    })();
+    })()
+    +'<div class="repov"><a class="rep" href="'+esc(reportURL(w))+'">'+esc(t.reportOv)+'</a></div>';
   var sa=document.getElementById("seeAll");if(sa)sa.onclick=function(){tab="log";render();};
   // the Rate Meter opens on the active watch
   document.querySelectorAll("#paneOv a[data-open]").forEach(function(a){
@@ -1388,12 +1425,21 @@ document.getElementById("addCancel").onclick=function(){closeAdd();document.getE
   document.getElementById(id).addEventListener("keydown",function(e){if(e.key==="Enter")addWatch();else if(e.key==="Escape")closeAdd();});
 });
 document.getElementById("backBtn").onclick=function(){location.hash="";};
+document.getElementById("pnPrev").onclick=function(){stepWatch(-1);};
+document.getElementById("pnNext").onclick=function(){stepWatch(1);};
+document.addEventListener("keydown",function(e){
+  if(!currentId()||editing||logForm||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)return;
+  if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;
+  var tg=e.target;if(tg&&(/^(INPUT|SELECT|TEXTAREA)$/.test(tg.tagName)||tg.isContentEditable))return;
+  e.preventDefault();stepWatch(e.key==="ArrowLeft"?-1:1);
+});
 document.querySelectorAll("#tabs button").forEach(function(b){
   b.onclick=function(){tab=b.dataset.tab;editing=false;logForm=null;disarm();render();};
 });
 window.addEventListener("hashchange",function(){
   if(!location.hash)history.replaceState(null,"",location.pathname);
-  tab="ov";editing=false;logForm=null;serialShown=false;disarm();
+  if(!keepTab||!location.hash)tab="ov";
+  keepTab=false;editing=false;logForm=null;serialShown=false;disarm();
   document.getElementById("ovNote").textContent="";
   render();window.scrollTo(0,0);
 });
