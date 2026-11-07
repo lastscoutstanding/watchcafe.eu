@@ -159,6 +159,17 @@
   .qbtn2{width:20px;height:20px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;padding:0;cursor:pointer}
   .posnote{font-size:12.5px;color:var(--muted);background:#16161b;border-radius:8px;padding:8px 10px;margin:8px 0 0}
   table.postab th{vertical-align:bottom}
+  table.std td{vertical-align:middle}
+  table.std tr[data-std]{cursor:pointer}
+  table.std tr[data-std]:hover td{background:#18181d}
+  table.std tr.sel td{background:#0e0e12}
+  table.std .nm small{display:block;color:var(--muted);font-size:11px}
+  table.std td.rng{font-family:var(--mono);white-space:nowrap;color:var(--muted);padding-left:8px}
+  table.std td.sbar{width:42%;padding-left:8px}
+  table.std td.sbar svg{display:block;width:100%;height:22px}
+  table.std td.v{width:28px;text-align:center;font-weight:700;color:var(--muted)}
+  table.std td.v.ok,.vd .ok{color:#3be35b}
+  @media (max-width:600px){table.std td.rng,table.std th:nth-child(2){display:none}}
   table.postab th small{display:block;font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px}
   table.postab th.num{padding-left:8px}
   table.postab td.num{padding-left:8px;white-space:nowrap}
@@ -233,6 +244,7 @@
 </div>
 
 <script src="/watchdata.js?v=14"></script>
+<script src="/standards.js?v=1"></script>
 <script src="sample.js?v=7"></script>
 <script>
 "use strict";
@@ -334,8 +346,10 @@ function collectWatches(){
     const byKey=new Map();
     for(const f of FILES) for(const w of f.watches){
       const key=(w.id!=null?"id:"+w.id:"name:"+(w.name||"")).toLowerCase();
-      if(!byKey.has(key)) byKey.set(key,{id:w.id,name:w.name,sources:new Set(),measById:new Map(),tgById:new Map(),active:false});
+      if(!byKey.has(key)) byKey.set(key,{id:w.id,name:w.name,sources:new Set(),measById:new Map(),tgById:new Map(),active:false,info:null,edited:-1});
       const agg=byKey.get(key); agg.sources.add(f.name);
+      // details (own accuracy spec): the latest edit wins, as when merging on a device
+      if(w.info&&(+w.edited||0)>agg.edited){agg.info=w.info;agg.edited=+w.edited||0;}
       if(f.activeWatch!=null && String(f.activeWatch)===String(w.id)) agg.active=true;
       (w.measurements||[]).forEach((m,i)=>{
         const nm=normMeas(m);
@@ -348,10 +362,10 @@ function collectWatches(){
         if(!agg.tgById.has(tk)) agg.tgById.set(tk,ns);
       });
     }
-    for(const a of byKey.values()) out.push({id:a.id,name:a.name,sources:[...a.sources],active:a.active,measurements:[...a.measById.values()],timegrapher:[...a.tgById.values()]});
+    for(const a of byKey.values()) out.push({id:a.id,name:a.name,info:a.info,sources:[...a.sources],active:a.active,measurements:[...a.measById.values()],timegrapher:[...a.tgById.values()]});
   } else {
     for(const f of FILES) for(const w of f.watches) out.push({
-      id:w.id,name:w.name,sources:[f.name],
+      id:w.id,name:w.name,info:w.info||null,sources:[f.name],
       active:f.activeWatch!=null && String(f.activeWatch)===String(w.id),
       measurements:(w.measurements||[]).map(normMeas),
       timegrapher:(w.timegrapher||[]).map(normTG)
@@ -509,9 +523,19 @@ function rateChartSVG(w){
   if(vals.length<2) return "";
   const ax=timeAxis(w),X=ax.X;
   let vMin=Math.min(...vals),vMax=Math.max(...vals);
+  // a standard's band (How it compares open) widens the range, but a very wide one stops 8 s/day past the data
+  const band=stdBand(w);
+  if(band){const dmn=vMin,dmx=vMax;vMin=Math.min(vMin,Math.max(band.lo,dmn-8),band.rate);vMax=Math.max(vMax,Math.min(band.hi,dmx+8),band.rate);}
   if(vMax-vMin<0.5){const c=(vMin+vMax)/2;vMin=c-1;vMax=c+1;} const vp=(vMax-vMin)*0.12; vMin-=vp; vMax+=vp;
   const Y=v=>CH-padB-(v-vMin)/(vMax-vMin)*(CH-padT-padB);
-  let g=yGrid(Y,vMin,vMax,true)+axisSVG(ax);
+  let g="";
+  if(band){const y1=Y(Math.min(band.hi,vMax)),y0=Y(Math.max(band.lo,vMin)),x0=padL,x1=CW-padR;
+    g+=`<rect x="${x0}" y="${y1.toFixed(1)}" width="${x1-x0}" height="${(y0-y1).toFixed(1)}" fill="#3be35b" opacity=".07"/>`;
+    if(band.hi<=vMax)g+=`<line x1="${x0}" x2="${x1}" y1="${y1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#3be35b" stroke-opacity=".45" stroke-dasharray="2 4"/>`;
+    if(band.lo>=vMin)g+=`<line x1="${x0}" x2="${x1}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" stroke="#3be35b" stroke-opacity=".45" stroke-dasharray="2 4"/>`;
+    g+=`<text x="${x1-6}" y="${(y1+14).toFixed(1)}" text-anchor="end" font-size="11" fill="#3be35b" fill-opacity=".75">${esc(band.label)}</text>`;}
+  g+=yGrid(Y,vMin,vMax,true)+axisSVG(ax);
+  if(band)g+=`<line x1="${padL}" x2="${CW-padR}" y1="${Y(band.rate).toFixed(1)}" y2="${Y(band.rate).toFixed(1)}" stroke="var(--accent)" stroke-opacity=".6" stroke-dasharray="6 4"/>`;
   if(vMin<0&&vMax>0){const zy=Y(0).toFixed(1);g+=`<line x1="${padL}" y1="${zy}" x2="${CW-padR}" y2="${zy}" stroke="#66646c" stroke-dasharray="4 4"/>`;}
   segs.forEach(s=>{
     if(s.length>1) g+=`<path d="${s.map((p,i)=>(i?"L":"M")+X(p.t).toFixed(1)+" "+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="#777" stroke-width="1.5"/>`;
@@ -559,7 +583,7 @@ function cardHTML(w,i){
   const src=w.sources.length>1?` · ${t().files(w.sources.length)}`:"";
   const legend=w.positions.map(p=>`<span><i style="background:${p.info.color}"></i>${p.info.abbr}</span>`).join("")
     +(rateSegments(w).flat().some(p=>p.pos===null)?`<span><i style="background:var(--p-flat)"></i>${t().posMixed}</span>`:"");
-  return `<div class="wcard ${w.active?'active':''}">
+  return `<div class="wcard ${w.active?'active':''}" data-i="${i}">
     <div class="wtop">
       <div><div class="wname">${esc(w.name||t().unnamed)}</div>
         <div class="wmeta">${esc(String(w.id??"—"))} · ${t().meas(w.valid.length)}${src}</div></div>
@@ -569,6 +593,7 @@ function cardHTML(w,i){
     ${sessionPickerHTML(w)}
     ${chartsHTML(w,i,legend)}
     ${posPanelHTML(w)}
+    ${stdPanelHTML(w)}
     ${tgHTML(w)}
   </div>`;
 }
@@ -629,9 +654,45 @@ function posPanelHTML(w){
   return h+`</tbody></table>`;
 }
 document.getElementById("list").addEventListener("click",e=>{
-  if(e.target.closest(".postog")){posOpen=!posOpen;try{if(posOpen)localStorage.setItem(POSKEY,"1");else localStorage.removeItem(POSKEY);}catch(err){}render();return;}
+  if(e.target.closest(".postog:not(.stdtog)")){posOpen=!posOpen;try{if(posOpen)localStorage.setItem(POSKEY,"1");else localStorage.removeItem(POSKEY);}catch(err){}render();return;}
   const q=e.target.closest(".poshelp");if(q){const n=q.closest(".wcard").querySelector(".posnote");if(n)n.hidden=!n.hidden;}
 });
+
+// How it compares: as on the Rate Meter (open state shared with it, per device). The own spec
+// comes from the watch's details in the backup; a click on a row shows that standard in the chart.
+const STDKEY="siouxWatchStdOpen",stdSel={};
+let stdOpen=(()=>{try{return localStorage.getItem(STDKEY)==="1";}catch(e){return false;}})();
+function stdRows(w){const own=w.info&&w.info.spec&&Standards.spec(w.info.spec);let rows=Standards.list();
+  if(own){rows=rows.filter(s=>s.id!==own.id);rows.unshift({...own,own:true});}return rows;}
+function stdCur(w){const rows=stdRows(w);return rows.find(s=>s.id===stdSel[w.id])||rows[0]||null;}
+const stdIn=(s,v)=>v>=s.lo-1e-9&&v<=s.hi+1e-9;
+const stdLabel=s=>s.label||t().stdSpec;
+function stdBand(w){const r=w.fit?.ratePerDay;if(!stdOpen||r==null||!window.Standards)return null;const s=stdCur(w);
+  return s?{lo:s.lo,hi:s.hi,rate:r,label:stdLabel(s)+" "+Standards.fmt(s)}:null;}
+function stdBar(s,v,S){const W=300,X=x=>(Math.max(-S,Math.min(S,x))+S)/(2*S)*W;
+  let o=`<svg viewBox="0 0 ${W} 22" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="11" y2="11" stroke="#2c2c2c" stroke-width="2"/><line x1="${X(0)}" x2="${X(0)}" y1="4" y2="18" stroke="#555" stroke-dasharray="2 2"/>`;
+  if(s){const c=stdIn(s,v)?"#3be35b":"#a09da6";o+=`<rect x="${X(s.lo).toFixed(1)}" y="6" width="${Math.max(2,X(s.hi)-X(s.lo)).toFixed(1)}" height="10" fill="${c}" fill-opacity=".28" stroke="${c}" stroke-opacity=".6"/>`;}
+  return o+`<line x1="${X(v).toFixed(1)}" x2="${X(v).toFixed(1)}" y1="1" y2="21" stroke="var(--accent)" stroke-width="3"/></svg>`;}
+function stdPanelHTML(w){
+  const r=w.fit?.ratePerDay,T_=t();if(r==null||!window.Standards||!Standards.list().length)return "";
+  const rows=stdRows(w),own=rows.find(s=>s.own);
+  const vd=s=>{const ok=stdIn(s,r);return `<span class="${ok?"ok":""}">${esc(ok?T_.stdWithin(stdLabel(s)):T_.stdOutside(stdLabel(s)))}</span>`;};
+  let h=`<div class="posbar"><button type="button" class="postog stdtog${stdOpen?" open":""}"><span class="chev">\u25b8</span>${esc(T_.stdTitle)}${!stdOpen&&own?`<span class="vd">${vd(own)}</span>`:""}</button>${stdOpen?'<button type="button" class="qbtn2 stdhelp" aria-label="?">?</button>':""}</div>`;
+  if(!stdOpen)return h;
+  const cur=stdCur(w),S=Math.max(10,Math.ceil((Math.abs(r)+1)/5)*5),fr=signOf(r)+fmtMag(r);
+  h+=`<p class="posnote stdnote" hidden>${esc(T_.stdNote)}</p><table class="pos std"><thead><tr><th>${T_.stdThStd}</th><th>${T_.stdThRange}</th><th>\u2212${S} \u2026 0 \u2026 +${S} ${T_.sday}</th><th></th></tr></thead><tbody>`;
+  rows.forEach(s=>{const ok=stdIn(s,r),rng=Standards.fmt(s),nm=s.own&&!s.label?T_.stdOwn:s.name,
+      sub=s.own?(s.label?esc(s.label)+" \u00b7 "+T_.stdSpec:T_.stdOwnSub):esc(s.label);
+    h+=`<tr data-std="${esc(s.id)}"${s===cur?' class="sel"':""}><td class="nm">${esc(nm)}<small>${sub}</small></td><td class="rng">${rng}</td><td class="sbar">${stdBar(s,r,S)}</td><td class="v${ok?" ok":""}">${ok?"\u2713":"\u2013"}</td></tr>`;});
+  h+=`<tr class="me"><td class="nm">${esc(T_.stdThis)}<small>${esc(isAllSel(w.selKey)?T_.posLatest:T_.stdThisSub)}</small></td><td class="rng">${fr}</td><td class="sbar">${stdBar(null,r,S)}</td><td></td></tr>`;
+  return h+`</tbody></table>`;
+}
+document.getElementById("list").addEventListener("click",e=>{
+  if(e.target.closest(".stdtog")){stdOpen=!stdOpen;try{localStorage.setItem(STDKEY,stdOpen?"1":"0");}catch(err){}render();return;}
+  const q=e.target.closest(".stdhelp");if(q){const n=q.closest(".wcard").querySelector(".stdnote");if(n)n.hidden=!n.hidden;return;}
+  const tr=e.target.closest("tr[data-std]");if(tr){const id=shownWatches[+tr.closest(".wcard").dataset.i]?.id;stdSel[id]=tr.dataset.std;render();}
+});
+window.addEventListener("swcstandards",()=>render());
 
 function tgHTML(w){
   const tg=w.timegrapher||[];
@@ -659,6 +720,18 @@ function tgHTML(w){
 T.en.tgHead="Timegrapher"; T.nl.tgHead="Timegrapher";
 T.en.posMixed="mixed"; T.nl.posMixed="gemengd";
 T.en.posTitle="Positions"; T.nl.posTitle="Posities";
+T.en.stdTitle="How it compares"; T.nl.stdTitle="Vergelijking met normen";
+T.en.stdWithin=l=>"\u2713 Within "+l; T.nl.stdWithin=l=>"\u2713 Binnen "+l;
+T.en.stdOutside=l=>"Outside "+l; T.nl.stdOutside=l=>"Buiten "+l;
+T.en.stdSpec="your spec"; T.nl.stdSpec="jouw norm";
+T.en.stdOwn="Your spec"; T.nl.stdOwn="Jouw norm";
+T.en.stdOwnSub="from Details"; T.nl.stdOwnSub="uit Gegevens";
+T.en.stdThis="This watch"; T.nl.stdThis="Dit horloge";
+T.en.stdThisSub="rate of this session"; T.nl.stdThisSub="gang van deze sessie";
+T.en.stdThStd="Standard"; T.nl.stdThStd="Norm";
+T.en.stdThRange="Range"; T.nl.stdThRange="Bereik";
+T.en.stdNote="Click a standard to show it in the rate chart. Standards are lab tests (COSC: 15 days, five positions, three temperatures); this rate was measured in daily use, so it is an indication, not a certificate. A watch's own spec comes from its Details in the backup.";
+T.nl.stdNote="Klik op een norm om hem in de ganggrafiek te tonen. Normen zijn labtests (COSC: 15 dagen, vijf posities, drie temperaturen); deze gang is gemeten bij gewoon gebruik, dus dit is een indicatie, geen certificaat. De eigen norm van een horloge komt uit de Gegevens in de back-up.";
 T.en.posSpread=(m,g)=>[m!=null?"spread "+m.toFixed(1)+" s/day":"",g!=null?(m!=null?"":"timegrapher spread ")+g.toFixed(1)+(m!=null?" timegrapher":" s/day"):""].filter(Boolean).join(" \u00b7 ");
 T.nl.posSpread=(m,g)=>[m!=null?"spreiding "+m.toFixed(1)+" s/dag":"",g!=null?(m!=null?"":"spreiding timegrapher ")+g.toFixed(1)+(m!=null?" timegrapher":" s/dag"):""].filter(Boolean).join(" \u00b7 ");
 T.en.posThMeas="Measured"; T.nl.posThMeas="Gemeten";
