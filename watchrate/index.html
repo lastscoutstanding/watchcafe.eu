@@ -154,6 +154,20 @@
   table.std td.bar svg{display:block;width:100%;height:22px}
   table.std td.v{width:28px;text-align:center;font-weight:700;color:var(--muted)}
   table.std td.v.ok{color:#3be35b}
+  /* Positions: folded like How it compares; measured rate per position next to the timegrapher */
+  .posbar .vd{color:var(--muted)}
+  table.postab{margin-top:6px;font-size:13.5px}
+  table.postab th{padding:6px 8px;border-bottom:1px solid var(--border);font-weight:700;font-size:12.5px;vertical-align:bottom}
+  table.postab th small{display:block;font-weight:400;color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0}
+  table.postab td{padding:7px 8px;border-bottom:1px solid #26262c;font-variant-numeric:tabular-nums}
+  table.postab .num{text-align:right;white-space:nowrap}
+  table.postab .dim{color:var(--muted)}
+  table.postab td.pn{white-space:nowrap}
+  table.postab td.pn i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+  table.postab .cnt{font-size:11px;color:var(--muted);margin-left:4px}
+  table.postab tr.foot td{border-bottom:none;color:var(--muted)}
+  @media (max-width:600px){table.postab{font-size:13px}table.postab .hn{display:none}table.postab th,table.postab td{padding-left:4px;padding-right:4px}
+    table.postab td.pn{white-space:normal}table.postab td.pn i{margin-right:6px}table.postab th small{font-size:10.5px}table.postab th{letter-spacing:.2px}table.postab th.num{white-space:normal}}
   table.std tr.me td{border-bottom:none}
   table.std tr.me .nm{color:var(--accent);font-weight:700}
   table.std tr.me .nm small{font-weight:400}
@@ -246,7 +260,7 @@
   }
 </style>
   <script src="/nav.js" defer></script>
-  <script src="/watchdata.js?v=13"></script>
+  <script src="/watchdata.js?v=14"></script>
   <script src="sample.js?v=7"></script>
   <script src="/standards.js?v=1"></script>
 </head>
@@ -406,6 +420,7 @@
         <p class="hint infobox" id="rateChartHint" style="display:none"></p>
       </div>
       <div class="legend" id="tgLegend" style="display:none"></div>
+      <div id="posBox" style="display:none"></div>
       <div id="stdBox" style="display:none"></div>
       <div class="tgcmp" id="tgCompare" style="display:none"></div>
       <div id="tgList"></div>
@@ -451,6 +466,10 @@ var I18N={
   stdTitle:"How it compares", stdWithin:function(l){return "\u2713 Within "+l;}, stdOutside:function(l){return "Outside "+l;},
   stdSpec:"your spec", stdOwn:"Your spec", stdOwnSub:"from Details", stdThis:"This watch", stdThisSub:"rate of this session",
   stdThStd:"Standard", stdThRange:"Range",
+  posTitle:"Positions", posSpread:function(m,g){return [m!=null?"spread "+m.toFixed(1)+" s/day":"",g!=null?(m!=null?"":"timegrapher spread ")+g.toFixed(1)+(m!=null?" timegrapher":" s/day"):""].filter(Boolean).join(" \u00b7 ");},
+  posThPos:"Position", posThMeas:"Measured", posThis:"this session", posLatest:"latest session", posThTG:"Timegrapher", posThAmp:"Ampl.", posThDiff:"\u0394",
+  posAvgOf:function(n){return "avg of "+n+" sessions";}, posAvg:"avg", posDiffSub:"measured \u2212 TG", posSpreadRow:"Spread between positions", posNa:"n/a",
+  posNote:"Measured: the rate in each position, from consecutive measurements in that position; an interval in which the position changed doesn't count. Timegrapher: the readings per position of the timegrapher sessions in this rate session, averaged when there are more (hover for each one). A timegrapher can't measure on the wrist. The list of sessions below has every reading.",
   stdNote:"Click a standard to show it in the rate chart. Standards are lab tests (COSC: 15 days, five positions, three temperatures); your rate is measured in daily use, so this is an indication, not a certificate. Set a watch's own spec under Details in the Collection.",
   rateChartHint:"Rate points are calculated from consecutive measurements at least 6 hours apart. Lines break at a new start or a reset.",
   guideTitle:"How it works", guideIntro:"Track how fast or slow your watch runs, in seconds per day.",
@@ -515,6 +534,10 @@ var I18N={
   stdTitle:"Vergelijking met normen", stdWithin:function(l){return "\u2713 Binnen "+l;}, stdOutside:function(l){return "Buiten "+l;},
   stdSpec:"jouw norm", stdOwn:"Jouw norm", stdOwnSub:"uit Gegevens", stdThis:"Dit horloge", stdThisSub:"gang van deze sessie",
   stdThStd:"Norm", stdThRange:"Bereik",
+  posTitle:"Posities", posSpread:function(m,g){return [m!=null?"spreiding "+m.toFixed(1)+" s/dag":"",g!=null?(m!=null?"":"spreiding timegrapher ")+g.toFixed(1)+(m!=null?" timegrapher":" s/dag"):""].filter(Boolean).join(" \u00b7 ");},
+  posThPos:"Positie", posThMeas:"Gemeten", posThis:"deze sessie", posLatest:"laatste sessie", posThTG:"Timegrapher", posThAmp:"Ampl.", posThDiff:"\u0394",
+  posAvgOf:function(n){return "gem. van "+n+" sessies";}, posAvg:"gem.", posDiffSub:"gemeten \u2212 TG", posSpreadRow:"Spreiding tussen posities", posNa:"n.v.t.",
+  posNote:"Gemeten: de gang in elke positie, uit opeenvolgende metingen in die positie; een interval waarin de positie wisselde telt niet mee. Timegrapher: de waarden per positie van de timegrapher-sessies in deze gangsessie, gemiddeld als het er meer zijn (wijs aan voor elke waarde). Een timegrapher kan niet aan de pols meten. De lijst met sessies hieronder heeft alle waarden.",
   stdNote:"Klik op een norm om hem in de ganggrafiek te tonen. Normen zijn labtests (COSC: 15 dagen, vijf posities, drie temperaturen); jouw gang is gemeten bij gewoon gebruik, dus dit is een indicatie, geen certificaat. De eigen norm van een horloge zet je bij Gegevens in de Collectie.",
   rateChartHint:"Gangpunten worden berekend uit opeenvolgende metingen die minstens 6 uur uit elkaar liggen. Lijnen breken bij een nieuwe start of doorstart.",
   guideTitle:"Zo werkt het", guideIntro:"Meet hoeveel je horloge per dag voor- of achterloopt.",
@@ -727,7 +750,7 @@ function renderHistory(){
   var t=I18N[lang],w=activeWatch(),wrap=document.getElementById("historyWrap"),sum=document.getElementById("rateSummary");
   document.getElementById("histH2").innerHTML=escapeHtml(t.measurements)+watchSuffix(w);
   renderSessionPicker(w);
-  if(!w||!w.measurements.length){document.getElementById("sessEnd").style.display="none";wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderStd(null,null);renderTG(w||null);return;}
+  if(!w||!w.measurements.length){document.getElementById("sessEnd").style.display="none";wrap.innerHTML='<div class="empty">'+t.noMeasurements+'</div>';sum.textContent="";drawCharts(w||null);renderPos(null);renderStd(null,null);renderTG(w||null);return;}
   renderSessEnd(w);
   var pts=selectedMeas(w).slice().sort(function(a,b){return b.t-a.t;}),r=rateOf(w);
   if(r){var rstr=(r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" "+t.perDay;
@@ -743,6 +766,7 @@ function renderHistory(){
   html+="</tbody></table>";wrap.innerHTML=html;
   wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");WatchData.markDeleted(state,id);w.measurements=w.measurements.filter(function(x){return x.id!==id;});save();renderAll();};});
   drawCharts(w);
+  renderPos(w);
   renderStd(w,r);
   renderTG(w);
 }
@@ -1030,6 +1054,48 @@ function renderStd(w,r){
   };
   var sh=document.getElementById("stdHelp");if(sh)sh.onclick=function(){stdHelp=!stdHelp;toggleInfo("stdNote");};
   box.querySelectorAll("tr[data-std]").forEach(function(tr){tr.onclick=function(){stdSel=tr.getAttribute("data-std");renderHistory();};});
+}
+
+/* ===== positions: measured rate per position next to the timegrapher, folded by default ===== */
+var POSKEY="siouxWatchPosOpen",posHelp=false;
+var posOpen=(function(){try{return localStorage.getItem(POSKEY)==="1";}catch(e){return false;}})();
+function renderPos(w){
+  var box=document.getElementById("posBox"),t=I18N[lang];
+  var segs=w?segments(w):[],all=w&&resolvedSegIndex(w)==="all",pts=w?(all?segs[segs.length-1]:selectedMeas(w)):[];
+  // same rate session as the summary line; timegrapher sessions within a day of it count (TG_GRACE)
+  var tg=pts&&pts.length?tgOf(w).filter(function(g){return g.t>=pts[0].t-TG_GRACE&&g.t<=pts[pts.length-1].t+TG_GRACE;}):[];
+  var sum=pts&&pts.length?WatchData.positionSummary(pts,tg):null;
+  if(!sum||!sum.rows.some(function(r){return r.code;})){box.style.display="none";return;}
+  box.style.display="";
+  var many=tg.length>1,hasTG=tg.length>0,loc=lang==="nl"?"nl-NL":"en-GB";
+  function sg(v,d){var a=Math.abs(v).toFixed(d);return (+a===0?"\u00b1":v>0?"+":"\u2212")+a;}
+  function day(ms){return new Date(ms).toLocaleDateString(loc,{day:"numeric",month:"short"});}
+  var html='<div class="stdbar posbar"><button class="sm stdtog'+(posOpen?' open':'')+'" id="posTog"><span class="chev">\u25b8</span>'+escapeHtml(t.posTitle)
+    +(posOpen?'':'<span class="vd">'+escapeHtml(t.posSpread(sum.spread,sum.tgSpread))+'</span>')+'</button>'
+    +(posOpen?'<button class="qbtn" id="posHelp" aria-label="?">?</button>':'')+'</div>';
+  if(posOpen){
+    html+='<p class="hint infobox" id="posNote"'+(posHelp?'':' style="display:none"')+'>'+escapeHtml(t.posNote)+'</p>';
+    html+='<table class="postab"><thead><tr><th>'+t.posThPos+'</th><th class="num hn">n</th><th class="num">'+t.posThMeas+'<small>'+t.perDay+' \u00b7 '+(all?t.posLatest:t.posThis)+'</small></th>'
+      +(hasTG?'<th class="num">'+t.posThTG+'<small>'+t.perDay+' \u00b7 '+(many?t.posAvgOf(tg.length):day(tg[0].t))+'</small></th><th class="num">'+t.posThAmp+'<small>'+(many?t.posAvg:"")+'</small></th><th class="num hn">'+t.posThDiff+'<small>'+t.posDiffSub+'</small></th>':'')+'</tr></thead><tbody>';
+    sum.rows.forEach(function(r){
+      var g=r.tg,tip=g?g.list.map(function(x){return day(x.t)+": "+sg(x.rate,1)+" "+t.perDay+(x.amp!=null?" \u00b7 "+x.amp+"\u00b0":"")+(x.beat!=null?" \u00b7 "+x.beat+" ms":"");}).join("\n"):"";
+      html+='<tr><td class="pn"><i style="background:'+posColor(r.code)+'"></i>'+escapeHtml(r.code?posLabel(r.code):t.posNone)+'</td>'
+        +'<td class="num dim hn">'+(r.n||"")+'</td><td class="num"><b>'+(r.rate!=null?sg(r.rate,1):"\u2014")+'</b></td>';
+      if(hasTG)html+='<td class="num"'+(tip?' title="'+escapeHtml(tip)+'"':'')+'>'+(g?(many?sg(g.rate,1)+'<span class="cnt">'+g.n+'\u00d7</span>':sg(g.rate,Number.isInteger(g.rate)?0:1)):r.code==="worn"?'<span class="dim">'+t.posNa+'</span>':"\u2014")+'</td>'
+        +'<td class="num dim">'+(g&&g.amp!=null?Math.round(g.amp)+"\u00b0":"")+'</td>'
+        +'<td class="num dim hn">'+(g&&r.rate!=null?sg(r.rate-g.rate,1):"")+'</td>';
+      html+='</tr>';
+    });
+    if(sum.spread!=null||sum.tgSpread!=null)html+='<tr class="foot"><td>'+t.posSpreadRow+'</td><td class="hn"></td><td class="num">'+(sum.spread!=null?sum.spread.toFixed(1):"")+'</td>'
+      +(hasTG?'<td class="num">'+(sum.tgSpread!=null?sum.tgSpread.toFixed(1):"")+'</td><td></td><td class="hn"></td>':'')+'</tr>';
+    html+='</tbody></table>';
+  }
+  box.innerHTML=html;
+  document.getElementById("posTog").onclick=function(){
+    posOpen=!posOpen;try{if(posOpen)localStorage.setItem(POSKEY,"1");else localStorage.removeItem(POSKEY);}catch(e){}
+    renderPos(w);
+  };
+  var ph=document.getElementById("posHelp");if(ph)ph.onclick=function(){posHelp=!posHelp;toggleInfo("posNote");};
 }
 
 /* ===== timegrapher helpers ===== */

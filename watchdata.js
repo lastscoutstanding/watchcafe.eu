@@ -338,6 +338,22 @@ var WatchData=(function(){
     });
     return o;
   }
+  /* Everything for a "Positions" table: measured rate per position of the given
+     measurements (one session) next to the timegrapher averages of the given
+     sessions. rows = [{code, n, rate, tg}] in POS_ORDER (tg may be null, a
+     position only on the timegrapher has n 0 and rate null); spreads are
+     max − min over the positions that have a value (null below two). */
+  function positionSummary(pts,tgSessions){
+    var meas=positionRates(pts),tg=tgByPosition(tgSessions),seen={},rows=[];
+    meas.forEach(function(p){seen[p.code]=1;rows.push({code:p.code,n:p.n,rate:p.rate,tg:tg[p.code]||null});});
+    Object.keys(tg).forEach(function(c){if(!seen[c])rows.push({code:c,n:0,rate:null,tg:tg[c]});});
+    var rank=function(c){var i=c===""?99:POS_ORDER.indexOf(c);return i<0?50:i;};
+    rows.sort(function(a,b){return rank(a.code)-rank(b.code)||a.code.localeCompare(b.code);});
+    function spread(vs){return vs.length>1?Math.max.apply(null,vs)-Math.min.apply(null,vs):null;}
+    return {rows:rows,sessions:(tgSessions||[]).length,
+      spread:spread(rows.filter(function(r){return r.code&&r.rate!=null;}).map(function(r){return r.rate;})),
+      tgSpread:spread(rows.filter(function(r){return r.code&&r.tg;}).map(function(r){return r.tg.rate;}))};
+  }
 
   /* ----- session state -----
      w.rateEnd = {at, edited}: "End session" in the Rate Meter. at = when it was
@@ -386,6 +402,6 @@ var WatchData=(function(){
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
     markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,deletedAt:deletedAt,markRestored:markRestored,idTime:idTime,ensureIds:ensureIds,merge:merge,
     currentRate:currentRate,previousRate:previousRate,pieces:pieces,fitPieces:fitPieces,rateOf:rateOf,rateSession:rateSession,
-    POS_ORDER:POS_ORDER,posColor:posColor,ratePoints:ratePoints,positionRates:positionRates,tgByPosition:tgByPosition,
+    POS_ORDER:POS_ORDER,posColor:posColor,ratePoints:ratePoints,positionRates:positionRates,tgByPosition:tgByPosition,positionSummary:positionSummary,
     wornCount:wornCount,wearOrder:wearOrder};
 })();

@@ -9,7 +9,7 @@
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script src="/nav.js" defer></script>
-<script src="/watchdata.js?v=13"></script>
+<script src="/watchdata.js?v=14"></script>
 <script src="sample.js?v=7"></script>
 <script src="/standards.js?v=1"></script>
 <style>
@@ -215,7 +215,7 @@ var I18N={
   rTitle:"Watch Report",generated:"Generated",device:"Device",period:"Period",watches:"Watches",measurements:"Measurements",
   overview:"Overview",watch:"Watch",meas:"Meas.",current:"Current rate",allSessions:"All sessions",tgLatest:"Timegrapher",pr:"Power reserve",
   sessions:"Sessions",session:"Session",from:"From",to:"To",duration:"Duration",n:"N",rate:"Rate",fitSpread:"Spread",sessNote:"± = margin on the rate (about 95%), never smaller than whole-second readings allow. Spread = how far the measurements typically lie from the rate line. Explained in the glossary at watchcafe.eu/guide.",
-  positions:"Rate per position",positionsSub:"latest session",position:"Position",spread:"Spread between positions",
+  positions:"Rate per position",positionsSub:"latest session",measured:"Measured",tgShort:"Timegr.",tgAvgOf:function(n){return "avg of "+n;},ampl:"Ampl.",na:"n/a",position:"Position",spread:"Spread between positions",
   timegrapher:"Timegrapher",date:"Date",avg:"Avg",readings:"Readings",note2:"Note",amp:"Amplitude",beat:"Beat error",
   powerReserve:"Power reserve",wound:"Wound",stopped:"Stopped",reserve:"Reserve",typical:"Typical",
   allMeas:"All measurements",time:"Time",offset:"Offset",newStart:"new start",resetTag:"reset",
@@ -246,7 +246,7 @@ var I18N={
   rTitle:"Horlogerapport",generated:"Gemaakt",device:"Apparaat",period:"Periode",watches:"Horloges",measurements:"Metingen",
   overview:"Overzicht",watch:"Horloge",meas:"Met.",current:"Huidige gang",allSessions:"Alle sessies",tgLatest:"Timegrapher",pr:"Gangreserve",
   sessions:"Sessies",session:"Sessie",from:"Van",to:"Tot",duration:"Duur",n:"N",rate:"Gang",fitSpread:"Spreiding",sessNote:"± = marge op de gang (ongeveer 95%), nooit kleiner dan aflezen op hele seconden toelaat. Spreiding = hoe ver de metingen doorgaans van de ganglijn liggen. Uitleg in de woordenlijst op watchcafe.eu/guide.",
-  positions:"Gang per positie",positionsSub:"laatste sessie",position:"Positie",spread:"Spreiding tussen posities",
+  positions:"Gang per positie",positionsSub:"laatste sessie",measured:"Gemeten",tgShort:"Timegr.",tgAvgOf:function(n){return "gem. van "+n;},ampl:"Ampl.",na:"n.v.t.",position:"Positie",spread:"Spreiding tussen posities",
   timegrapher:"Timegrapher",date:"Datum",avg:"Gem.",readings:"Metingen",note2:"Notitie",amp:"Amplitude",beat:"Beat error",
   powerReserve:"Gangreserve",wound:"Opgewonden",stopped:"Gestopt",reserve:"Reserve",typical:"Typisch",
   allMeas:"Alle metingen",time:"Tijdstip",offset:"Offset",newStart:"nieuwe start",resetTag:"doorstart",
@@ -391,7 +391,10 @@ function analyse(w){
   var pr=(w.powerReserve||[]).slice().sort(function(a,b){return a.start-b.start;});
   var prAvg=pr.length?pr.reduce(function(a,p){return a+p.reserveMs;},0)/pr.length:null;
   var allFit=linreg(ms);
-  return {w:w,ms:ms,sess:sess,last:last,positions:positions,spread:rated.length>=2?Math.max.apply(null,rated)-Math.min.apply(null,rated):null,
+  // Rate per position (latest session) next to its timegrapher sessions, as in the Rate Meter's "Positions"
+  var posTG=last?tg.filter(function(s){return s.t>=last.t0-DAY&&s.t<=last.t1+DAY;}):[];
+  var posSum=last?WatchData.positionSummary(last.pts,posTG):null;
+  return {w:w,ms:ms,sess:sess,last:last,positions:positions,posSum:posSum,posTG:posTG,spread:rated.length>=2?Math.max.apply(null,rated)-Math.min.apply(null,rated):null,
     tg:tg,pr:pr,prAvg:prAvg,t0:ms.length?ms[0].t:null,t1:ms.length?ms[ms.length-1].t:null,
     current:last&&last.fit?last.fit.rate:null,allRate:sess.length>1?null:(allFit?allFit.rate:null)};
 }
@@ -658,10 +661,14 @@ function watchPage(a,opt){
   if(opt.std&&a.current!=null)h+=stdBlock(a);
 
   var side=[];
-  if(a.positions.length>1){
-    side.push('<div><h3>'+esc(t("positions"))+' <span style="text-transform:none;letter-spacing:0;font-weight:400">('+esc(t("positionsSub"))+')</span></h3><table><thead><tr><th>'+t("position")+'</th><th class="num">'+t("n")+'</th><th class="num">'+t("perDay")+'</th></tr></thead><tbody>'
-      +a.positions.map(function(p){var i=pos(p.code);return '<tr><td><span class="dot" style="background:'+i.color+'"></span>'+esc(i.label)+'</td><td class="num">'+p.n+'</td><td class="num">'+sgn(p.rate)+'</td></tr>';}).join("")
-      +(a.spread!=null?'<tr><td colspan="2"><b>'+esc(t("spread"))+'</b></td><td class="num"><b>'+a.spread.toFixed(1)+'</b></td></tr>':'')+'</tbody></table></div>');
+  var ps=a.posSum,named=ps?ps.rows.filter(function(r){return r.code;}):[];
+  if(named.length>1||named.length&&a.posTG.length){
+    var hasTG=a.posTG.length>0,many=a.posTG.length>1;
+    side.push('<div><h3>'+esc(t("positions"))+' <span style="text-transform:none;letter-spacing:0;font-weight:400">('+esc(t("positionsSub"))+')</span></h3><table><thead><tr><th>'+t("position")+'</th><th class="num">'+t("n")+'</th><th class="num">'+t("measured")+'<small>'+t("perDay")+'</small></th>'
+      +(hasTG?'<th class="num">'+t("tgShort")+'<small>'+(many?t("tgAvgOf")(a.posTG.length):esc(fShort(a.posTG[0].t)))+'</small></th><th class="num">'+t("ampl")+'</th>':'')+'</tr></thead><tbody>'
+      +ps.rows.map(function(p){var i=pos(p.code),g=p.tg;return '<tr><td><span class="dot" style="background:'+i.color+'"></span>'+esc(i.label)+'</td><td class="num">'+(p.n||"")+'</td><td class="num">'+(p.rate!=null?sgn(p.rate):t("none"))+'</td>'
+        +(hasTG?'<td class="num">'+(g?sgn(g.rate,many||!Number.isInteger(g.rate)?1:0)+(many?'<span class="pm">'+g.n+'×</span>':''):p.code==="worn"?'<span class="dim">'+t("na")+'</span>':t("none"))+'</td><td class="num dim">'+(g&&g.amp!=null?Math.round(g.amp)+"°":"")+'</td>':'')+'</tr>';}).join("")
+      +(ps.spread!=null||ps.tgSpread!=null?'<tr><td colspan="2"><b>'+esc(t("spread"))+'</b></td><td class="num"><b>'+(ps.spread!=null?ps.spread.toFixed(1):"")+'</b></td>'+(hasTG?'<td class="num"><b>'+(ps.tgSpread!=null?ps.tgSpread.toFixed(1):"")+'</b></td><td></td>':'')+'</tr>':'')+'</tbody></table></div>');
   }
   if(a.pr.length){
     // note column only when at least one measurement has a note

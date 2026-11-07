@@ -150,6 +150,22 @@
   table.pos td.dot{width:16px}
   table.pos td.dot i{width:8px;height:8px;border-radius:50%;display:inline-block}
   table.pos tr:last-child td{border-bottom:none}
+  .posbar{display:flex;align-items:center;gap:8px;margin-top:14px;border:1px dashed var(--border);border-radius:8px;padding-right:9px}
+  .postog{flex:1;display:flex;align-items:center;gap:8px;min-width:0;background:transparent;border:none;color:var(--muted);font:inherit;font-size:13px;text-align:left;padding:8px 12px;cursor:pointer}
+  .postog:hover{color:var(--ink)}
+  .postog .chev{display:inline-block;transition:transform .15s}
+  .postog.open .chev{transform:rotate(90deg)}
+  .postog .vd{margin-left:auto;font-size:12.5px}
+  .qbtn2{width:20px;height:20px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;padding:0;cursor:pointer}
+  .posnote{font-size:12.5px;color:var(--muted);background:#16161b;border-radius:8px;padding:8px 10px;margin:8px 0 0}
+  table.postab th{vertical-align:bottom}
+  table.postab th small{display:block;font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px}
+  table.postab th.num{padding-left:8px}
+  table.postab td.num{padding-left:8px;white-space:nowrap}
+  table.postab .dim{color:var(--muted)}
+  table.postab .cnt{font-size:10.5px;color:var(--muted);margin-left:3px}
+  table.postab tr.foot td{color:var(--muted)}
+  @media (max-width:600px){table.postab .hn{display:none}}
   .delta{margin-top:11px;font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px}
   .delta b{color:var(--accent);font-weight:700;font-family:var(--mono)}
 
@@ -216,7 +232,7 @@
   </div>
 </div>
 
-<script src="/watchdata.js?v=13"></script>
+<script src="/watchdata.js?v=14"></script>
 <script src="sample.js?v=7"></script>
 <script>
 "use strict";
@@ -376,6 +392,11 @@ function collectWatches(){
     w.delta=rated.length>=2?Math.max(...rated)-Math.min(...rated):null;
     w.timegrapher=(w.timegrapher||[]).filter(sess=>Number.isFinite(sess.t)&&sess.readings.length).sort((a,b)=>a.t-b.t);
     w.timegrapher.forEach(sess=>{sess.avg=sess.readings.reduce((a,r)=>a+r.rate,0)/sess.readings.length;});
+    // "Positions" panel: the same rate session as the rate, with its timegrapher sessions (within a day)
+    const unk=c=>c==="unknown"?"":c;
+    w.posTG=metricPts.length?w.timegrapher.filter(g=>g.t>=metricPts[0].t-TG_GRACE&&g.t<=metricPts[metricPts.length-1].t+TG_GRACE):[];
+    w.posSum=metricPts.length?WatchData.positionSummary(metricPts.map(m=>({...m,position:unk(m.position)})),
+      w.posTG.map(g=>({t:g.t,readings:g.readings.map(r=>({position:unk(r.position),rate:r.rate,amplitude:r.amplitude,beatError:r.beatError}))}))):null;
     // a timegrapher session up to a day before or after a session's measurements belongs to it,
     // so the time axis stretches to it (same rule as the Rate Meter)
     const span=s=>{let a=s[0].t,b=s[s.length-1].t;
@@ -538,9 +559,6 @@ function cardHTML(w,i){
   const src=w.sources.length>1?` · ${t().files(w.sources.length)}`:"";
   const legend=w.positions.map(p=>`<span><i style="background:${p.info.color}"></i>${p.info.abbr}</span>`).join("")
     +(rateSegments(w).flat().some(p=>p.pos===null)?`<span><i style="background:var(--p-flat)"></i>${t().posMixed}</span>`:"");
-  const rows=w.positions.map(p=>`<tr><td class="dot"><i style="background:${p.info.color}"></i></td>
-    <td>${esc(p.info.label)}</td><td class="num">${p.n}</td>
-    <td class="num">${p.ratePerDay==null?"—":signOf(p.ratePerDay)+fmtMag(p.ratePerDay)}</td></tr>`).join("");
   return `<div class="wcard ${w.active?'active':''}">
     <div class="wtop">
       <div><div class="wname">${esc(w.name||t().unnamed)}</div>
@@ -550,8 +568,7 @@ function cardHTML(w,i){
     <div class="ledrow">${ledHTML(r)}</div>
     ${sessionPickerHTML(w)}
     ${chartsHTML(w,i,legend)}
-    ${w.positions.length?`<table class="pos"><thead><tr><th class="dot"></th><th>${t().posHead}</th><th class="num">${t().n}</th><th class="num">${t().sday}</th></tr></thead><tbody>${rows}</tbody></table>`:""}
-    ${w.delta!=null?`<div class="delta"><span>${t().spread}</span><b>${w.delta.toFixed(1)} ${t().sday}</b></div>`:""}
+    ${posPanelHTML(w)}
     ${tgHTML(w)}
   </div>`;
 }
@@ -587,6 +604,35 @@ function drawCharts(){
 if(window.ResizeObserver) new ResizeObserver(es=>{const wd=Math.round(es[0].contentRect.width);
   if(wd!==chartListW){chartListW=wd;drawCharts();}}).observe(document.getElementById("list"));
 
+// Positions: folded like on the Rate Meter (open state shared with it, per device)
+const POSKEY="siouxWatchPosOpen";
+let posOpen=(()=>{try{return localStorage.getItem(POSKEY)==="1";}catch(e){return false;}})();
+function posPanelHTML(w){
+  const sum=w.posSum;if(!sum||!sum.rows.some(r=>r.code))return "";
+  const tg=w.posTG,many=tg.length>1,hasTG=tg.length>0,T_=t(),loc=lang==="nl"?"nl-NL":"en-GB";
+  const sg=(v,d)=>{const a=Math.abs(v).toFixed(d);return (+a===0?"\u00b1":v>0?"+":"\u2212")+a;};
+  const day=ms=>new Date(ms).toLocaleDateString(loc,{day:"numeric",month:"short"});
+  let h=`<div class="posbar"><button type="button" class="postog${posOpen?" open":""}"><span class="chev">\u25b8</span>${esc(T_.posTitle)}${posOpen?"":`<span class="vd">${esc(T_.posSpread(sum.spread,sum.tgSpread))}</span>`}</button>${posOpen?'<button type="button" class="qbtn2 poshelp" aria-label="?">?</button>':""}</div>`;
+  if(!posOpen)return h;
+  h+=`<p class="posnote" hidden>${esc(T_.posNote)}</p><table class="pos postab"><thead><tr><th class="dot"></th><th>${T_.posHead}</th><th class="num hn">${T_.n}</th><th class="num">${T_.posThMeas}<small>${T_.sday} \u00b7 ${isAllSel(w.selKey)?T_.posLatest:T_.posThis}</small></th>`
+    +(hasTG?`<th class="num">TG<small>${T_.sday} \u00b7 ${many?T_.posAvgOf(tg.length):day(tg[0].t)}</small></th><th class="num">${T_.posThAmp}<small>${many?T_.posAvg:""}</small></th><th class="num hn">\u0394<small>${T_.posDiffSub}</small></th>`:"")+`</tr></thead><tbody>`;
+  sum.rows.forEach(r=>{
+    const g=r.tg,info=posInfo(r.code||"unknown",0);
+    const tip=g?g.list.map(x=>`${day(x.t)}: ${sg(x.rate,1)} ${T_.sday}${x.amp!=null?` \u00b7 ${x.amp}\u00b0`:""}${x.beat!=null?` \u00b7 ${x.beat} ms`:""}`).join("\n"):"";
+    h+=`<tr><td class="dot"><i style="background:${info.color}"></i></td><td>${esc(info.label)}</td><td class="num dim hn">${r.n||""}</td><td class="num"><b>${r.rate!=null?sg(r.rate,1):"\u2014"}</b></td>`;
+    if(hasTG)h+=`<td class="num"${tip?` title="${esc(tip)}"`:""}>${g?(many?`${sg(g.rate,1)}<span class="cnt">${g.n}\u00d7</span>`:sg(g.rate,Number.isInteger(g.rate)?0:1)):r.code==="worn"?`<span class="dim">${T_.posNa}</span>`:"\u2014"}</td>`
+      +`<td class="num dim">${g&&g.amp!=null?Math.round(g.amp)+"\u00b0":""}</td><td class="num dim hn">${g&&r.rate!=null?sg(r.rate-g.rate,1):""}</td>`;
+    h+=`</tr>`;
+  });
+  if(sum.spread!=null||sum.tgSpread!=null)h+=`<tr class="foot"><td></td><td>${T_.spread}</td><td class="hn"></td><td class="num">${sum.spread!=null?sum.spread.toFixed(1):""}</td>`
+    +(hasTG?`<td class="num">${sum.tgSpread!=null?sum.tgSpread.toFixed(1):""}</td><td></td><td class="hn"></td>`:"")+`</tr>`;
+  return h+`</tbody></table>`;
+}
+document.getElementById("list").addEventListener("click",e=>{
+  if(e.target.closest(".postog")){posOpen=!posOpen;try{if(posOpen)localStorage.setItem(POSKEY,"1");else localStorage.removeItem(POSKEY);}catch(err){}render();return;}
+  const q=e.target.closest(".poshelp");if(q){const n=q.closest(".wcard").querySelector(".posnote");if(n)n.hidden=!n.hidden;}
+});
+
 function tgHTML(w){
   const tg=w.timegrapher||[];
   if(!tg.length) return "";
@@ -612,6 +658,19 @@ function tgHTML(w){
 
 T.en.tgHead="Timegrapher"; T.nl.tgHead="Timegrapher";
 T.en.posMixed="mixed"; T.nl.posMixed="gemengd";
+T.en.posTitle="Positions"; T.nl.posTitle="Posities";
+T.en.posSpread=(m,g)=>[m!=null?"spread "+m.toFixed(1)+" s/day":"",g!=null?(m!=null?"":"timegrapher spread ")+g.toFixed(1)+(m!=null?" timegrapher":" s/day"):""].filter(Boolean).join(" \u00b7 ");
+T.nl.posSpread=(m,g)=>[m!=null?"spreiding "+m.toFixed(1)+" s/dag":"",g!=null?(m!=null?"":"spreiding timegrapher ")+g.toFixed(1)+(m!=null?" timegrapher":" s/dag"):""].filter(Boolean).join(" \u00b7 ");
+T.en.posThMeas="Measured"; T.nl.posThMeas="Gemeten";
+T.en.posThis="this session"; T.nl.posThis="deze sessie";
+T.en.posLatest="latest session"; T.nl.posLatest="laatste sessie";
+T.en.posThAmp="Ampl."; T.nl.posThAmp="Ampl.";
+T.en.posAvgOf=n=>"avg of "+n+" sessions"; T.nl.posAvgOf=n=>"gem. van "+n+" sessies";
+T.en.posAvg="avg"; T.nl.posAvg="gem.";
+T.en.posDiffSub="measured \u2212 TG"; T.nl.posDiffSub="gemeten \u2212 TG";
+T.en.posNa="n/a"; T.nl.posNa="n.v.t.";
+T.en.posNote="Measured: the rate in each position, from consecutive measurements in that position; an interval in which the position changed doesn't count. TG: the timegrapher readings per position in this rate session, averaged when there are more (hover for each one). A timegrapher can't measure on the wrist.";
+T.nl.posNote="Gemeten: de gang in elke positie, uit opeenvolgende metingen in die positie; een interval waarin de positie wisselde telt niet mee. TG: de timegrapher-waarden per positie in deze gangsessie, gemiddeld als het er meer zijn (wijs aan voor elke waarde). Een timegrapher kan niet aan de pols meten.";
 T.en.posNone="no position"; T.nl.posNone="geen positie";
 T.en.lineSeg={trend:"Trend",path:"Path",both:"Both"}; T.nl.lineSeg={trend:"Trend",path:"Pad",both:"Beide"};
 T.en.lineSegTip="Trend line = the calculated rate; path = straight lines between the measurements"; T.nl.lineSegTip="Trendlijn = de berekende gang; pad = rechte lijnen tussen de metingen";
