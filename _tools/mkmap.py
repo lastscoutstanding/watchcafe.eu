@@ -87,6 +87,11 @@ for poly in polys(topo["objects"]["land"]):
             elif a - b > 180:
                 off += 360
             un.append((b + off, lat))
+        # the ring may start on the far side of the line (Eurasia starts in
+        # Chukotka): shift it whole so most of it lies within -180..180
+        mid = sum(p[0] for p in un) / len(un)
+        shift = 360 * round(mid / 360)
+        un = [(lo - shift, la) for lo, la in un]
         d += emit([(max(-180, min(180, lo)), la) for lo, la in un])
 
 with open(sys.argv[2], "w") as f:
