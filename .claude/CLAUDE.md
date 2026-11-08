@@ -29,7 +29,10 @@ Dependency-free vanilla HTML/CSS/JS. Geen backend, cookies of analytics; alle da
 | `watchrate/report.html` | Printbaar rapport (PDF via printvenster) |
 | `watchrate/sample.js` | Voorbeeldhorloges, gedeeld door Rate Meter en Viewer |
 | `powerreserve/index.html` | Power Reserve |
-| `moonphase/index.html` | Moon Phase (NL "Maanstand"): maanstand-complicatie gelijkzetten |
+| `complications/index.html` | Complications (NL "Complicaties"): tabs Moon phase (`#moon`, standaard) en GMT (`#gmt`); de maancode staat inline in de pagina |
+| `complications/gmt.js` + `worldmap.js` | GMT-tab: wereldkaart met steden, stappen voor flyer/caller. `worldmap.js` is gegenereerd (zie Complications) |
+| `moonphase/index.html` | Alleen doorverwijzing naar `/complications/#moon` (oude bladwijzers) |
+| `_tools/mkmap.py` | Maakt `complications/worldmap.js` uit Natural Earth 110m (`_` = niet gepubliceerd) |
 | `guide/index.html` + `glossary.txt` | Guide met twee tabs: handleiding per tool en woordenlijst EN/NL (`#glossary`; `#glossary/<term>` vult de zoekbalk, zoals de link "How the rate is calculated" in de Rate Meter-uitleg naar `#glossary/regression`). Losse termen in de handleiding (offset, kaliber, positie, "één lijn", amplitude, slagfout, "volledig opgewonden", servicebeurt) linken als `a.gl` (gestippelde onderstreping) naar een zoekterm die een klein cluster begrippen toont; de zoekopdracht doorzoekt namen en definities in beide talen, dus geen te algemene woorden als "rate" |
 | `glossary/index.html` | Alleen doorverwijzing naar `/guide/#glossary` (oude bladwijzers) |
 | `flyer/index.html` + `watchcafe-flyer.pdf` | A4-flyer (Engels, `noindex`, niet in het menu): tools voorop, QR naar watchcafe.eu, Sioux Watch Café alleen in de voetregel. Licht papier met donker kopblok in Watch Café-oranje; PDF gemaakt met headless Chromium (`page.pdf`, `printBackground`) |
@@ -54,6 +57,7 @@ localStorage-keys (gedeeld over de hele site, altijd uitlezen, nooit hardcoden):
 - `siouxWatchPosOpen`: `"1"` als "Positions" openstaat (Rate Meter en Viewer, per apparaat; standaard dicht).
 - `siouxWatchOffsetLines`: `"trend"` of `"path"` voor de lijnen in de offsetgrafiek (Rate Meter en Viewer); ontbreekt = `both`.
 - `siouxWatchMoonType`: `"prec"` als in Moon Phase het type Precision is gekozen (per apparaat; standaard Standard).
+- `siouxWatchGmt`: keuzes op de GMT-tab `{ home, loc, third, type, watch }` (tijdzonenamen, `type` = `flyer`/`caller`, `watch` = id of leeg; per apparaat).
 - `siouxWatchHidePrices`: `"1"` als het oogje in de Collection aan staat (prijzen, kosten en serienummers verborgen; per apparaat).
 - `siouxWatchWearClosed`: dag (00:00 UTC, ms) waarop het blok "Wearing today" met de hand is gesloten; alleen die dag geldig.
 
@@ -62,7 +66,7 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 - `sample: true`: voorbeeldhorloge (zie Voorbeeldhorloges).
 - `rateEnd`: `{ at, edited }` van "End session" in de Rate Meter; `at` = null na Undo. Samenvoegen: hoogste `edited` wint.
 - Meting: `{ id, t, offset, position, note, newStart?, restart? }` met `t` in epoch-ms en `offset` in seconden. `restart` = Doorstart (zie Watch Rate Meter).
-- `info`: gegevens uit de Collection (`brand, model, ref, caliber, spec, year, serial, caseSize, lugWidth, boxPapers, serviceYears`, alle vrije tekst, alleen ingevulde velden); `edited` = tijdstip van de laatste wijziging van naam of gegevens.
+- `info`: gegevens uit de Collection (`brand, model, ref, caliber, spec, gmt, year, serial, caseSize, lugWidth, boxPapers, serviceYears`, alle vrije tekst, alleen ingevulde velden); `edited` = tijdstip van de laatste wijziging van naam of gegevens.
 - `log`: `[{ id, t, type, where?, cost?, note?, edited? }]`; `worn`: `[{ id, t }]`; bij beide is `t` de dag om 00:00 UTC.
 - Prijzen en serienummers staan dus altijd in de back-up, ook als het rapport ze weglaat. De Backup Viewer toont alleen de meetgegevens; gegevens, logboek en draagdagen alleen via het rapport.
 
@@ -87,7 +91,7 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 
 - Site is tool-gericht; café-inhoud staat onder `/cafe/`.
 - Merknaam buiten de café-pagina is `watchcafe.eu` (menubalk, paginatitels, footers, rapport); tool-ondertitels zonder achtervoegsel. "Sioux" alleen op `/cafe/` en in de regel onder de homepage-tegels, met uitleg ("a monthly meetup of watch fans at Dutch tech company Sioux"): buiten Sioux zegt de naam niemand iets en het is ook de naam van inheemse Amerikaanse volken.
-- Menuvolgorde: Home, Collection, Rate Meter, Power Reserve, Moon Phase, Guide, Watch Café (café bewust achteraan). Glossary is een tab van de Guide, om het menu kort te houden.
+- Menuvolgorde: Home, Collection, Rate Meter, Power Reserve, Complications, Guide, Watch Café (café bewust achteraan). Glossary is een tab van de Guide, om het menu kort te houden.
 - Verborgen sectie "Tools" onderaan het tandwielmenu (`TOOLS` in `nav.js`, één regel per tool, alleen Engels): verschijnt alleen bij rechtsklik/ctrl-klik op het tandwiel (`contextmenu`, ook lang drukken op Android) of lang drukken (500 ms, eigen touch-timer, want iOS kent geen `contextmenu`). Een gewone klik opent het menu zonder Tools; niets in localStorage. Nu "Brand marks" en "Add samples". Easter egg voor hulppagina's die niet in de menubalk horen.
 - Homepage-tegels: Collection, Rate Meter, Power Reserve, Guide.
 - Eén kolom op de breedte van de menubalk (980 px): klokpaneel vult de breedte, wereldklok op één rij van negen (3×3 onder 940 px), vier tegels naast elkaar (2×2 onder 860 px, onder elkaar onder 520 px).
@@ -220,16 +224,34 @@ Backup-JSON = de volledige opgeslagen data plus stempel (`WatchData.backupData`)
 - Bewust losgekoppeld van de Rate Meter-offset; opgeslagen metingen houden `offset: 0`.
 - Meerdere horloges tegelijk meten kan: elk horloge met een lopende meting krijgt een ● achter de naam in de pulldown. Bewust geen looptijd in de pulldown en geen lijst met alle lopende metingen; dat overzicht staat in de Collection.
 
-## Moon Phase
+## Complications
 
-- Losse pagina zonder horlogedata: rekent alleen, slaat alleen het gekozen type op (`siouxWatchMoonType`).
+- Eén pagina `/complications/` met tabs Moon phase en GMT (rechtsboven, naast de ?-knop; de ? opent de gids van de open tab). Tab via de hash (`#moon` standaard, `#gmt`), `history.replaceState`. Ondertitel wisselt per tab. Menu-item "Complications" verving "Moon Phase"; `/moonphase/` verwijst door. Gekozen boven een menugroep "More": het menu blijft even kort, en latere complicaties (datumcorrectie, chronograafschalen) kunnen er als tab bij.
+- `gmt.js` en `worldmap.js` laden zonder `defer` in de head, vóór het paginascript (dat roept bij het openen van de tab `GMT.show()` aan); DOM-toegang alleen vanuit `show()`.
+
+### GMT
+
+- Kaart bovenaan als blikvanger; daaronder links de wijzerplaat (12-uurs, uurwijzer = waar je bent, rode GMT-wijzer = thuis, draaibare 24-uursrand op de derde zone, datumvenster) met de tijden, rechts soort GMT, uitleg en stappen.
+- Drie pillen Thuis (H, rood, GMT-wijzer), Waar je bent (L, wit, uurwijzer), Derde zone (3, blauw, rand; "geen" in de pil). Een tik op een pil kiest welke plek een klik op de kaart zet; geen automatisch doorschakelen (in een mockup geprobeerd, de knop was niet mooi). Eerste bezoek: thuis en waar je bent = de stad van dit apparaat (eigen tijdzone, anders een stad met dezelfde offset), geen derde zone, pil Thuis actief.
+- Kaart: 46 generieke steden (geen Sioux-steden), Europa gedund zodat stippen niet overlappen (Paris, Berlin, Toronto weg; je kiest eigenlijk een tijdzone). Grijze stip met tooltip (naam · UTC-offset); gekozen stad = gekleurde stip(pen) met letter en label met lokale tijd. Nachtschaduw uit declinatie en uurhoek (zonder tijdsvereffening, dus op een paar graden).
+- Kaart = vaste SVG-path in `worldmap.js` (Natural Earth 110m land, publiek domein, ~35 kB), Natural Earth I-projectie gecentreerd op 0°, 640 breed, lat 80 tot −57 (Antarctica weg). Projectieformule ook in `gmt.js` (stippen, nachtschaduw). Opnieuw maken: `python3 -I _tools/mkmap.py land-110m.json complications/worldmap.js` (bron-URL in het script). Geen d3/topojson: alleen voor het genereren nodig geweest.
+- Onder 600 px is de kaart 860 px breed en veeg je hem opzij (geen zoom). Bij openen staat de stad van de actieve pil in beeld; een tik op een pil schuift (smooth) naar die stad als hij buiten beeld staat.
+- Tijdzones alleen via `Intl` (`timeZoneName:"longOffset"`), dus offsets en zomertijd kloppen altijd met de browser. Onderaan "Volgende tijdwissel" voor thuis en waar je bent (zoekt per dag, dan per uur, tot ~13 maanden vooruit), met welke wijzer dan mee moet.
+- Flyer: stap 1 horloge op thuistijd (kroon uit, GMT-wijzer loopt mee; "Klopt het al? Sla over"), stap 2 kroon in stand 2, uurwijzer N stappen vooruit/terug, met wat de datum doet. Caller: stap 1 lokale tijd, stap 2 GMT-wijzer per uur naar thuis, stap 3 datum (voorzichtig geformuleerd: "bij veel callers ook in stand 2, kijk in je handleiding"; niet per kaliber nagezocht). Rand: N uur tegen de klok in = de rand leest N uur later. Halfuurzones (Mumbai, Tehran, Kathmandu, Adelaide) geven een oranje waarschuwing.
+- Bewust geen kalibers in de uitleg (flyer/caller verschilt per uurwerk; niet nagezocht).
+- Soort GMT: keuzelijst "Je horloge" (alleen zichtbaar als een horloge `info.gmt` heeft) plus Flyer/Caller. Een horloge kiezen zet het type; een type met de hand kiezen zet de lijst terug op "Elk GMT-horloge".
+- Collection: veld "GMT" bij Details (`info.gmt` = `flyer`/`caller`, keuzelijst met uitleg), in beeld "Flyer · Gelijkzetten →" naar `/complications/?watch=<id>#gmt`, dat dat horloge eenmalig kiest (parameter wordt uit de URL gehaald). Het rapport toont het veld (nog) niet.
+
+### Moon phase
+
+- Zonder horlogedata: rekent alleen, slaat alleen het gekozen type op (`siouxWatchMoonType`).
 - Echte nieuwe en volle manen volgens Meeus (*Astronomical Algorithms*, hfst. 49, hoofdtermen), binnen een minuut of twee; getoetst op bekende data (o.a. 25 jan 2024, zonsverduistering 8 apr 2024). Geen dependency.
 - Bovenaan een dagstrook (14 dagen terug, 60 vooruit) met een maantje per dag (accentring = dag met nieuwe of volle maan, op het echte tijdstip in de lokale tijdzone) en een tijdschuif per kwartier. Strook blijft onder de menubalk staan (`sticky`, `top:53px` = vaste balk van `nav.js`); onder 760 px staat er een klein maanvenster naast de schuif, zodat je de maan ziet bewegen waar je ook op de pagina bent. Bewust geen native datumkiezer: die klapt open over de plaatjes. Gekozen uit drie mockups (pijltjes+schuif, maankalender, dagstrook).
 - Links "The moon now": de hemelmaan (noordelijk halfrond), fasenaam (nieuw/vol binnen 12 uur van het echte moment, de rest op leeftijd), leeftijd, % verlicht, laatste volle en volgende nieuwe/volle maan.
 - Standaard (59 tanden, 29,5 dag per maan): stap 1 volle maan in het midden, stap 2 N keer drukken. N komt uit `watchPos`: lineair tussen de echte volle en nieuwe maan (die liggen 13,9–15,6 dagen uit elkaar, het horloge rekent altijd 14,75), zodat nieuwe en volle maan allebei precies kloppen; eerst was het dagen sinds volle maan, en dan stak bij een korte helft op het moment van nieuwe maan nog een randje maan boven de bult uit. Bulten (r 35) iets groter dan de manen (r 29): rond nieuwe maan is de maan ~een dag helemaal weg, zoals op een echt horloge; daaronder het maanvenster zoals het eruit hoort te zien. Precision (135 tanden of meer): geen aantal (verschilt per kaliber), alleen het plaatje.
 - Maanvenster als SVG: schijf met twee manen die achter twee bulten draaien; volle maan midden bovenaan, nieuwe maan achter een bult. Vaste kleuren (blauw/goud), alleen het streepje bovenaan in accentkleur.
 - Waarschuwing: corrector niet tussen ~21:00 en 03:00 (handleiding). Driftregel: standaard loopt ~elke 2 jaar en 8 maanden een dag achter.
-- Bewust geen homepage-tegel (te weinig gebruikt; de vier tegels blijven rustig) en geen tabbladen met Rate/Reserve (die hebben een horlogekeuze, Moon Phase niet; kost bovenin schermruimte op de telefoon). Alleen een menu-item. Komt er een tweede zelden gebruikte tool (datumcorrectie, chronograafschalen), dan een groep "More" in het menu of één pagina "Complications"; Rate en Reserve blijven direct in de balk.
+- Bewust geen homepage-tegel (te weinig gebruikt; de vier tegels blijven rustig) en geen tabbladen met Rate/Reserve (die hebben een horlogekeuze, Moon Phase niet). Rate en Reserve blijven direct in de balk.
 - Nog niet: sectie in de Guide, koppeling met de Collection (type bij Details, logboekregel "maan ingesteld" met drift-herinnering).
 
 ## Thema's
@@ -256,7 +278,9 @@ Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowfla
 
 ## Open punten
 
-- [ ] Moon Phase: sectie in de Guide.
+- [ ] Complications (Moon phase en GMT): sectie in de Guide; woordenlijst (GMT, flyer, caller).
+- [ ] Flyer (`flyer/index.html` + PDF) noemt nog "Moon Phase"; bijwerken naar Complications/GMT.
+- [ ] GMT: kroonstand en datuminstelling bij callers en draairichting van de rand op echte horloges controleren.
 
 - [x] Oude `viewer.html` in de root verwijderd (commit b46e201); `watchrate/viewer.html` is de enige viewer.
 - [ ] Beslissen of een lichtere, beter leesbare variant nog gewenst is, nu alle thema's donker zijn.
