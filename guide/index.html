@@ -143,7 +143,7 @@ var C={
   gSearch:"Search terms\u2026", gCount:function(n){return n+" term"+(n===1?"":"s");},
   gNone:"No terms match your search.", gFail:"Could not load the glossary. It works on the live site (watchcafe.eu).",
   intro:"Everything here runs in your own browser \u2014 nothing is sent anywhere, and your watch data stays on your device. This guide walks through each tool and the few concepts worth knowing. New to measuring watches? Start with \u201cThe two numbers\u201d below.",
-  toc:[["concepts","The two numbers"],["clock","Live Clock"],["collection","Collection"],["ratemeter","Rate Meter"],["powerreserve","Power Reserve"],["viewer","Backup Viewer"],["data","Your data & backups"]],
+  toc:[["concepts","The two numbers"],["clock","Live Clock"],["collection","Collection"],["ratemeter","Rate Meter"],["powerreserve","Power Reserve"],["complications","Complications"],["viewer","Backup Viewer"],["data","Your data & backups"]],
   sections:[
     {id:"concepts",h:"The two numbers",tag:"Offset and rate \u2014 the heart of it all.",html:
       "<p>Two numbers describe how a watch keeps time, and it helps to keep them apart:</p>"+
@@ -195,6 +195,17 @@ var C={
       "<div class='callout'><b>Why still running matters:</b> the hands show a time like 3:47, but not <i>which</i> 3:47 \u2014 last night's or a day later? Tapping \u201cstill running\u201d now and then removes all doubt, and the day is filled in for you automatically.</div>"+
       "<p>You can run several watches at once, each on its own card with a live counter. Tapped <b>Stopped</b> by mistake? Use <b>Back</b> to resume. Saved measurements build a history per watch, so you can see if the reserve shrinks <a class='gl' href='#glossary/amplitude'>as a service nears</a>. Near the end of its reserve a watch usually runs less evenly (<a class='gl' href='#glossary/isochron'>isochronism</a>), so keep it well wound while you measure its rate.</p>"+
       "<a class='go' href='/powerreserve/'>Open Power Reserve \u2192</a>"},
+    {id:"complications",h:"Complications",tag:"Set a moonphase or a second time zone on your watch.",html:
+      "<p>Two tools on one page, each on its own tab. Neither uses your watch data; they only calculate.</p>"+
+      "<h3>Moon phase</h3>"+
+      "<p>Most moonphase watches move the moon disc one step a day. After the watch has stopped, you set it with the corrector, a small pusher in the case side. Pick the moment you set the watch in the strip at the top (it starts at now), press the corrector until a full moon sits exactly in the middle of the window, then press the number of times shown. The picture below shows how the window should look.</p>"+
+      "<p>The page uses the real new and full moons, not a simple count. A <b>precision</b> moonphase (135 teeth or more) gets no count, as one press differs per caliber; follow your manual and check with the picture.</p>"+
+      "<div class='callout'>Don't use the corrector in the evening or around midnight (roughly 21:00\u201303:00, check your manual): the calendar mechanism is engaged then and can be damaged.</div>"+
+      "<h3>GMT</h3>"+
+      "<p>A <a class='gl' href='#glossary/gmt'>GMT</a> watch shows a second time zone with a hand that goes round once in 24 hours, often with a turning 24-hour <a class='gl' href='#glossary/bezel'>bezel</a> for a third. Tap <b>Home</b>, <b>Where you are</b> or <b>Third zone</b>, then a city on the map: home goes on the GMT hand, where you are on the hour hand, the third zone on the bezel. On a phone, swipe the map sideways; tapping a place brings its city into view.</p>"+
+      "<p>Then choose the type. On a <a class='gl' href='#glossary/flyer'>flyer</a> the local hour hand jumps in hour steps and takes the date along; on a <a class='gl' href='#glossary/caller'>caller</a> the GMT hand jumps on its own. The steps tell you which hand to move and how far; the dial shows how your watch should look now. Fill in the <b>GMT</b> type under Details in the Collection and you can pick the watch itself, or tap <b>Set it \u2192</b> on its card.</p>"+
+      "<p>Places on a half-hour offset, such as Mumbai, get a warning: a GMT hand and bezel only step in whole hours. At the bottom, the next clock change at home or where you are tells you when to reset which hand.</p>"+
+      "<a class='go' href='/complications/'>Open Complications \u2192</a>"},
     {id:"viewer",h:"Backup Viewer",tag:"Browse rates and history from your backup files.",html:
       "<p>Make a backup in your Collection and load it here to review it \u2014 handy for keeping the live tool tidy while your older measurements stay safe in files. It reads the rate, positions and offset trace per watch, plus any timegrapher and power-reserve data.</p>"+
       "<p>You can load several files at once to compare watches, and the same session dropdown from the Rate Meter is here too. Loaded files are remembered in this browser, so they're still here when you come back.</p>"+
@@ -216,7 +227,7 @@ var C={
   gSearch:"Zoek een begrip\u2026", gCount:function(n){return n+" begrip"+(n===1?"":"pen");},
   gNone:"Geen begrippen gevonden voor je zoekopdracht.", gFail:"Kon de begrippenlijst niet laden. Op de live site (watchcafe.eu) werkt dit wel.",
   intro:"Alles hier draait in je eigen browser \u2014 er wordt niets verstuurd, en je horlogedata blijft op je apparaat. Deze handleiding loopt elke tool langs, plus de paar begrippen die het waard zijn om te kennen. Nieuw met het meten van horloges? Begin met \u201cDe twee getallen\u201d hieronder.",
-  toc:[["concepts","De twee getallen"],["clock","Live Clock"],["collection","Collectie"],["ratemeter","Rate Meter"],["powerreserve","Gangreserve"],["viewer","Backup Viewer"],["data","Je data & back-ups"]],
+  toc:[["concepts","De twee getallen"],["clock","Live Clock"],["collection","Collectie"],["ratemeter","Rate Meter"],["powerreserve","Gangreserve"],["complications","Complicaties"],["viewer","Backup Viewer"],["data","Je data & back-ups"]],
   sections:[
     {id:"concepts",h:"De twee getallen",tag:"Offset en gang \u2014 waar alles om draait.",html:
       "<p>Twee getallen beschrijven hoe een horloge de tijd bijhoudt, en het helpt ze uit elkaar te houden:</p>"+
@@ -268,6 +279,17 @@ var C={
       "<div class='callout'><b>Waarom \u201cloopt nog\u201d belangrijk is:</b> de wijzers tonen een tijd als 3:47, maar niet <i>welke</i> 3:47 \u2014 vannacht of een dag later? Af en toe \u201cloopt nog\u201d tikken haalt alle twijfel weg, en de dag wordt automatisch voor je ingevuld.</div>"+
       "<p>Je kunt meerdere horloges tegelijk laten lopen, elk op een eigen kaart met live teller. Per ongeluk op <b>Gestopt</b> getikt? Gebruik <b>Terug</b> om verder te gaan. Opgeslagen metingen vormen een historie per horloge, zodat je ziet of de reserve afneemt <a class='gl' href='#glossary/amplitude'>naarmate een servicebeurt nadert</a>. Tegen het eind van de reserve loopt een horloge meestal minder gelijkmatig (<a class='gl' href='#glossary/isochron'>isochronie</a>); houd het tijdens een gangmeting dus goed opgewonden.</p>"+
       "<a class='go' href='/powerreserve/'>Open Gangreserve \u2192</a>"},
+    {id:"complications",h:"Complicaties",tag:"Zet een maanstand of een tweede tijdzone op je horloge gelijk.",html:
+      "<p>Twee tools op één pagina, elk op een eigen tabblad. Geen van beide gebruikt je horlogedata; ze rekenen alleen.</p>"+
+      "<h3>Maanstand</h3>"+
+      "<p>De meeste maanstandhorloges zetten de maanschijf één stap per dag door. Heeft het horloge stilgestaan, dan zet je hem gelijk met de corrector, een klein drukknopje in de zijkant van de kast. Kies in de strook bovenaan het moment waarop je het horloge gelijkzet (hij begint op nu), druk de corrector tot een volle maan precies in het midden van het venster staat, en druk dan het aantal keer dat er staat. Het plaatje eronder laat zien hoe het venster eruit hoort te zien.</p>"+
+      "<p>De pagina rekent met de echte nieuwe en volle manen, niet met een simpele telling. Een <b>precisie</b>-maanstand (135 tanden of meer) krijgt geen aantal, omdat één druk per kaliber verschilt; volg je handleiding en controleer met het plaatje.</p>"+
+      "<div class='callout'>Gebruik de corrector niet 's avonds of rond middernacht (ongeveer 21:00\u201303:00, zie je handleiding): dan grijpt het kalendermechanisme in en kan het beschadigen.</div>"+
+      "<h3>GMT</h3>"+
+      "<p>Een <a class='gl' href='#glossary/gmt'>GMT</a>-horloge toont een tweede tijdzone met een wijzer die in 24 uur één keer rond gaat, vaak met een draaibare 24-uurs<a class='gl' href='#glossary/lunette'>rand</a> voor een derde. Tik op <b>Thuis</b>, <b>Waar je bent</b> of <b>Derde zone</b> en dan op een stad op de kaart: thuis komt op de GMT-wijzer, waar je bent op de uurwijzer, de derde zone op de rand. Op een telefoon veeg je de kaart opzij; een tik op een plek haalt de stad in beeld.</p>"+
+      "<p>Kies dan het soort. Bij een <a class='gl' href='#glossary/flyer'>flyer</a> springt de lokale uurwijzer per uur en gaat de datum mee; bij een <a class='gl' href='#glossary/caller'>caller</a> springt de GMT-wijzer los. De stappen zeggen welke wijzer je verzet en hoever; de wijzerplaat laat zien hoe je horloge er nu uit hoort te zien. Vul in de Collectie bij Gegevens het soort <b>GMT</b> in, dan kun je het horloge zelf kiezen, of tik op zijn kaart op <b>Gelijkzetten \u2192</b>.</p>"+
+      "<p>Plaatsen met een halfuur-offset, zoals Mumbai, geven een waarschuwing: een GMT-wijzer en rand gaan alleen per heel uur. Onderaan zegt de volgende tijdwissel thuis of waar je bent wanneer je welke wijzer opnieuw moet zetten.</p>"+
+      "<a class='go' href='/complications/'>Open Complicaties \u2192</a>"},
     {id:"viewer",h:"Backup Viewer",tag:"Bekijk gang en historie uit je back-upbestanden.",html:
       "<p>Maak een back-up in je Collectie en laad die hier om terug te kijken \u2014 handig om de live tool overzichtelijk te houden terwijl je oudere metingen veilig in bestanden blijven. De viewer leest per horloge de gang, posities en het offset-verloop, plus eventuele timegrapher- en gangreserve-data.</p>"+
       "<p>Je kunt meerdere bestanden tegelijk laden om horloges te vergelijken, en hetzelfde sessie-keuzemenu uit de Rate Meter zit ook hier. Geladen bestanden worden in deze browser onthouden, dus ze staan er nog als je terugkomt.</p>"+
@@ -294,6 +316,7 @@ var ICONS={
   ratemeter:'<circle cx="12" cy="13.5" r="7.5"/><path d="M10 2.5h4M12 2.5V6M18.2 6.8l1.3-1.3M12 13.5l3-3"/>',
   powerreserve:'<path d="M6.5 3h11M6.5 21h11M7.5 3v3.5L12 12l4.5-5.5V3M7.5 21v-3.5L12 12l4.5 5.5V21"/><path d="M10 19.2h4"/>',
   viewer:'<path d="M4 4v16h16"/><path d="M7.5 15l3.5-4 3 2.5 5-6"/>',
+  complications:'<path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.5 6.5 0 0 0 10 10z"/>',
   data:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/>'
 };
 function icon(id){
