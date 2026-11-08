@@ -150,8 +150,20 @@ EN: A feature that stops the seconds hand when you pull out the crown, so you ca
 NL: Een functie die de secondewijzer stilzet als je de kroon uittrekt, zodat je het horloge op de seconde gelijk kunt zetten. Zonder, zoals bij veel vintage horloges, kom je tot op een paar seconden; leg bij een doorstart in de Rate Meter vast wat het horloge echt aanwijst.
 ---
 Bezel / Lunette
-EN: The ring around the crystal; on dive watches it rotates to track elapsed time.
-NL: De ring rond het glas; bij duikhorloges draaibaar om verstreken tijd bij te houden.
+EN: The ring around the crystal; on dive watches it rotates to track elapsed time, on a GMT it often carries a 24-hour scale for a third time zone.
+NL: De ring rond het glas; bij duikhorloges draaibaar om verstreken tijd bij te houden, bij een GMT vaak met een 24-uursschaal voor een derde tijdzone.
+---
+GMT
+EN: A complication that shows a second time zone with an extra hand that goes round once in 24 hours, often with a turning 24-hour bezel for a third zone. Named after Greenwich Mean Time.
+NL: Een complicatie die een tweede tijdzone toont met een extra wijzer die in 24 uur één keer rond gaat, vaak met een draaibare 24-uursrand voor een derde zone. Genoemd naar Greenwich Mean Time.
+---
+Flyer GMT / Flyer-GMT
+EN: A GMT whose local hour hand jumps in hour steps without stopping the watch and takes the date along, while the GMT hand stays on home time. Also called a "true GMT"; made for travelling.
+NL: Een GMT waarbij de lokale uurwijzer per uur verspringt zonder dat het horloge stilstaat en de datum meeneemt, terwijl de GMT-wijzer op thuistijd blijft. Ook "echte GMT" genoemd; gemaakt om mee te reizen.
+---
+Caller GMT / Caller-GMT
+EN: A GMT whose 24-hour hand is set on its own in hour steps, while the watch itself is set as usual. Also called an "office GMT": for keeping an eye on another time zone, less handy than a flyer when you travel.
+NL: Een GMT waarbij je de 24-uurswijzer los per uur verzet, terwijl je het horloge zelf zoals altijd zet. Ook "office GMT" genoemd: om een andere tijdzone in de gaten te houden, op reis minder handig dan een flyer.
 ---
 Lume
 EN: Luminescent material on hands and markers that glows in the dark, usually Super-LumiNova or tritium tubes.
