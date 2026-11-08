@@ -112,6 +112,8 @@
   .grid .v{font-size:15px;margin-top:3px;overflow-wrap:anywhere}
   .grid .v.none{color:#6d6a73}
   .grid .v small{color:var(--muted);font-size:13px}
+  .grid .v small a{color:var(--accent);text-decoration:none}
+  .grid .v small a:hover{text-decoration:underline}
   /* a last cell alone on its row fills the row, so no empty grey cell shows */
   .grid>div:last-child:nth-child(3n+1){grid-column:span 3}
   .grid>div:last-child:nth-child(3n+2){grid-column:span 2}
@@ -449,8 +451,9 @@ var I18N={
   tgN:function(n){return n+(n===1?" session":" sessions");}, tgNone:"No sessions yet",
   openRM:"Open in Rate Meter →", openPR:"Open in Power Reserve →",
   report:"Report ↗", reportOv:"Report for this watch ↗", prevW:"Previous watch (←)", nextW:"Next watch (→)",
-  fields:{brand:"Brand",model:"Model",ref:"Reference",caliber:"Caliber / movement",spec:"Accuracy spec",year:"Year",serial:"Serial number",caseSize:"Case size",lugWidth:"Lug width",boxPapers:"Box & papers",serviceYears:"Service interval"},
+  fields:{brand:"Brand",model:"Model",ref:"Reference",caliber:"Caliber / movement",spec:"Accuracy spec",gmt:"GMT",year:"Year",serial:"Serial number",caseSize:"Case size",lugWidth:"Lug width",boxPapers:"Box & papers",serviceYears:"Service interval"},
   specPick:"Choose a standard",ph:{caliber:"e.g. 861, manual wind",spec:"e.g. COSC or −2/+4",year:"e.g. 1969",caseSize:"e.g. 42 mm",lugWidth:"e.g. 20 mm"},
+  gmtO:{"":"—",flyer:"Flyer (hour hand jumps)",caller:"Caller (GMT hand jumps)"},gmtV:{flyer:"Flyer",caller:"Caller"},gmtLink:"Set it →",
   bp:{"":"—",full:"Full set",papers:"Papers only",box:"Box only",none:"Watch only"},
   refPfx:"Ref. ", calPfx:"Cal. ",
   privOff:"Hide prices and serial numbers", privOn:"Show prices and serial numbers",
@@ -535,8 +538,9 @@ var I18N={
   tgN:function(n){return n+(n===1?" sessie":" sessies");}, tgNone:"Nog geen sessies",
   openRM:"Open in Rate Meter →", openPR:"Open in Gangreserve →",
   report:"Rapport ↗", reportOv:"Rapport van dit horloge ↗", prevW:"Vorig horloge (←)", nextW:"Volgend horloge (→)",
-  fields:{brand:"Merk",model:"Model",ref:"Referentie",caliber:"Kaliber / uurwerk",spec:"Nauwkeurigheidsnorm",year:"Jaar",serial:"Serienummer",caseSize:"Kastmaat",lugWidth:"Bandaanzet",boxPapers:"Doos & papieren",serviceYears:"Onderhoudsinterval"},
+  fields:{brand:"Merk",model:"Model",ref:"Referentie",caliber:"Kaliber / uurwerk",spec:"Nauwkeurigheidsnorm",gmt:"GMT",year:"Jaar",serial:"Serienummer",caseSize:"Kastmaat",lugWidth:"Bandaanzet",boxPapers:"Doos & papieren",serviceYears:"Onderhoudsinterval"},
   specPick:"Kies een norm",ph:{caliber:"bijv. 861, handopwind",spec:"bijv. COSC of −2/+4",year:"bijv. 1969",caseSize:"bijv. 42 mm",lugWidth:"bijv. 20 mm"},
+  gmtO:{"":"—",flyer:"Flyer (uurwijzer springt)",caller:"Caller (GMT-wijzer springt)"},gmtV:{flyer:"Flyer",caller:"Caller"},gmtLink:"Gelijkzetten →",
   bp:{"":"—",full:"Compleet",papers:"Alleen papieren",box:"Alleen doos",none:"Alleen horloge"},
   refPfx:"Ref. ", calPfx:"Kal. ",
   privOff:"Prijzen en serienummers verbergen", privOn:"Prijzen en serienummers tonen",
@@ -553,7 +557,7 @@ var I18N={
   gears:"Deze site draait op tandwielen, niet op cookies. Je horlogedata verlaat je browser nooit — ", gearsLink:"zie het zelf →"
  }
 };
-var FIELDS=["brand","model","ref","caliber","spec","year","serial","caseSize","lugWidth","boxPapers","serviceYears"];
+var FIELDS=["brand","model","ref","caliber","spec","gmt","year","serial","caseSize","lugWidth","boxPapers","serviceYears"];
 var TYPES=["purchase","service","repair","strap","event","sold","note"];
 var lang=(function(){try{return localStorage.getItem("siouxWatchRateMeterLang")||"en";}catch(e){return "en";}})();
 function T(){return I18N[lang]||I18N.en;}
@@ -1050,7 +1054,7 @@ function renderDet(w){
       +'<div><label class="fld req" for="eName">'+esc(t.name)+'</label><input type="text" id="eName" value="'+esc(w.name)+'"></div>'
       +FIELDS.map(function(f){
         // explicit key order: numeric object keys would otherwise come first
-        var opts={boxPapers:t.bp,serviceYears:t.svc}[f],keys={boxPapers:["","full","papers","box","none"],serviceYears:["","3","4","5","6","7","8","10"]}[f];
+        var opts={boxPapers:t.bp,serviceYears:t.svc,gmt:t.gmtO}[f],keys={boxPapers:["","full","papers","box","none"],serviceYears:["","3","4","5","6","7","8","10"],gmt:["","flyer","caller"]}[f];
         if(opts)return '<div><label class="fld" for="e_'+f+'">'+esc(t.fields[f])+'</label><select id="e_'+f+'">'
           +keys.map(function(k){return '<option value="'+k+'"'+((i[f]||"")===k?" selected":"")+'>'+esc(opts[k])+'</option>';}).join("")+'</select></div>';
         var inp='<input type="text" id="e_'+f+'" value="'+esc(i[f]||"")+'"'+(t.ph[f]?' placeholder="'+esc(t.ph[f])+'"':'')+(f==="spec"?' list="specList"':'')+' autocomplete="off">';
@@ -1074,6 +1078,7 @@ function renderDet(w){
       if(!v)html='<div class="v none">—</div>';
       else if(f==="boxPapers")html='<div class="v">'+esc(t.bp[v]||v)+'</div>';
       else if(f==="serviceYears")html='<div class="v">'+esc(t.svc[v]||v)+'</div>';
+      else if(f==="gmt")html='<div class="v">'+esc(t.gmtV[v]||v)+' <small>\u00b7 <a href="/complications/?watch='+encodeURIComponent(w.id)+'#gmt">'+esc(t.gmtLink)+'</a></small></div>';
       else if(f==="spec")html='<div class="v">'+specHTML(v)+'</div>';
       else if(f==="serial"&&priv)html='<div class="v">'+MASK+'</div>';
       else if(f==="serial"&&!serialShown)html='<div class="v"><button class="serial" id="serialBtn" title="'+esc(t.showSerial)+'">•••• '+esc(v.slice(-4))+'</button></div>';
