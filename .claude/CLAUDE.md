@@ -278,7 +278,7 @@ Watch Café (standaard, `#d96a41`), Day-Date (`#d4af52`, verving Pepsi), Snowfla
 
 ## Open punten
 
-- [ ] Complications (Moon phase en GMT): sectie in de Guide; woordenlijst (GMT, flyer, caller).
+- [x] Complications: sectie in de Guide (tussen Power Reserve en Backup Viewer, maan-icoon) en woordenlijst (GMT, Flyer GMT, Caller GMT; Bezel noemt de 24-uursrand).
 - [ ] Flyer (`flyer/index.html` + PDF) noemt nog "Moon Phase"; bijwerken naar Complications/GMT.
 - [ ] GMT: kroonstand en datuminstelling bij callers en draairichting van de rand op echte horloges controleren.
 
