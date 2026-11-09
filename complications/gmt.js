@@ -160,7 +160,7 @@
   }
 
   /* ===== map: fixed land path from worldmap.js, Natural Earth I projection ===== */
-  var WM=window.WorldMap||{w:640,h:273,top:80,land:""};
+  var WM=window.WorldMap||{w:640,h:273,top:80,bot:-57,land:""};
   var K=WM.w/(2*0.8707*Math.PI);
   function ne(lon,lat){
     var l=lon*Math.PI/180,p=lat*Math.PI/180,p2=p*p,p4=p2*p2;
@@ -169,19 +169,22 @@
   }
   var Y0=ne(0,WM.top)[1];
   function px(lon,lat){var q=ne(lon,lat);return [WM.w/2+K*q[0],K*(Y0-q[1])];}
-  // night side: where the sun is below the horizon (declination and hour angle,
-  // no equation of time, so within a few degrees)
+  // night side: where the sun is below the horizon (declination, hour angle and
+  // equation of time, so within a degree or so)
   function nightPath(now){
     var y0=Date.UTC(now.getUTCFullYear(),0,0),doy=(now.getTime()-y0)/864e5;
     var dec=-23.44*Math.cos(2*Math.PI*(doy+10)/365);
     if(Math.abs(dec)<0.1)dec=dec<0?-0.1:0.1;
-    var u=now.getUTCHours()+now.getUTCMinutes()/60,sunLon=(12-u)*15,td=Math.tan(dec*Math.PI/180),pts=[];
-    for(var lon=-180;lon<=180;lon+=3){
-      var lat=Math.atan(-Math.cos((lon-sunLon)*Math.PI/180)/td)*180/Math.PI;
-      pts.push(px(lon,lat));
-    }
-    var pole=dec>0?-90:90;
-    pts.push(px(180,pole));pts.push(px(-180,pole));
+    var B=2*Math.PI*(doy-81)/365,eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B);
+    var u=now.getUTCHours()+now.getUTCMinutes()/60+eot/60,sunLon=(12-u)*15,td=Math.tan(dec*Math.PI/180),pts=[],lon,lat;
+    function tl(lon){return Math.atan(-Math.cos((lon-sunLon)*Math.PI/180)/td)*180/Math.PI;}
+    for(lon=-180;lon<=180;lon+=3)pts.push(px(lon,tl(lon)));
+    // close along the map's curved edge meridians to just past the top (or bottom)
+    // of the map, not via the pole: in this projection the pole is a short line
+    // inside the map width, which drew straight slanted edges across the map
+    var edge=dec>0?WM.bot-5:WM.top+5,a=tl(180),n=24,i;
+    for(i=1;i<=n;i++)pts.push(px(180,a+(edge-a)*i/n));
+    for(i=0;i<n;i++)pts.push(px(-180,edge+(a-edge)*i/n));
     return "M"+pts.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join("L")+"Z";
   }
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
