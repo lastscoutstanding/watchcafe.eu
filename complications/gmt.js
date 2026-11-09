@@ -62,6 +62,7 @@
       g1:"Tap <b>Home</b>, <b>Where you are</b> or <b>Third zone</b>, then a city on the map. Home goes on the GMT hand, where you are on the hour hand, the third zone on the bezel.",
       g2:"Choose your type of GMT. Gave a watch a GMT setting in its details in your Collection? Then you can pick the watch.",
       g3:"Follow the steps. The dial shows how your watch should look now.",
+      midnight:"Midnight: the date changes here",
       locale:"en-GB"
     },
     nl:{
@@ -90,6 +91,7 @@
       g1:"Tik op <b>Thuis</b>, <b>Waar je bent</b> of <b>Derde zone</b> en dan op een stad op de kaart. Thuis komt op de GMT-wijzer, waar je bent op de uurwijzer, de derde zone op de rand.",
       g2:"Kies je soort GMT. Heb je bij een horloge in je Collection bij de gegevens een GMT-soort ingevuld? Dan kun je het horloge kiezen.",
       g3:"Volg de stappen. De wijzerplaat laat zien hoe je horloge er nu uit hoort te zien.",
+      midnight:"Middernacht: hier wisselt de datum",
       locale:"nl-NL"
     }
   };
@@ -187,10 +189,30 @@
     for(i=0;i<n;i++)pts.push(px(-180,edge+(a-edge)*i/n));
     return "M"+pts.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join("L")+"Z";
   }
+  // midnight line: where it is 00:00 local mean time; west of it (left) the date
+  // before, east of it (right) the date after, up to the date line at the map edges.
+  // Mean solar time, so it ignores the zigzag of real time zones.
+  function midnightLine(now){
+    var u=now.getUTCHours()+now.getUTCMinutes()/60+now.getUTCSeconds()/3600;
+    var m=-u*15;if(m<=-180)m+=360;
+    function dateAt(lon){return new Date(now.getTime()+lon/15*36e5).toLocaleDateString(tr("locale"),{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"});}
+    var pts=[],lat;
+    for(lat=WM.top+2;lat>=WM.bot-2;lat-=4)pts.push(px(m,lat));
+    var s='<g><title>'+esc(tr("midnight"))+'</title><path d="M'+pts.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join("L")
+      +'" fill="none" stroke="#8b8894" stroke-width="1" stroke-dasharray="3 3"/></g>';
+    var x=px(m,WM.bot)[0],y=WM.h-12;
+    function lab(t,right){
+      var w=t.length*5.6+12,lx=right?x+5:x-5-w;
+      if(lx<3||lx+w>WM.w-3)return "";
+      return '<rect x="'+lx.toFixed(1)+'" y="'+(y-8)+'" width="'+w.toFixed(1)+'" height="16" rx="8" fill="#1c1c21" stroke="#3a3a44"/>'
+        +'<text x="'+(lx+w/2).toFixed(1)+'" y="'+y+'" font-size="10" fill="#b9b6bf" text-anchor="middle" dominant-baseline="central">'+esc(t)+'</text>';
+    }
+    return s+lab(dateAt((m-180)/2),false)+lab(dateAt((m+180)/2),true);
+  }
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
   function drawMap(now){
     var s='<rect width="'+WM.w+'" height="'+WM.h+'" fill="#141418"/><path d="'+WM.land+'" fill="#3b3b46"/>'
-      +'<path d="'+nightPath(now)+'" fill="#000" fill-opacity=".32"/>';
+      +'<path d="'+nightPath(now)+'" fill="#000" fill-opacity=".32"/>'+midnightLine(now);
     var sel={};
     SLOTS.forEach(function(q){if(st[q.k])(sel[st[q.k]]=sel[st[q.k]]||[]).push(q);});
     CITIES.forEach(function(c){
