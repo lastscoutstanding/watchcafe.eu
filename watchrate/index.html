@@ -606,7 +606,8 @@ function buildClock(el){
   return digs;
 }
 function setClock(digs,str){for(var i=0;i<6;i++){var on=MAP[str[i]]||"";ORDER.forEach(function(id){digs[i][id].classList.toggle("on",on.indexOf(id)>-1);});}}
-function fmtAms(ms){var f=new Intl.DateTimeFormat("en-GB",{timeZone:TZ,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});var o={};f.formatToParts(new Date(ms)).forEach(function(p){o[p.type]=p.value;});return o.hour+o.minute+o.second;}
+var AMS_FMT=new Intl.DateTimeFormat("en-GB",{timeZone:TZ,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+function fmtAms(ms){var o={};AMS_FMT.formatToParts(new Date(ms)).forEach(function(p){o[p.type]=p.value;});return o.hour+o.minute+o.second;}
 var refDigs=buildClock(document.getElementById("clkRef"));
 var watchDigs=buildClock(document.getElementById("clkWatch"));
 
@@ -709,6 +710,7 @@ function renderWatches(){
 }
 function renderMeter(){
   var t=I18N[lang],w=activeWatch();
+  tick(); // show a changed offset right away, not at the next flip
   document.getElementById("meterBlock").style.opacity=w?"1":".45";
   document.getElementById("activeWatchName").textContent=w?w.name:t.chooseWatch;
   document.getElementById("recordBtn").disabled=!w;
@@ -1195,8 +1197,18 @@ function applyLang(){
 }
 
 /* ===== clock loop ===== */
-function tick(){var now=Date.now();setClock(refDigs,fmtAms(now));setClock(watchDigs,fmtAms(now+offsetN*1000));}
-tick();setInterval(tick,200);
+// Both clocks flip on their own second boundary: the timer is set for the next flip of either clock
+// (a few ms after it), instead of polling, which made a digit change up to 200 ms late.
+var tickTimer=null;
+function msToFlip(ms){return 1000-((ms%1000)+1000)%1000;}
+function tick(){
+  clearTimeout(tickTimer);
+  var now=Date.now(),w=now+offsetN*1000;
+  setClock(refDigs,fmtAms(now));setClock(watchDigs,fmtAms(w));
+  tickTimer=setTimeout(tick,Math.min(msToFlip(now),msToFlip(w))+4);
+}
+tick();
+document.addEventListener("visibilitychange",function(){if(!document.hidden)tick();});
 
 /* ===== events ===== */
 window.addEventListener("swcstandards",function(){if(window.__rmReady)renderHistory();});
