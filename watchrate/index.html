@@ -88,6 +88,17 @@
   .nudge-col{display:flex;flex-direction:column;gap:6px}
   .nudge{width:44px;height:38px;font-size:16px;line-height:1;background:#262626;color:#fff;border:none}
   .nudge:hover{background:#333}
+  /* fine-tune: beep on every flip of the green clock, slider in tenths */
+  .fine{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px dashed #2a2a31}
+  .fine input[type=range]{flex:1;min-width:0;accent-color:var(--led2)}
+  .fine .fb{width:36px;height:34px;padding:0;background:#262626;color:#fff;border:none;font-size:18px;line-height:1}
+  .fine .fb:hover{background:#333}
+  .fine .fv{font-family:"Courier New",monospace;font-weight:700;color:var(--led2);min-width:44px;text-align:right}
+  .spk{flex:none;width:40px;height:34px;padding:0;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);background:#262626;border:none}
+  .spk svg{width:20px;height:20px}.spk .w{display:none}.spk.on .w{display:inline}.spk.on .x{display:none}
+  .spk.on{color:var(--led2);background:color-mix(in srgb,var(--led2) 14%,transparent)}
+  button.flink{border:none;background:none;padding:0 2px;font-size:12.5px;color:var(--accent);text-decoration:underline dashed;text-underline-offset:3px}
+  button.flink:hover{background:none;color:var(--ink)}
 
   .readout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
   .led-stat{background:#0e0e12;border-radius:10px;padding:12px;text-align:center;font-family:"Courier New",monospace;color:var(--led);font-weight:700;font-size:24px}
@@ -260,7 +271,7 @@
   }
 </style>
   <script src="/nav.js" defer></script>
-  <script src="/watchdata.js?v=14"></script>
+  <script src="/watchdata.js?v=15"></script>
   <script src="sample.js?v=7"></script>
   <script src="/standards.js?v=1"></script>
 </head>
@@ -331,6 +342,13 @@
               <button class="nudge" id="nDown" aria-label="-1s">&#9660;</button>
             </div>
           </div>
+          <div class="fine" id="fineRow" hidden>
+            <button class="spk" id="beepBtn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="x" d="M16 10l4 4M20 10l-4 4"/><path class="w" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/></svg></button>
+            <button class="fb" id="fineDown" aria-label="-0.1 s">&minus;</button>
+            <input type="range" id="fineSl" min="-5" max="5" step="1" value="0">
+            <button class="fb" id="fineUp" aria-label="+0.1 s">+</button>
+            <span class="fv" id="fineVal">&plusmn;0.0</span>
+          </div>
         </div>
       </div>
 
@@ -342,6 +360,8 @@
       <div class="grp">
         <div class="grp-h"><span class="grp-n">1</span><span id="grpAlign"></span></div>
         <p class="hint" id="alignHint" style="margin-top:0"></p>
+        <p class="hint" id="fineHint" style="margin-top:4px"><button class="flink" id="fineLink"></button></p>
+        <p class="hint" id="fineHelp" hidden></p>
       </div>
 
       <div class="grp">
@@ -491,6 +511,9 @@ var I18N={
   addToggle:"+ Add watch", addCancel:"Cancel",
   grpAlign:"Align to your watch", grpRecord:"Record",
   alignHint:"Use the \u25b2/\u25bc arrows so the green clock matches your watch to the second, then record.",
+  fineOpen:"Ticks out of step? Fine-tune", fineClose:"Back to whole seconds",
+  fineHelp:"The \ud83d\udd0a beeps when the green clock flips (lower at :00). Slide until each beep falls when the seconds hand reaches a marker. Use the speaker; Bluetooth adds delay.",
+  beepLbl:"Beep on every second of the green clock",
   sessionLbl:"Session", allSessions:"All sessions", allSessionsC:"All sessions, gaps removed",
   sessSince:function(d,n){return "Rate session \u00b7 since <b>"+d+"</b> \u00b7 "+n+(n===1?" measurement":" measurements");},
   endSess:"End session", endConfirm:"Confirm", undo:"Undo",
@@ -559,6 +582,9 @@ var I18N={
   addToggle:"+ Horloge toevoegen", addCancel:"Annuleren",
   grpAlign:"Gelijkzetten met je horloge", grpRecord:"Vastleggen",
   alignHint:"Zet met de \u25b2/\u25bc pijltjes de groene klok gelijk aan je horloge tot op de seconde, en leg dan vast.",
+  fineOpen:"Lopen de tikken niet gelijk? Fijn afstellen", fineClose:"Terug naar hele seconden",
+  fineHelp:"De \ud83d\udd0a piept als de groene klok verspringt (lager op :00). Schuif tot elke piep valt als de secondewijzer een streepje bereikt. Gebruik de speaker; bluetooth geeft vertraging.",
+  beepLbl:"Piep op elke seconde van de groene klok",
   sessionLbl:"Sessie", allSessions:"Alle sessies", allSessionsC:"Alle sessies, zonder tussenpozen",
   sessSince:function(d,n){return "Gangsessie \u00b7 sinds <b>"+d+"</b> \u00b7 "+n+(n===1?" meting":" metingen");},
   endSess:"Sessie afronden", endConfirm:"Bevestigen", undo:"Ongedaan maken",
@@ -684,6 +710,24 @@ var offsetN=0, guideOpen=false;
 // offsetTouched: the user moved the green clock since it was seeded; rsPrev: offset before a reset set it to 0
 var offsetTouched=false, rsPrev=null;
 function currentOffset(){return offsetN;}
+// Fine-tune: the offset may get tenths (slider, -0.5 to +0.5 s around the whole second), so the green clock
+// flips together with the watch. fineOpen = the row is open; measurements then get fine:true.
+var fineOpen=false;
+function isWhole(n){return Math.abs(n-Math.round(n))<1e-9;}
+function tenths(n){return Math.round(n*10)/10;}
+// fineV remembers the slider position, so +0.5 and -0.5 (the same phase) stay apart and + stops at +0.5;
+// if the offset was set elsewhere (new watch, reset) and no longer fits, it follows from the offset
+var fineV=0;
+function fineTenths(){if(!isWhole(tenths(offsetN-fineV/10)))fineV=Math.round((offsetN-Math.round(offsetN))*10);return fineV;}  // -5..5
+function setFine(v){var whole=tenths(offsetN-fineTenths()/10);fineV=Math.max(-5,Math.min(5,v));offsetN=tenths(whole+fineV/10);offsetTouched=true;rsPrev=null;renderMeter();}
+function renderFine(){
+  var t=I18N[lang],v=fineTenths();
+  document.getElementById("fineRow").hidden=!fineOpen;
+  document.getElementById("fineHelp").hidden=!fineOpen;
+  document.getElementById("fineLink").textContent=fineOpen?t.fineClose:t.fineOpen;
+  document.getElementById("fineSl").value=String(v);
+  document.getElementById("fineVal").textContent=(v>0?"+":v<0?"\u2212":"\u00b1")+(Math.abs(v)/10).toFixed(1);
+}
 function seedOffset(){var w=activeWatch();
   offsetTouched=false;rsPrev=null;
   if(w&&w.measurements.length){var last=w.measurements.slice().sort(function(a,b){return b.t-a.t;})[0];offsetN=Math.round(last.offset);}
@@ -719,10 +763,11 @@ function renderMeter(){
   // first measurement of a watch, or after End session: always a new start, a reset makes no sense
   if(!s||s.ended){chk.checked=true;chk.disabled=true;rs.checked=false;rs.disabled=true;}
   else if(chk.disabled){chk.checked=false;chk.disabled=false;rs.disabled=false;}
-  document.getElementById("offVal").textContent=signSec(currentOffset(),false);
+  document.getElementById("offVal").textContent=signSec(currentOffset(),fineOpen||!isWhole(offsetN));
+  renderFine();
   var note=document.getElementById("rsNote");
   note.hidden=!(rs.checked&&rsPrev!==null);
-  if(!note.hidden){document.getElementById("rsNoteTxt").textContent=t.rsZeroed(signSec(rsPrev,false));document.getElementById("rsUndo").textContent=t.undo;}
+  if(!note.hidden){document.getElementById("rsNoteTxt").textContent=t.rsZeroed(signSec(rsPrev,!isWhole(rsPrev)));document.getElementById("rsUndo").textContent=t.undo;}
 
   var r=rateOf(w);
   document.getElementById("rateVal").textContent=r?((r.rate>0?"+":r.rate<0?"\u2212":"")+Math.abs(r.rate).toFixed(1)+" "+t.perDay):("\u2014 "+t.perDay);
@@ -1172,6 +1217,9 @@ function applyLang(){
   document.getElementById("grpRecord").textContent=t.grpRecord;
   document.getElementById("tgFrameLabel").innerHTML='<i>\u25c8</i> '+t.tgFrameLabel;
   document.getElementById("alignHint").textContent=t.alignHint;
+  document.getElementById("fineHelp").textContent=t.fineHelp;
+  var bb=document.getElementById("beepBtn");bb.title=t.beepLbl;bb.setAttribute("aria-label",t.beepLbl);
+  renderFine();
   document.getElementById("nsHint").textContent=t.nsHint;
   document.getElementById("rsHint").textContent=t.rsHint;
   var tgOpen=document.getElementById("tgForm").style.display!=="none";
@@ -1344,9 +1392,58 @@ document.getElementById("tgSave").onclick=function(){
   closeTG();save();renderAll();
 };
 
+document.getElementById("fineLink").onclick=function(){
+  fineOpen=!fineOpen;
+  if(!fineOpen){setBeep(false);offsetN=tenths(offsetN-fineTenths()/10);fineV=0;}
+  renderMeter();
+};
+document.getElementById("fineSl").oninput=function(e){setFine(+e.target.value);};
+document.getElementById("fineDown").onclick=function(){setFine(fineTenths()-1);};
+document.getElementById("fineUp").onclick=function(){setFine(fineTenths()+1);};
+document.getElementById("beepBtn").onclick=function(){setBeep(!beepOn);};
+
+// Beep on each flip of the green clock, scheduled on the audio clock (exact to a few ms, unlike a timer),
+// corrected for the output latency the browser reports. Off on every page load: audio needs a click.
+var audioCtx=null,beepOn=false,beepTimer=null,beepNext=0,beepNodes=[];
+function setBeep(on){
+  beepOn=on;
+  var b=document.getElementById("beepBtn");b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on));
+  clearTimeout(beepTimer);
+  if(!on){beepNodes.forEach(function(o){try{o.stop();}catch(e){}});beepNodes=[];return;}
+  try{
+    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    // iOS: play through the ringer switch (Safari 16.4+), like a media player
+    if(navigator.audioSession)navigator.audioSession.type="playback";
+    if(audioCtx.state==="suspended")audioCtx.resume();
+  }catch(e){beepOn=false;b.classList.remove("on");return;}
+  beepNext=0;scheduleBeep();
+}
+function audioTimeAt(ms){
+  var ts=audioCtx.getOutputTimestamp?audioCtx.getOutputTimestamp():null,lat=audioCtx.outputLatency||audioCtx.baseLatency||0;
+  var now=ts&&ts.contextTime?ts.contextTime+(performance.now()-ts.performanceTime)/1000:audioCtx.currentTime;
+  return now+(ms-Date.now())/1000-lat;
+}
+function scheduleBeep(){
+  if(!beepOn)return;
+  var now=Date.now(),next=now+msToFlip(now+offsetN*1000);   // device time of the next green flip
+  if(next-beepNext>500){
+    var at=audioTimeAt(next);
+    if(at>audioCtx.currentTime+0.005){
+      var low=Math.round((next+offsetN*1000)/1000)%60===0,o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type="sine";o.frequency.setValueAtTime(low?660:1320,at);
+      g.gain.setValueAtTime(0.0001,at);g.gain.exponentialRampToValueAtTime(0.2,at+0.004);g.gain.exponentialRampToValueAtTime(0.0001,at+0.06);
+      o.connect(g);g.connect(audioCtx.destination);o.start(at);o.stop(at+0.07);
+      beepNodes.push(o);o.onended=function(){beepNodes=beepNodes.filter(function(x){return x!==o;});};
+      beepNext=next;
+    }
+  }
+  beepTimer=setTimeout(scheduleBeep,Math.max(20,next-Date.now()-150));
+}
+document.addEventListener("visibilitychange",function(){if(document.hidden&&beepOn)setBeep(false);});
+
 // adjusting the clock by hand: the value is the user's now, a reset no longer changes it
-document.getElementById("nUp").onclick=function(){offsetN++;offsetTouched=true;rsPrev=null;renderMeter();};
-document.getElementById("nDown").onclick=function(){offsetN--;offsetTouched=true;rsPrev=null;renderMeter();};
+document.getElementById("nUp").onclick=function(){offsetN=tenths(offsetN+1);offsetTouched=true;rsPrev=null;renderMeter();};
+document.getElementById("nDown").onclick=function(){offsetN=tenths(offsetN-1);offsetTouched=true;rsPrev=null;renderMeter();};
 document.getElementById("recordBtn").onclick=function(){
   var w=activeWatch();if(!w)return;
   var chk=document.getElementById("newStartChk");
@@ -1354,6 +1451,7 @@ document.getElementById("recordBtn").onclick=function(){
   var rs=document.getElementById("restartChk");
   if(chk.checked&&w.measurements.length)m.newStart=true; // the first measurement starts a session anyway
   else if(rs.checked)m.restart=true;
+  if(fineOpen)m.fine=true;
   w.measurements.push(m);
   document.getElementById("noteIn").value="";chk.checked=false;rs.checked=false;offsetTouched=false;rsPrev=null;
   save();renderAll();showNudge();flashRecorded();

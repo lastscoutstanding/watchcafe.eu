@@ -243,7 +243,7 @@
   </div>
 </div>
 
-<script src="/watchdata.js?v=14"></script>
+<script src="/watchdata.js?v=15"></script>
 <script src="/standards.js?v=1"></script>
 <script src="sample.js?v=7"></script>
 <script>
@@ -331,7 +331,7 @@ let FILES=[], merge=false, sortBy="name", sessionSel={},
 /* ---------- math ---------- */
 // rate fit as on the Rate Meter: a reset ("Reset, same session") lets the offset jump, the rate stays one slope (WatchData.rateOf)
 function fitOf(pts){const f=pts.length>1?WatchData.rateOf(pts):null;return f&&{...f,ratePerDay:f.rate};}
-function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||"",newStart:!!m.newStart,restart:!!m.restart};}
+function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||"",newStart:!!m.newStart,restart:!!m.restart,fine:!!m.fine};}
 function normTG(sess){
   const readings=(sess.readings||[]).map(r=>({position:r.position||"unknown",rate:Number(r.rate),
     amplitude:(r.amplitude!=null&&isFinite(r.amplitude))?Number(r.amplitude):null,

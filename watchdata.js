@@ -246,10 +246,10 @@ var WatchData=(function(){
   }
   // pooled fit over pieces of {t, offset}: rate in s/day, r2, and a fitted line per piece
   function fitPieces(ps){
-    var n=0,sxx=0,sxy=0,syy=0,t0=Infinity,t1=-Infinity,ms=[];
+    var n=0,sxx=0,sxy=0,syy=0,t0=Infinity,t1=-Infinity,ms=[],allFine=true;
     ps.forEach(function(p){
       var k=p.length,mt=0,mo=0;if(!k)return;
-      p.forEach(function(q){mt+=q.t;mo+=q.offset;t0=Math.min(t0,q.t);t1=Math.max(t1,q.t);});
+      p.forEach(function(q){mt+=q.t;mo+=q.offset;t0=Math.min(t0,q.t);t1=Math.max(t1,q.t);if(!q.fine)allFine=false;});
       mt/=k;mo/=k;n+=k;ms.push({p:p,mt:mt,mo:mo});
       p.forEach(function(q){var x=q.t-mt,y=q.offset-mo;sxx+=x*x;sxy+=x*y;syy+=y*y;});
     });
@@ -259,15 +259,16 @@ var WatchData=(function(){
       return {t0:a,t1:z,o0:m.mo+b*(a-m.mt),o1:m.mo+b*(z-m.mt)};});
     // spread: residual standard deviation (s); margin: ~95% interval on the rate (s/day).
     // Degrees of freedom: one intercept per piece plus the shared slope.
-    // The residual sd never counts below the rounding noise of whole-second readings (1/sqrt(12) s).
+    // The residual sd never counts below the rounding noise of whole-second readings (1/sqrt(12) s),
+    // or 0.05 s when every reading was fine-tuned to tenths with the beep (fine:true).
     var sse=Math.max(syy-b*sxy,0),dof=n-ms.length-1,spread=null,margin=null;
     if(dof>0){
       spread=Math.sqrt(sse/dof);
-      margin=tCrit(dof)*Math.max(spread,ROUND_SD)/Math.sqrt(sxx)*DAY;
+      margin=tCrit(dof)*Math.max(spread,allFine?FINE_SD:ROUND_SD)/Math.sqrt(sxx)*DAY;
     }
     return {rate:b*DAY,n:n,span:t1-t0,r2:syy>0?1-sse/syy:null,spread:spread,margin:margin,dof:dof,lines:lines};
   }
-  var ROUND_SD=1/Math.sqrt(12);
+  var ROUND_SD=1/Math.sqrt(12),FINE_SD=0.05;
   // two-sided 95% Student-t critical value
   function tCrit(dof){
     var T=[0,12.71,4.30,3.18,2.78,2.57,2.45,2.36,2.31,2.26,2.23,2.20,2.18,2.16,2.14,2.13,2.12,2.11,2.10,2.09,2.09];
