@@ -275,7 +275,7 @@
   }
 </style>
   <script src="/nav.js" defer></script>
-  <script src="/watchdata.js?v=15"></script>
+  <script src="/watchdata.js?v=16"></script>
   <script src="sample.js?v=7"></script>
   <script src="/standards.js?v=1"></script>
 </head>
@@ -1028,10 +1028,10 @@ function drawCharts(w){
   // gedeelde tijd-as: min/max van alle getoonde offset-metingen
   // a timegrapher session up to a day before or after a session's measurements belongs to it
   // (often the last reading of a session, then onto the timegrapher), so the axis stretches to it
-  var tgAll=tgOf(w),tgSessions=[];
+  // (each timegrapher session to one rate session only, so blocks never overlap: tgBySession)
+  var tgAll=tgOf(w),tgSessions=[],own=WatchData.tgBySession(allSegs,tgAll,TG_GRACE);
   var spans=segs.map(function(s){var a=s[0].t,b=s[s.length-1].t;
-    tgAll.forEach(function(g){if(g.t>=s[0].t-TG_GRACE&&g.t<=s[s.length-1].t+TG_GRACE){
-      if(tgSessions.indexOf(g)<0)tgSessions.push(g);if(g.t<a)a=g.t;if(g.t>b)b=g.t;}});
+    (own[allSegs.indexOf(s)]||[]).forEach(function(g){tgSessions.push(g);if(g.t<a)a=g.t;if(g.t>b)b=g.t;});
     return [a,b];});
   var tDomain=[Math.min.apply(null,spans.map(function(b){return b[0];})),Math.max.apply(null,spans.map(function(b){return b[1];}))];
   var blocks=(selectedSession==="allc")?spans:null;
@@ -1057,7 +1057,8 @@ function drawCharts(w){
       title:fdt(p.from)+" \u2192 "+fdt(p.t)+" \u00b7 "+v+" \u00b7 "+(p.pos===null?t.posMixed+": "+p.path.map(function(c){return c?posAbbr(c):"\u2014";}).filter(function(x,i,a){return i===0||a[i-1]!==x;}).join(" \u2192 "):plab(p.pos))};}));});});
   // all timegrapher sessions inside the (stretched) period count; without a rate point
   // there is no rate chart, so a first measurement doesn't stack every session at one x
-  tgSessions=tgAll.filter(function(g){return g.t>=tDomain[0]&&g.t<=tDomain[1];});
+  // with the gaps cut out, only the sessions' own ones (another would land in a cut gap)
+  if(!blocks)tgSessions=tgAll.filter(function(g){return g.t>=tDomain[0]&&g.t<=tDomain[1];});
   var okRate=rateSegs.length>0&&chartSVG(document.getElementById("chartRate"),rateSegs,{path:"solid"},tgSessions,tDomain,blocks,stdBand(w));
   rw.style.display=okRate?"block":"none";
   // legend: the positions that show, grey for "mixed" or none given, and the timegrapher marks
@@ -1142,7 +1143,9 @@ function renderPos(w){
   var box=document.getElementById("posBox"),t=I18N[lang];
   var segs=w?segments(w):[],all=w&&resolvedSegIndex(w)==="all",pts=w?(all?segs[segs.length-1]:selectedMeas(w)):[];
   // same rate session as the summary line; timegrapher sessions within a day of it count (TG_GRACE)
-  var tg=pts&&pts.length?tgOf(w).filter(function(g){return g.t>=pts[0].t-TG_GRACE&&g.t<=pts[pts.length-1].t+TG_GRACE;}):[];
+  var tg=[];
+  if(pts&&pts.length){var si=segs.findIndex(function(s){return s[0].t===pts[0].t;});
+    tg=si<0?[]:WatchData.tgBySession(segs,tgOf(w),TG_GRACE)[si];}
   var sum=pts&&pts.length?WatchData.positionSummary(pts,tg):null;
   if(!sum||!sum.rows.some(function(r){return r.code;})){box.style.display="none";return;}
   box.style.display="";

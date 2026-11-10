@@ -275,6 +275,24 @@ var WatchData=(function(){
     return dof<T.length?T[dof]:dof<30?2.06:dof<60?2.02:1.98;
   }
   function rateOf(pts){return fitPieces(pieces(pts));}
+  /* Timegrapher sessions per rate session (segs: time-sorted sessions of {t}).
+     A timegrapher session belongs to one rate session only: the one it falls
+     inside, otherwise the nearest within grace (ms; a tie goes to the earlier
+     session, often "last reading, then onto the timegrapher"). So a session
+     only stretches into the gap next to it and two sessions never overlap,
+     also when they follow each other within a day (a reset changed into a
+     new start afterwards). Returns one array per session. */
+  function tgBySession(segs,tgs,grace){
+    var out=segs.map(function(){return [];});
+    (tgs||[]).forEach(function(g){
+      var best=-1,bd=Infinity;
+      segs.forEach(function(s,i){if(!s.length)return;
+        var a=s[0].t,b=s[s.length-1].t,d=g.t<a?a-g.t:g.t>b?g.t-b:0;
+        if(d<=grace&&d<bd){bd=d;best=i;}});
+      if(best>=0)out[best].push(g);
+    });
+    return out;
+  }
 
   /* ----- positions -----
      Colours on a dark background (Rate Meter, Viewer); the report keeps its own
@@ -403,6 +421,6 @@ var WatchData=(function(){
     lastBackup:lastBackup,markBackedUp:markBackedUp,backupStatus:backupStatus,backupAge:backupAge,downloadBackup:downloadBackup,
     markDeleted:markDeleted,markWatchDeleted:markWatchDeleted,deletedAt:deletedAt,markRestored:markRestored,idTime:idTime,ensureIds:ensureIds,merge:merge,
     currentRate:currentRate,previousRate:previousRate,pieces:pieces,fitPieces:fitPieces,rateOf:rateOf,rateSession:rateSession,
-    POS_ORDER:POS_ORDER,posColor:posColor,ratePoints:ratePoints,positionRates:positionRates,tgByPosition:tgByPosition,positionSummary:positionSummary,
+    POS_ORDER:POS_ORDER,posColor:posColor,ratePoints:ratePoints,positionRates:positionRates,tgByPosition:tgByPosition,positionSummary:positionSummary,tgBySession:tgBySession,
     wornCount:wornCount,wearOrder:wearOrder};
 })();

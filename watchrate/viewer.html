@@ -243,7 +243,7 @@
   </div>
 </div>
 
-<script src="/watchdata.js?v=15"></script>
+<script src="/watchdata.js?v=16"></script>
 <script src="/standards.js?v=1"></script>
 <script src="sample.js?v=7"></script>
 <script>
@@ -409,13 +409,16 @@ function collectWatches(){
     w.timegrapher.forEach(sess=>{sess.avg=sess.readings.reduce((a,r)=>a+r.rate,0)/sess.readings.length;});
     // "Positions" panel: the same rate session as the rate, with its timegrapher sessions (within a day)
     const unk=c=>c==="unknown"?"":c;
-    w.posTG=metricPts.length?w.timegrapher.filter(g=>g.t>=metricPts[0].t-TG_GRACE&&g.t<=metricPts[metricPts.length-1].t+TG_GRACE):[];
+    // each timegrapher session belongs to one rate session only (WatchData.tgBySession)
+    const own=WatchData.tgBySession(sessions,w.timegrapher,TG_GRACE);
+    const ownOf=s=>{const i=sessions.indexOf(s);return i<0?w.timegrapher.filter(g=>g.t>=s[0].t-TG_GRACE&&g.t<=s[s.length-1].t+TG_GRACE):own[i];};
+    w.posTG=metricPts.length?ownOf(metricPts):[];
     w.posSum=metricPts.length?WatchData.positionSummary(metricPts.map(m=>({...m,position:unk(m.position)})),
       w.posTG.map(g=>({t:g.t,readings:g.readings.map(r=>({position:unk(r.position),rate:r.rate,amplitude:r.amplitude,beatError:r.beatError}))}))):null;
     // a timegrapher session up to a day before or after a session's measurements belongs to it,
     // so the time axis stretches to it (same rule as the Rate Meter)
     const span=s=>{let a=s[0].t,b=s[s.length-1].t;
-      w.timegrapher.forEach(g=>{if(g.t>=s[0].t-TG_GRACE&&g.t<=s[s.length-1].t+TG_GRACE){a=Math.min(a,g.t);b=Math.max(b,g.t);}});return [a,b];};
+      ownOf(s).forEach(g=>{a=Math.min(a,g.t);b=Math.max(b,g.t);});return [a,b];};
     w.spans=sessions.map(span);
     const sp=isAllSel(selKey)?w.spans:(shown.length?[span(shown)]:[]);
     w.axMin=sp.length?Math.min(...sp.map(b=>b[0])):null; w.axMax=sp.length?Math.max(...sp.map(b=>b[1])):null;
