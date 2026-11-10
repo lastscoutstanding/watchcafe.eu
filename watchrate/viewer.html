@@ -331,7 +331,7 @@ let FILES=[], merge=false, sortBy="name", sessionSel={},
 /* ---------- math ---------- */
 // rate fit as on the Rate Meter: a reset ("Reset, same session") lets the offset jump, the rate stays one slope (WatchData.rateOf)
 function fitOf(pts){const f=pts.length>1?WatchData.rateOf(pts):null;return f&&{...f,ratePerDay:f.rate};}
-function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||"",newStart:!!m.newStart,restart:!!m.restart,fine:!!m.fine};}
+function normMeas(m){return {id:m.id,t:Number(m.t),offset:Number(m.offset),position:m.position||"unknown",note:m.note||"",newStart:!!m.newStart,restart:!!m.restart,fine:!!m.fine,edited:+m.edited||0};}
 function normTG(sess){
   const readings=(sess.readings||[]).map(r=>({position:r.position||"unknown",rate:Number(r.rate),
     amplitude:(r.amplitude!=null&&isFinite(r.amplitude))?Number(r.amplitude):null,
@@ -354,7 +354,8 @@ function collectWatches(){
       (w.measurements||[]).forEach((m,i)=>{
         const nm=normMeas(m);
         const mk=nm.id!=null?"id:"+nm.id:("t:"+nm.t+"|o:"+nm.offset+"|i:"+i+"|"+f.name);
-        if(!agg.measById.has(mk)) agg.measById.set(mk,nm);
+        // a label swapped afterwards (new start <-> reset): the latest edit wins
+        if(!agg.measById.has(mk)||nm.edited>agg.measById.get(mk).edited) agg.measById.set(mk,nm);
       });
       (w.timegrapher||[]).forEach((sess,i)=>{
         const ns=normTG(sess);

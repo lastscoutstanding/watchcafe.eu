@@ -313,7 +313,10 @@ function localWatches(){
 function mergeKey(w){return (w.id!=null?"id:"+w.id:"name:"+(w.name||"")).toLowerCase();}
 function mergeFiles(files){
   var by={},order=[];
-  function addAll(dst,src,key){(src||[]).forEach(function(x,i){var k=x.id!=null?"id:"+x.id:key(x,i);if(!dst._seen[k]){dst._seen[k]=1;dst.list.push(x);}});}
+  // same item in several backups: the latest edit wins (a measurement label swapped afterwards)
+  function addAll(dst,src,key){(src||[]).forEach(function(x,i){var k=x.id!=null?"id:"+x.id:key(x,i);
+    if(!dst._seen[k]){dst._seen[k]=dst.list.length+1;dst.list.push(x);}
+    else if((+x.edited||0)>(+dst.list[dst._seen[k]-1].edited||0))dst.list[dst._seen[k]-1]=x;});}
   files.forEach(function(f){f.watches.forEach(function(w){
     var k=mergeKey(w);
     if(!by[k]){by[k]={name:w.name,info:w.info,edited:+w.edited||0,m:{_seen:{},list:[]},g:{_seen:{},list:[]},p:{_seen:{},list:[]},l:{_seen:{},list:[]},n:{_seen:{},list:[]}};order.push(k);}

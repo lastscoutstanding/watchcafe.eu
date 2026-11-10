@@ -131,6 +131,10 @@
   .block h2.sub{border-top:1px solid var(--border);padding-top:20px;margin-top:26px}
   .tag{display:inline-block;background:#2e221c;color:#eda57f;border-radius:6px;font-size:11px;padding:2px 7px;margin-left:6px;vertical-align:1px;white-space:nowrap}
   .tag.rs{background:transparent;border:1px dashed #eda57f;padding:1px 6px}
+  button.tag{font:inherit;font-size:11px;line-height:normal;cursor:pointer;border:1px solid transparent;padding:1px 6px}
+  button.tag.rs{border:1px dashed #eda57f}
+  button.tag:hover{border-color:#eda57f}
+  button.tag .sw{opacity:.6;margin-left:4px}
 
   .chart-wrap{background:#0e0e12;border-radius:12px;padding:14px 12px 10px;margin-top:14px}
   .chart-title{display:flex;align-items:center;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#999;margin:0 0 8px 4px}
@@ -481,6 +485,7 @@ var I18N={
   sinceStart:"latest session",
   thTime:"Time", thOffset:"Offset", thPosition:"Position", thNote:"Note", del:"delete",
   newStartTag:"new start", restartTag:"reset",
+  toRestart:"Tap to make this a reset (same session)", toNewStart:"Tap to make this a new start (new session)",
   posNone:"no position", posMixed:"mixed", lineSeg:{trend:"Trend",path:"Path",both:"Both"}, lineSegTip:"Trend line = the calculated rate; path = straight lines between the measurements",
   chartOffset:"Offset over time", chartRate:"Rate over time",
   stdTitle:"How it compares", stdWithin:function(l){return "\u2713 Within "+l;}, stdOutside:function(l){return "Outside "+l;},
@@ -552,6 +557,7 @@ var I18N={
   sinceStart:"laatste sessie",
   thTime:"Tijdstip", thOffset:"Offset", thPosition:"Positie", thNote:"Notitie", del:"verwijder",
   newStartTag:"nieuwe start", restartTag:"doorstart",
+  toRestart:"Tik om er een doorstart van te maken (zelfde sessie)", toNewStart:"Tik om er een nieuwe start van te maken (nieuwe sessie)",
   posNone:"geen positie", posMixed:"gemengd", lineSeg:{trend:"Trend",path:"Pad",both:"Beide"}, lineSegTip:"Trendlijn = de berekende gang; pad = rechte lijnen tussen de metingen",
   chartOffset:"Offset in de tijd", chartRate:"Gang in de tijd",
   stdTitle:"Vergelijking met normen", stdWithin:function(l){return "\u2713 Binnen "+l;}, stdOutside:function(l){return "Buiten "+l;},
@@ -807,15 +813,41 @@ function renderHistory(){
   var html='<h2 class="sub">'+escapeHtml(t.measLog)+watchSuffix(w)+'</h2><table class="mtab"><thead><tr><th>'+t.thTime+'</th><th>'+t.thOffset+'</th><th>'+t.thPosition+'</th><th>'+t.thNote+'</th><th></th></tr></thead><tbody>';
   pts.forEach(function(m){
     var d=new Date(m.t).toLocaleString(lang==="nl"?"nl-NL":"en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
-    var tag=m.newStart?('<span class="tag">'+t.newStartTag+'</span>'):m.restart?('<span class="tag rs">'+t.restartTag+'</span>'):"";
+    var tag="";
+    if(m.newStart||m.restart){
+      var lbl=m.newStart?t.newStartTag:t.restartTag,cls="tag"+(m.newStart?"":" rs");
+      tag=labelSwappable(w,m)?'<button class="'+cls+'" data-swap="'+m.id+'" title="'+escapeHtml(m.newStart?t.toRestart:t.toNewStart)+'">'+lbl+'<span class="sw" aria-hidden="true">\u21c4</span></button>'
+        :'<span class="'+cls+'">'+lbl+'</span>';
+    }
     html+='<tr><td class="num">'+d+tag+'</td><td class="num">'+signSec(m.offset,true)+'</td><td>'+withNote(m.position?escapeHtml(posLabel(m.position)):"",m.note)+'</td><td>'+escapeHtml(m.note||"")+'</td><td><button class="sm danger ghost" data-id="'+m.id+'">'+t.del+'</button></td></tr>';
   });
   html+="</tbody></table>";wrap.innerHTML=html;
+  wrap.querySelectorAll("button[data-swap]").forEach(function(b){b.onclick=function(){swapLabel(w,b.getAttribute("data-swap"));};});
   wrap.querySelectorAll("button[data-id]").forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-id");WatchData.markDeleted(state,id);w.measurements=w.measurements.filter(function(x){return x.id!==id;});save();renderAll();};});
   drawCharts(w);
   renderPos(w);
   renderStd(w,r);
   renderTG(w);
+}
+
+// A label set when measuring can be swapped afterwards, new start <-> reset, nothing else: a plain
+// measurement never gets a label, and date, offset and position stay as recorded. Locked: the first
+// measurement of the watch (it starts a session anyway) and the new start right after "End session"
+// (the user ended that session on purpose; Undo there joins them again). edited lets the change win
+// when merging with other devices.
+function labelSwappable(w,m){
+  var ms=w.measurements.slice().sort(function(a,b){return a.t-b.t;}),i=ms.indexOf(m);
+  if(i<=0)return false;
+  if(m.newStart&&w.rateEnd&&w.rateEnd.at!=null&&w.rateEnd.at>=ms[i-1].t&&w.rateEnd.at<m.t)return false;
+  return true;
+}
+function swapLabel(w,id){
+  var m=w.measurements.find(function(x){return x.id===id;});
+  if(!m||!(m.newStart||m.restart)||!labelSwappable(w,m))return;
+  if(m.newStart){delete m.newStart;m.restart=true;}else{delete m.restart;m.newStart=true;}
+  m.edited=Date.now();
+  selectedSession="last"; // session numbers shift
+  save();renderAll();
 }
 
 // "End session": an explicit flag (w.rateEnd), two steps like deleting; Undo while no new measurement exists
